@@ -1,0 +1,493 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // or "mysql", "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER & ORGANIZATION MODELS
+// ============================================
+
+enum UserType {
+  ADMIN_OWNER
+  CLIENT
+  ORGANIZATION_MEMBER
+}
+
+enum MemberRole {
+  ADMIN
+  CREATIVE_LEAD
+  TEAM_LEAD
+  SALESPERSON
+  ACCOUNT_MANAGER
+  COPYWRITER
+  CONTENT_WRITER
+  GRAPHIC_DESIGNER
+  VIDEO_EDITOR
+  SOCIAL_MEDIA_MANAGER
+  SEO_SPECIALIST
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String
+  phone         String?
+  userType      UserType
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  ownedOrganizations  Organization[]     @relation("OrganizationOwner")
+  memberships         OrganizationMember[]
+  clientProfiles      ClientProfile[]
+  assignedProjects    ProjectTeamMember[]
+  createdTasks        Task[]             @relation("TaskCreator")
+  assignedTasks       Task[]             @relation("TaskAssignee")
+  meetingLogs         MeetingLog[]
+  comments            Comment[]
+  notifications       Notification[]
+
+  @@index([email])
+  @@index([userType])
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  owner       User     @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId     String
+
+  members     OrganizationMember[]
+  clients     ClientProfile[]
+  projects    Project[]
+  customRoles CustomRole[]
+
+  @@index([ownerId])
+}
+
+model OrganizationMember {
+  id        String     @id @default(cuid())
+  role      MemberRole
+  isActive  Boolean    @default(true)
+  joinedAt  DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Relations
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  customRole   CustomRole? @relation(fields: [customRoleId], references: [id])
+  customRoleId String?
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+// For dynamic/custom roles beyond predefined ones
+model CustomRole {
+  id             String   @id @default(cuid())
+  name           String
+  description    String?
+  permissions    Json     // Store permissions as JSON
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  members OrganizationMember[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+// ============================================
+// CLIENT MODELS
+// ============================================
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  ARCHIVED
+}
+
+enum EngagementType {
+  RETAINER
+  PROJECT_BASED
+}
+
+enum ServiceType {
+  SOCIAL_MEDIA
+  PAID_MEDIA
+  INFLUENCER_MARKETING
+  EMAIL_MARKETING
+  SEO
+  CONTENT_CREATION
+  BRANDING
+  WEB_DEVELOPMENT
+}
+
+model ClientProfile {
+  id              String         @id @default(cuid())
+  companyName     String
+  contactPerson   String
+  email           String
+  phone           String
+  industry        String
+  engagementType  EngagementType
+  status          ClientStatus   @default(PENDING)
+  onboardingNotes String?        @db.Text
+  requirementNotes String?       @db.Text
+  competitors     String?        @db.Text
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relations
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  managedBy      String? // User ID of account manager
+  
+  services       ClientService[]
+  teamMembers    ClientTeamMember[]
+  scopeOfWork    ScopeOfWork[]
+  documents      ClientDocument[]
+  meetingLogs    MeetingLog[]
+  projects       Project[]
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([status])
+}
+
+model ClientService {
+  id        String      @id @default(cuid())
+  service   ServiceType
+  isActive  Boolean     @default(true)
+  createdAt DateTime    @default(now())
+
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+
+  @@unique([clientId, service])
+  @@index([clientId])
+}
+
+model ClientTeamMember {
+  id        String   @id @default(cuid())
+  userId    String
+  userName  String
+  userRole  String
+  createdAt DateTime @default(now())
+
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+
+  @@index([clientId])
+  @@index([userId])
+}
+
+// ============================================
+// SCOPE OF WORK
+// ============================================
+
+model ScopeOfWork {
+  id          String      @id @default(cuid())
+  service     ServiceType
+  description String      @db.Text
+  details     Json? // Store platform-specific details as JSON
+  budget      Float?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+
+  @@index([clientId])
+  @@index([service])
+}
+
+// ============================================
+// DOCUMENTS
+// ============================================
+
+enum DocumentType {
+  BRAND_GUIDELINES
+  STRATEGY_DECK
+  SOP
+  CONTRACT
+  PROPOSAL
+  REPORT
+  OTHER
+}
+
+model ClientDocument {
+  id          String       @id @default(cuid())
+  fileName    String
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String?
+  type        DocumentType @default(OTHER)
+  description String?
+  uploadedAt  DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
+
+  @@index([clientId])
+  @@index([type])
+}
+
+// ============================================
+// MEETING LOGS
+// ============================================
+
+model MeetingLog {
+  id          String   @id @default(cuid())
+  title       String
+  notes       String   @db.Text
+  meetingDate DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  client     ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId   String
+  createdBy  User          @relation(fields: [createdById], references: [id])
+  createdById String
+
+  attendees  Json? // Store attendee IDs/names as JSON
+
+  @@index([clientId])
+  @@index([meetingDate])
+}
+
+// ============================================
+// PROJECT & TASK MANAGEMENT
+// ============================================
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+  ON_HOLD
+  CANCELLED
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?       @db.Text
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  endDate     DateTime?
+  budget      Float?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  client         ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId       String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+
+  teamMembers ProjectTeamMember[]
+  tasks       Task[]
+  approvals   Approval[]
+
+  @@index([clientId])
+  @@index([organizationId])
+  @@index([status])
+}
+
+model ProjectTeamMember {
+  id        String   @id @default(cuid())
+  role      String
+  joinedAt  DateTime @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  BLOCKED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  title       String
+  description String?      @db.Text
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  createdBy   User   @relation("TaskCreator", fields: [createdById], references: [id])
+  createdById String
+
+  assignedTo   User?   @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  assignedToId String?
+
+  comments    Comment[]
+  attachments TaskAttachment[]
+
+  @@index([projectId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String
+
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+
+  @@index([taskId])
+  @@index([authorId])
+}
+
+model TaskAttachment {
+  id         String   @id @default(cuid())
+  fileName   String
+  fileUrl    String
+  fileSize   Int?
+  mimeType   String?
+  uploadedAt DateTime @default(now())
+
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String
+
+  @@index([taskId])
+}
+
+// ============================================
+// APPROVAL WORKFLOW
+// ============================================
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+}
+
+model Approval {
+  id          String         @id @default(cuid())
+  title       String
+  description String?        @db.Text
+  status      ApprovalStatus @default(PENDING)
+  submittedAt DateTime       @default(now())
+  reviewedAt  DateTime?
+  feedback    String?        @db.Text
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  submittedBy   String // User ID
+  reviewedBy    String? // User ID
+  
+  attachments Json? // Store file URLs as JSON
+
+  @@index([projectId])
+  @@index([status])
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_COMPLETED
+  APPROVAL_REQUESTED
+  APPROVAL_REVIEWED
+  MEETING_SCHEDULED
+  DOCUMENT_UPLOADED
+  COMMENT_ADDED
+  PROJECT_STATUS_CHANGED
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  isRead    Boolean          @default(false)
+  link      String? // Link to relevant resource
+  createdAt DateTime         @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+// ============================================
+// ANALYTICS & REPORTING (Optional)
+// ============================================
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String
+  entityType  String // e.g., "Project", "Task", "Client"
+  entityId    String
+  metadata    Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

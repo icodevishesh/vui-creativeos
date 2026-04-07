@@ -224,3 +224,23 @@ AI copy + content generation
 AI performance prediction 
 Automated content suggestions 
 SaaS monetization
+
+
+
+8th april 2026
+- Dashboard
+- clients
+- onboarding
+
+projects:
+- content calendar
+- task board
+- creative Upload
+
+workspace:
+- Writer
+- Designer
+
+more:
+- client portal
+- file repo
