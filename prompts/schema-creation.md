@@ -77,4 +77,23 @@ Meeting Logs:
     Monthly Review  -- Apr 1, 2026
         Client happy with engagement growth. Wants to explore Reels.
     Strategy Sync  -- Mar 15, 2026
-        Discussed Q2 campaign themes. Budget increase approved.
+        Discussed Q2 campaign themes. Budget increase approved.create a prisma schema for the following entities:
+
+user:
+    admin: owner
+    client: client
+    user: a member of a organisation
+        - role as admin
+        - role as Creative Lead / Team Lead 
+        - role as Salesperson
+        - role as Account Manager
+        - role as Copywriter / Content Writer 
+        - role as Graphic Designer
+        - role as Video Editor
+        - role as Social Media Manager
+        - role as SEO Specialist
+
+add role as a dynamic
+
+
+    

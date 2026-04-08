@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // or "mysql", "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -35,7 +35,7 @@ enum MemberRole {
 }
 
 model User {
-  id            String   @id @default(cuid())
+  id            String   @id @default(cuid()) @map("_id")
   email         String   @unique
   password      String
   name          String
@@ -55,12 +55,11 @@ model User {
   comments            Comment[]
   notifications       Notification[]
 
-  @@index([email])
   @@index([userType])
 }
 
 model Organization {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   name        String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -78,7 +77,7 @@ model Organization {
 }
 
 model OrganizationMember {
-  id        String     @id @default(cuid())
+  id        String     @id @default(cuid()) @map("_id")
   role      MemberRole
   isActive  Boolean    @default(true)
   joinedAt  DateTime   @default(now())
@@ -100,7 +99,7 @@ model OrganizationMember {
 
 // For dynamic/custom roles beyond predefined ones
 model CustomRole {
-  id             String   @id @default(cuid())
+  id             String   @id @default(cuid()) @map("_id")
   name           String
   description    String?
   permissions    Json     // Store permissions as JSON
@@ -125,6 +124,8 @@ enum ClientStatus {
   INACTIVE
   PENDING
   ARCHIVED
+  DELAYED
+  REJECTED
 }
 
 enum EngagementType {
@@ -144,19 +145,19 @@ enum ServiceType {
 }
 
 model ClientProfile {
-  id              String         @id @default(cuid())
-  companyName     String
-  contactPerson   String
-  email           String
-  phone           String
-  industry        String
-  engagementType  EngagementType
-  status          ClientStatus   @default(PENDING)
-  onboardingNotes String?        @db.Text
-  requirementNotes String?       @db.Text
-  competitors     String?        @db.Text
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id               String         @id @default(cuid()) @map("_id")
+  companyName      String
+  contactPerson    String
+  email            String
+  phone            String
+  industry         String
+  engagementType   EngagementType
+  status           ClientStatus   @default(PENDING)
+  onboardingNotes  String?
+  requirementNotes String?
+  competitors      String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   // Relations
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -164,8 +165,8 @@ model ClientProfile {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
 
-  managedBy      String? // User ID of account manager
-  
+  managedBy      String? // User ID of account manager of allocated team
+
   services       ClientService[]
   teamMembers    ClientTeamMember[]
   scopeOfWork    ScopeOfWork[]
@@ -179,7 +180,7 @@ model ClientProfile {
 }
 
 model ClientService {
-  id        String      @id @default(cuid())
+  id        String      @id @default(cuid()) @map("_id")
   service   ServiceType
   isActive  Boolean     @default(true)
   createdAt DateTime    @default(now())
@@ -192,7 +193,7 @@ model ClientService {
 }
 
 model ClientTeamMember {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   userId    String
   userName  String
   userRole  String
@@ -210,9 +211,9 @@ model ClientTeamMember {
 // ============================================
 
 model ScopeOfWork {
-  id          String      @id @default(cuid())
+  id          String      @id @default(cuid()) @map("_id")
   service     ServiceType
-  description String      @db.Text
+  description String
   details     Json? // Store platform-specific details as JSON
   budget      Float?
   createdAt   DateTime    @default(now())
@@ -240,7 +241,7 @@ enum DocumentType {
 }
 
 model ClientDocument {
-  id          String       @id @default(cuid())
+  id          String       @id @default(cuid()) @map("_id")
   fileName    String
   fileUrl     String
   fileSize    Int?
@@ -262,16 +263,16 @@ model ClientDocument {
 // ============================================
 
 model MeetingLog {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   title       String
-  notes       String   @db.Text
+  notes       String
   meetingDate DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  client     ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId   String
-  createdBy  User          @relation(fields: [createdById], references: [id])
+  client      ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId    String
+  createdBy   User          @relation(fields: [createdById], references: [id])
   createdById String
 
   attendees  Json? // Store attendee IDs/names as JSON
@@ -294,9 +295,9 @@ enum ProjectStatus {
 }
 
 model Project {
-  id          String        @id @default(cuid())
+  id          String        @id @default(cuid()) @map("_id")
   name        String
-  description String?       @db.Text
+  description String?
   status      ProjectStatus @default(PLANNING)
   startDate   DateTime?
   endDate     DateTime?
@@ -319,7 +320,7 @@ model Project {
 }
 
 model ProjectTeamMember {
-  id        String   @id @default(cuid())
+  id        String   @id @default(cuid()) @map("_id")
   role      String
   joinedAt  DateTime @default(now())
 
@@ -334,11 +335,12 @@ model ProjectTeamMember {
 }
 
 enum TaskStatus {
-  TODO
+  OPEN_TASK
   IN_PROGRESS
   IN_REVIEW
-  COMPLETED
-  BLOCKED
+  CLIENT_REVIEW
+  APPROVED
+  REJECTED
 }
 
 enum TaskPriority {
@@ -349,9 +351,9 @@ enum TaskPriority {
 }
 
 model Task {
-  id          String       @id @default(cuid())
+  id          String       @id @default(cuid()) @map("_id")
   title       String
-  description String?      @db.Text
+  description String?
   status      TaskStatus   @default(TODO)
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
@@ -378,8 +380,8 @@ model Task {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
+  id        String   @id @default(cuid()) @map("_id")
+  content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -394,7 +396,7 @@ model Comment {
 }
 
 model TaskAttachment {
-  id         String   @id @default(cuid())
+  id         String   @id @default(cuid()) @map("_id")
   fileName   String
   fileUrl    String
   fileSize   Int?
@@ -419,13 +421,13 @@ enum ApprovalStatus {
 }
 
 model Approval {
-  id          String         @id @default(cuid())
+  id          String         @id @default(cuid()) @map("_id")
   title       String
-  description String?        @db.Text
+  description String?
   status      ApprovalStatus @default(PENDING)
   submittedAt DateTime       @default(now())
   reviewedAt  DateTime?
-  feedback    String?        @db.Text
+  feedback    String?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
@@ -434,7 +436,7 @@ model Approval {
 
   submittedBy   String // User ID
   reviewedBy    String? // User ID
-  
+
   attachments Json? // Store file URLs as JSON
 
   @@index([projectId])
@@ -457,10 +459,10 @@ enum NotificationType {
 }
 
 model Notification {
-  id        String           @id @default(cuid())
+  id        String           @id @default(cuid()) @map("_id")
   type      NotificationType
   title     String
-  message   String           @db.Text
+  message   String
   isRead    Boolean          @default(false)
   link      String? // Link to relevant resource
   createdAt DateTime         @default(now())
@@ -477,7 +479,7 @@ model Notification {
 // ============================================
 
 model ActivityLog {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   userId      String
   action      String
   entityType  String // e.g., "Project", "Task", "Client"
