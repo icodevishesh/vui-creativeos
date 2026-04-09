@@ -3,27 +3,87 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Briefcase, Plus, X, ListTodo, DollarSign, Layout, ChevronRight, RefreshCw } from 'lucide-react';
+import {
+  Briefcase,
+  Plus,
+  X,
+  ListTodo,
+  DollarSign,
+  Layout,
+  ChevronRight,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  Camera,
+  Globe,
+  Video,
+  MessageCircle,
+  Pin,
+  Settings,
+  Monitor,
+  Check
+} from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ServiceType } from '@prisma/client';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ScopeTabProps {
   clientId: string;
 }
 
+const PLATFORMS = {
+  SOCIAL_MEDIA: [
+    { id: 'instagram', name: 'Instagram', icon: Camera },
+    { id: 'facebook', name: 'Facebook', icon: Globe },
+    { id: 'linkedin', name: 'LinkedIn', icon: Briefcase },
+    { id: 'youtube', name: 'YouTube', icon: Video },
+    { id: 'twitter', name: 'Twitter', icon: MessageCircle },
+    { id: 'pinterest', name: 'Pinterest', icon: Pin },
+  ],
+  PAID_MEDIA: [
+    { id: 'meta_ads', name: 'Meta Ads' },
+    { id: 'google_ads', name: 'Google Ads' },
+    { id: 'linkedin_ads', name: 'LinkedIn Ads' },
+    { id: 'amazon_ads', name: 'Amazon Ads' },
+    { id: 'others', name: 'Others' },
+  ]
+};
+
+const CONTENT_TYPES = ['Static', 'Video', 'Carousel'];
+
 export function ScopeTab({ clientId }: ScopeTabProps) {
   const queryClient = useQueryClient();
+  const [isConfirming, setIsConfirming] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [formData, setFormData] = useState({
-    service: '' as ServiceType | '',
-    description: '',
-    budget: '',
+
+  // Fetch client to get defaultService and isScopeFinalized
+  const { data: client, isLoading: isClientLoading } = useQuery({
+    queryKey: ['client', clientId],
+    queryFn: () => fetch(`/api/clients/${clientId}`).then(res => res.json()),
   });
 
-  const { data: scope, isLoading } = useQuery({
+  const { data: scope, isLoading: isScopeLoading } = useQuery({
     queryKey: ['client-scope', clientId],
     queryFn: () => fetch(`/api/clients/${clientId}/scope`).then(res => res.json()),
   });
+
+  const [formData, setFormData] = useState<any>({
+    service: '',
+    description: '',
+    budget: '',
+    details: {
+      platforms: [],
+      deliverables: {},
+      contentSplit: [],
+    }
+  });
+
+  // Set default service once client data is loaded
+  React.useEffect(() => {
+    if (client?.defaultService && !formData.service) {
+      setFormData((prev: any) => ({ ...prev, service: client.defaultService }));
+    }
+  }, [client]);
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -32,150 +92,399 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to add scope');
+      if (!res.ok) throw new Error('Failed to submit scope');
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Scope of Work updated!');
+      toast.success('Scope of Work finalized!');
       queryClient.invalidateQueries({ queryKey: ['client-scope', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['client', clientId] });
+      setIsConfirming(false);
       setIsAdding(false);
-      setFormData({ service: '', description: '', budget: '' });
     },
+    onError: (err: any) => {
+      toast.error(err.message || 'Something went wrong');
+    }
   });
 
-  if (isLoading) return (
+  const handleTogglePlatform = (platformId: string) => {
+    setFormData((prev: any) => {
+      const platforms = prev.details.platforms.includes(platformId)
+        ? prev.details.platforms.filter((p: string) => p !== platformId)
+        : [...prev.details.platforms, platformId];
+
+      return {
+        ...prev,
+        details: { ...prev.details, platforms }
+      };
+    });
+  };
+
+  const handleDeliverableChange = (platformId: string, count: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        deliverables: { ...prev.details.deliverables, [platformId]: count }
+      }
+    }));
+  };
+
+  const handleToggleContentSplit = (type: string) => {
+    setFormData((prev: any) => {
+      const contentSplit = prev.details.contentSplit.includes(type)
+        ? prev.details.contentSplit.filter((t: string) => t !== type)
+        : [...prev.details.contentSplit, type];
+
+      return {
+        ...prev,
+        details: { ...prev.details, contentSplit }
+      };
+    });
+  };
+
+  if (isClientLoading || isScopeLoading) return (
     <div className="flex justify-center p-20">
       <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
     </div>
   );
 
+  const isFinalized = client?.isScopeFinalized;
+  const hasScope = scope && scope.length > 0;
+
+  if (isFinalized && !isAdding && hasScope) {
+    return (
+      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 tracking-tight">Scope of Work</h2>
+            <p className="text-xs text-gray-500 font-medium mt-1">Detailed roadmap and confirmed deliverables for this account.</p>
+          </div>
+          <button
+            onClick={() => {
+              setFormData({
+                service: '',
+                description: '',
+                budget: '',
+                details: { platforms: [], deliverables: {}, contentSplit: [] }
+              });
+              setIsAdding(true);
+            }}
+            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Add New Service
+          </button>
+        </div>
+        <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-2xl flex items-center gap-4">
+          <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-emerald-900">Scope Finalized</h3>
+            <p className="text-sm text-emerald-700 font-medium">This scope was confirmed and is now active for execution.</p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          {scope.map((item: any) => (
+            <div key={item.id} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Service Type</p>
+                  <h2 className="text-xl font-bold text-gray-900">{item.service.replace(/_/g, ' ')}</h2>
+                </div>
+                {item.budget && (
+                  <div className="text-right">
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
+                    <p className="text-xl font-bold text-indigo-600">${item.budget.toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-50">
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                    <Monitor className="w-4 h-4 text-gray-400" />
+                    Selected Platforms
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {item.details?.platforms?.map((p: string) => (
+                      <span key={p} className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-lg border border-gray-100">
+                        {p.replace(/_/g, ' ')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {item.details?.deliverables && Object.keys(item.details.deliverables).length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                      <ListTodo className="w-4 h-4 text-gray-400" />
+                      Deliverables Count
+                    </h4>
+                    <div className="space-y-2">
+                      {Object.entries(item.details.deliverables).map(([p, count]: any) => (
+                        <div key={p} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
+                          <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">{p.replace(/_/g, ' ')}</span>
+                          <span className="text-xs font-bold text-indigo-600">{count} posts / mo</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-gray-900">Detailed Description</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
+                    "{item.description}"
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Scope of Work</h2>
-          <p className="text-sm text-gray-500 font-medium">Defined services and deliverables for this engagement.</p>
+          <h2 className="text-xl font-bold text-gray-900 tracking-tight">Scope of Work</h2>
+          <p className="text-xs text-gray-500 font-medium mt-1">
+            {isAdding || !isFinalized
+              ? `Define specific deliverables for your ${formData.service.replace(/_/g, ' ')} engagement.`
+              : 'Detailed roadmap and confirmed deliverables for this account.'}
+          </p>
         </div>
-        <button 
-          onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+        <button
+          onClick={() => {
+            if (isAdding) {
+              setIsAdding(false);
+            } else {
+              setFormData({
+                service: '',
+                description: '',
+                budget: '',
+                details: { platforms: [], deliverables: {}, contentSplit: [] }
+              });
+              setIsAdding(true);
+            }
+          }}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg ${isAdding
+            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-none'
+            : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'
+            }`}
         >
-          <Plus className="w-4 h-4" />
-          Add Service
+          {isAdding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+          {isAdding ? 'Cancel' : 'Add New Service'}
         </button>
       </div>
 
-      <div className="space-y-4">
-        {scope?.map((item: any) => (
-          <div 
-            key={item.id} 
-            className="flex items-center justify-between bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all group"
-          >
-            <div className="flex items-center gap-6">
-              <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-colors">
-                <Briefcase className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                  {item.service.replace(/_/g, ' ')}
-                </h4>
-                <p className="text-sm text-gray-500 font-medium">{item.description}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-8">
-              {item.budget && (
-                <div className="text-right">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Monthly Budget</p>
-                  <p className="text-sm font-semibold text-gray-900">${item.budget.toLocaleString()}</p>
-                </div>
-              )}
-              <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-indigo-600 transition-colors" />
-            </div>
-          </div>
-        ))}
-
-        {scope?.length === 0 && (
-          <div className="text-center py-20 bg-gray-50/50 border-2 border-dashed border-gray-100 rounded-3xl">
-            <Layout className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-            <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No Scope Defined</p>
-          </div>
-        )}
-      </div>
-
-      {/* Add Scope Modal */}
-      {isAdding && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Add Service Scope</h3>
-              <button 
-                onClick={() => setIsAdding(false)}
-                className="p-2 text-gray-400 hover:text-gray-900 rounded-lg"
+      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+        {/* Service Selector (Prefilled) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-gray-700">Service Category</label>
+            {isAdding || !client?.defaultService ? (
+              <select
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-indigo-600 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all cursor-pointer appearance-none"
+                value={formData.service}
+                onChange={(e) => setFormData((p: any) => ({ ...p, service: e.target.value as ServiceType }))}
               >
-                <X className="w-6 h-6" />
-              </button>
+                <option value="" disabled>Select a service...</option>
+                {Object.values(ServiceType).map((type) => (
+                  <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+                ))}
+              </select>
+            ) : (
+              <div className="px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-indigo-600 font-bold flex items-center gap-3 text-sm">
+                <Briefcase className="w-5 h-5" />
+                {formData.service.replace(/_/g, ' ')}
+              </div>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-gray-700">Monthly Budget Estimate ($)</label>
+            <div className="relative">
+              <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="number"
+                placeholder="5000"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold"
+                value={formData.budget}
+                onChange={(e) => setFormData((p: any) => ({ ...p, budget: e.target.value }))}
+              />
             </div>
-
-            <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(formData); }} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Service Category</label>
-                <select 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
-                  value={formData.service}
-                  onChange={(e) => setFormData(p => ({ ...p, service: e.target.value as ServiceType }))}
-                >
-                  <option value="">Select a service...</option>
-                  {Object.values(ServiceType).map((type) => (
-                    <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Scope Description</label>
-                <textarea 
-                  placeholder="e.g. Daily Instagram management and 4 Paid campaigns monthly"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
-                  value={formData.description}
-                  onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-500" />
-                  Allocated Budget (Monthly)
-                </label>
-                <input 
-                  type="number"
-                  placeholder="e.g. 5000"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
-                  value={formData.budget}
-                  onChange={(e) => setFormData(p => ({ ...p, budget: e.target.value }))}
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-6">
-                <button 
-                  type="button"
-                  onClick={() => setIsAdding(false)}
-                  className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  disabled={mutation.isPending}
-                  className="px-10 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-70"
-                >
-                  {mutation.isPending ? 'Updating...' : 'Add Service'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
-      )}
+
+        {/* Dynamic Form Content */}
+        {formData.service === 'SOCIAL_MEDIA' && (
+          <div className="space-y-8 pt-8 border-t border-gray-50">
+            <div className="space-y-4">
+              <label className="text-sm font-bold text-gray-900">Select Social Platforms</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                {PLATFORMS.SOCIAL_MEDIA.map(platform => {
+                  const isSelected = formData.details.platforms.includes(platform.id);
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => handleTogglePlatform(platform.id)}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${isSelected
+                        ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                        : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
+                        }`}
+                    >
+                      <platform.icon className="w-5 h-5" />
+                      <span className="text-[9px] font-bold uppercase tracking-tighter">{platform.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {formData.details.platforms.length > 0 && (
+              <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <label className="text-sm font-bold text-gray-900">Monthly Deliverables (Post Count)</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {formData.details.platforms.map((platformId: string) => (
+                    <div key={platformId} className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                      <span className="text-[9px] font-black uppercase text-gray-400 w-20">
+                        {platformId.replace(/_/g, ' ')}
+                      </span>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+                        value={formData.details.deliverables[platformId] || ''}
+                        onChange={(e) => handleDeliverableChange(platformId, e.target.value)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <label className="text-sm font-bold text-gray-900">Content Split (Optional)</label>
+              <div className="flex gap-3">
+                {CONTENT_TYPES.map(type => (
+                  <button
+                    key={type}
+                    onClick={() => handleToggleContentSplit(type)}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold border-2 transition-all ${formData.details.contentSplit.includes(type)
+                      ? 'bg-indigo-600 border-indigo-600 text-white'
+                      : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-100'
+                      }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {formData.service === 'PAID_MEDIA' && (
+          <div className="space-y-8 pt-8 border-t border-gray-50">
+            <div className="space-y-4">
+              <label className="text-sm font-bold text-gray-900">Select Ad Platforms</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {PLATFORMS.PAID_MEDIA.map(platform => {
+                  const isSelected = formData.details.platforms.includes(platform.id);
+                  return (
+                    <button
+                      key={platform.id}
+                      onClick={() => handleTogglePlatform(platform.id)}
+                      className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${isSelected
+                        ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                        : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
+                        }`}
+                    >
+                      <span className="font-bold text-sm">{platform.name}</span>
+                      {isSelected ? <CheckCircle2 className="w-5 h-5" /> : <Plus className="w-5 h-5 opacity-50" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-4 pt-8 border-t border-gray-50">
+          <label className="text-xs font-bold text-gray-900">Brief Scope Description</label>
+          <textarea
+            placeholder="Outline specific objectives, goals, and any additional notes for this service..."
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-xs min-h-[120px] focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium leading-relaxed"
+            value={formData.description}
+            onChange={(e) => setFormData((p: any) => ({ ...p, description: e.target.value }))}
+          />
+        </div>
+
+        <div className="flex items-center justify-end pt-4">
+          <button
+            onClick={() => setIsConfirming(true)}
+            className="px-8 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            Finalize Scope of Work
+          </button>
+        </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      <AnimatePresence>
+        {isConfirming && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsConfirming(false)}
+              className="absolute inset-0 bg-gray-900/60 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
+
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-gray-900 tracking-tight">Final Confirmation</h3>
+                  <p className="text-gray-500 font-medium px-4">
+                    Are you sure you want to finalize this scope? This action <span className="text-indigo-600 font-bold underline decoration-indigo-200 underline-offset-4">cannot be reversed</span> and will set the official roadmap for the client.
+                  </p>
+                </div>
+
+                <div className="w-full flex flex-col gap-3 pt-4">
+                  <button
+                    disabled={mutation.isPending}
+                    onClick={() => mutation.mutate(formData)}
+                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                  >
+                    {mutation.isPending ? 'Processing...' : 'Yes, Finalize Now'}
+                  </button>
+                  <button
+                    onClick={() => setIsConfirming(false)}
+                    className="w-full py-4 text-gray-400 font-bold hover:text-gray-900 transition-all"
+                  >
+                    Go back and edit
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

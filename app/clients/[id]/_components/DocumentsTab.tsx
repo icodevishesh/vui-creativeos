@@ -68,7 +68,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Client Resources</h2>
           <p className="text-sm text-gray-500 font-medium">All brand assets, strategies, and legal documents.</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsUploading(true)}
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
         >
@@ -81,16 +81,16 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
         <table className="w-full text-left">
           <thead className="bg-gray-50/50 border-b border-gray-100">
             <tr>
-              <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-widest text-gray-400">File Name</th>
-              <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Category</th>
-              <th className="px-6 py-4 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Date Added</th>
-              <th className="px-6 py-4 text-right"></th>
+              <th className="px-8 py-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">File Name</th>
+              <th className="px-8 py-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Category</th>
+              <th className="px-8 py-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Date Added</th>
+              <th className="px-8 py-2 text-right"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {documents?.map((doc: any) => (
               <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors group">
-                <td className="px-6 py-4">
+                <td className="px-4 py-2">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
                       {getFileIcon(doc.type)}
@@ -98,15 +98,15 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
                     <span className="text-sm font-bold text-gray-900">{doc.fileName}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-4 py-2">
                   <span className="px-2.5 py-1 bg-gray-100 text-[10px] font-semibold uppercase tracking-widest text-gray-500 rounded-lg">
                     {doc.type.replace(/_/g, ' ')}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+                <td className="px-4 py-2 text-sm text-gray-500 font-medium">
                   {new Date(doc.uploadedAt).toLocaleDateString()}
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-4 py-2 text-right">
                   <button className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
                     <Download className="w-4 h-4" />
                   </button>
@@ -115,7 +115,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
             ))}
           </tbody>
         </table>
-        
+
         {documents?.length === 0 && (
           <div className="text-center py-20">
             <p className="text-gray-400 font-medium italic">No documents uploaded yet.</p>
@@ -129,7 +129,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
           <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Log Document</h3>
-              <button 
+              <button
                 onClick={() => setIsUploading(false)}
                 className="p-2 text-gray-400 hover:text-gray-900 rounded-lg"
               >
@@ -140,7 +140,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
             <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Document Name</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Q1 Strategy Deck.pptx"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
@@ -151,7 +151,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Category</label>
-                <select 
+                <select
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                   value={formData.type}
                   onChange={(e) => setFormData(p => ({ ...p, type: e.target.value as DocumentType }))}
@@ -163,25 +163,25 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
               </div>
 
               <div className="w-full pt-2">
-                <Upload 
+                <Upload
                   folderName={companyName}
-                  disabled={!formData.fileName || !formData.type} 
+                  disabled={!formData.fileName || !formData.type}
                   onUploadComplete={(fileData) => {
                     setUploadedFileData(fileData);
                     toast.success("File uploaded to server. Click Submit Document to save.");
-                  }} 
+                  }}
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsUploading(false)}
                   className="px-6 py-3 text-sm font-semibold text-gray-500 hover:text-gray-900"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     mutation.mutate({

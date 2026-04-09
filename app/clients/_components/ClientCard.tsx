@@ -48,19 +48,19 @@ export function ClientCard({ client }: ClientCardProps) {
   return (
     <Link 
       href={`/clients/${client.id}`}
-      className="group bg-white rounded-xl border border-gray-100 p-5 hover:border-indigo-100 hover:shadow-sm transition-all cursor-pointer block"
+      className="group bg-white rounded-lg border border-gray-100 p-2.5 hover:border-indigo-100 hover:shadow-sm transition-all cursor-pointer block"
     >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-indigo-50 flex items-center justify-center rounded-lg text-indigo-600 font-semibold text-lg">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-indigo-50 flex items-center justify-center rounded-lg text-indigo-600 font-semibold text-sm">
             {getInitials(client.companyName)}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+              <h3 className="text-xs font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
                 {client.companyName}
               </h3>
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${statusColors[client.status as string] || statusColors.PENDING}`}>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusColors[client.status as string] || statusColors.PENDING}`}>
                 {client.status.charAt(0) + client.status.slice(1).toLowerCase()}
               </span>
             </div>

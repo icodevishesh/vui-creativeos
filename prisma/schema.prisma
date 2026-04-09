@@ -123,9 +123,6 @@ enum ClientStatus {
   ACTIVE
   INACTIVE
   PENDING
-  ARCHIVED
-  DELAYED
-  REJECTED
 }
 
 enum EngagementType {
@@ -155,7 +152,8 @@ model ClientProfile {
   status           ClientStatus   @default(PENDING)
   onboardingNotes  String?
   requirementNotes String?
-  competitors      String?
+  competitors      String[]
+  socialLinks      Json?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
@@ -166,7 +164,8 @@ model ClientProfile {
   organizationId String
 
   managedBy      String? // User ID of account manager of allocated team
-
+  defaultService ServiceType @default(SOCIAL_MEDIA)
+  isScopeFinalized Boolean @default(false)
   services       ClientService[]
   teamMembers    ClientTeamMember[]
   scopeOfWork    ScopeOfWork[]
@@ -354,7 +353,7 @@ model Task {
   id          String       @id @default(cuid()) @map("_id")
   title       String
   description String?
-  status      TaskStatus   @default(TODO)
+  status      TaskStatus   @default(OPEN_TASK)
   priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
   completedAt DateTime?

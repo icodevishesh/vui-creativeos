@@ -33,14 +33,25 @@ export async function POST(
       return new NextResponse('Missing required fields', { status: 400 });
     }
 
-    const item = await prisma.scopeOfWork.create({
-      data: {
-        clientId: id,
-        service: service as ServiceType,
-        description,
-        budget: budget ? parseFloat(budget) : null,
-        details: details || {},
-      },
+    const item = await prisma.$transaction(async (tx) => {
+      // Create the scope of work
+      const newScope = await tx.scopeOfWork.create({
+        data: {
+          clientId: id,
+          service: service as ServiceType,
+          description,
+          budget: budget ? parseFloat(budget) : null,
+          details: details || {},
+        },
+      });
+
+      // Mark the client profile as finalized
+      await tx.clientProfile.update({
+        where: { id },
+        data: { isScopeFinalized: true },
+      });
+
+      return newScope;
     });
 
     return NextResponse.json(item);

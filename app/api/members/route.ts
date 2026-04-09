@@ -11,7 +11,12 @@ async function validateAdminAccess() {
   const adminMember = await prisma.organizationMember.findFirst({
     where: { role: 'ADMIN' },
   });
-  if (!adminMember) {
+  
+  const adminOwner = await prisma.user.findFirst({
+    where: { userType: 'ADMIN_OWNER' },
+  });
+
+  if (!adminMember && !adminOwner) {
     throw new Error('Unauthorized: Admin access required');
   }
 }

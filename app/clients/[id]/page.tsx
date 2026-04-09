@@ -4,15 +4,15 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
-import { 
-  ArrowLeft, 
-  Layout, 
-  Users, 
-  Briefcase, 
-  FileText, 
+import {
+  ArrowLeft,
+  Layout,
+  Users,
+  Briefcase,
+  FileText,
   MessageSquare,
   ChevronRight,
-  RefreshCw 
+  RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -101,7 +101,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500">
       {/* Breadcrumbs / Back */}
       <div className="flex items-center gap-2 text-sm font-medium text-gray-400">
         <Link href="/clients" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
@@ -113,39 +113,36 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Profile Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center text-white text-2xl font-semibold shadow-xl shadow-indigo-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-lg font-semibold shadow-xl shadow-indigo-100/50">
             {client.companyName.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">{client.companyName}</h1>
+            <div className="flex items-center gap-2 mb-0.5">
+              <h1 className="text-xl font-bold text-gray-900 tracking-tight">{client.companyName}</h1>
               <span className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest border ${statusColors[client.status] || statusColors.PENDING}`}>
                 {client.status}
               </span>
             </div>
-            <p className="text-gray-500 font-medium flex items-center gap-2">
-              {client.engagementType.replace(/_/g, ' ')} 
-              <span className="w-1 h-1 bg-gray-300 rounded-full" />
-              Managed by <span className="text-gray-900 font-bold">{accountManagerName}</span>
+            <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-2">
+              {client.engagementType.replace(/_/g, ' ')}
+              <span className="w-1 h-1 bg-gray-200 rounded-full" />
+              Managed by <span className="text-gray-900">{accountManagerName}</span>
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <select 
+          <select
             value={client.status}
             onChange={(e) => updateStatus.mutate(e.target.value)}
             disabled={updateStatus.isPending}
-            className="px-4 py-2.5 bg-white border border-gray-200 text-gray-900 rounded-xl text-sm font-bold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-xs font-bold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm cursor-pointer disabled:opacity-50"
           >
             <option value="ACTIVE">Active</option>
             <option value="PENDING">Pending</option>
-            <option value="DELAYED">Delayed</option>
-            <option value="REJECTED">Rejected</option>
             <option value="INACTIVE">Inactive</option>
-            <option value="ARCHIVED">Archived</option>
           </select>
         </div>
       </div>
@@ -158,11 +155,10 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                isActive
-                  ? 'bg-white text-indigo-600 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-900'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${isActive
+                ? 'bg-white text-indigo-600 shadow-sm'
+                : 'text-gray-500 hover:text-gray-900'
+                }`}
             >
               <tab.icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-gray-400'}`} />
               {tab.name}

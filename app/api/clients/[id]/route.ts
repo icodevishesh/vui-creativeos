@@ -38,7 +38,7 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { onboardingNotes, requirementNotes, competitors, status, industry } = body;
+    const { onboardingNotes, requirementNotes, competitors, status, industry, socialLinks } = body;
 
     const client = await prisma.clientProfile.update({
       where: { id },
@@ -48,6 +48,7 @@ export async function PATCH(
         competitors,
         status,
         industry,
+        socialLinks,
       },
     });
 

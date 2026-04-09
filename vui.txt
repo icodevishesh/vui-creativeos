@@ -52,11 +52,11 @@ oStatic / Video / Carousel (Optional)
 Paid Media (Yes/No)
 If Yes:
 Platforms: 
-oMeta Ads 
-oGoogle Ads 
-oLinkedIn Ads 
-oAmazon Ads 
-oOthers 
+Meta Ads 
+Google Ads 
+LinkedIn Ads 
+Amazon Ads 
+Others 
 
 Influencer Marketing (Yes/No)
 Deliverable Count 
