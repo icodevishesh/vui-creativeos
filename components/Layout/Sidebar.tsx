@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
+  { name: 'Gantt Chart', href: '/gantt-chart', icon: FolderKanban },
   { name: 'Tasks', href: '/tasks', icon: CheckSquare },
   { name: 'Approvals', href: '/approvals', icon: FileText },
   { name: 'Members', href: '/members', icon: UserPlus }, // New item
@@ -36,18 +37,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 h-full w-54 bg-white border-r border-gray-200
+      className={`fixed top-0 left-0 z-50 h-full w-58 bg-white border-r border-gray-200
         transform transition-transform duration-200 ease-in-out
         lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       aria-label="Sidebar navigation"
     >
       {/* Logo / brand */}
       <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <div className="w-4 h-4 bg-white rounded-sm" />
+        <div className="flex items-center gap-1">
+          <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-semibold">VUI</span>
           </div>
-          <h2 className="text-lg font-bold text-gray-900 tracking-tight">CreativeOS</h2>
+          <h2 className="text-lg font-semibold text-gray-900 tracking-tight">CreativeOS</h2>
         </div>
         <button
           onClick={onClose}

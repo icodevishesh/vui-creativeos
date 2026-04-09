@@ -17,6 +17,8 @@
     "@schedule-x/events-service": "^4.3.1",
     "@schedule-x/react": "^4.1.0",
     "@schedule-x/theme-default": "^4.3.1",
+    "@svar-ui/gantt-data-provider": "^2.6.1",
+    "@svar-ui/react-gantt": "^2.6.1",
     "@tanstack/react-query": "^5.96.2",
     "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",

@@ -1,38 +1,7 @@
-https://creative-flow-hub-51.lovable.app/clients/acme-corp
-
-overview:
-    - add edit button in each card, onboarding notes, requirement notes and compititors
-
-team:
-    - add assign team members button
-    - a form will open to add active team mebers + there roles
-    - add more members repeat the above 
-    - check more than one member does not have the same role
-    - add a button to remove team members
-    - create api for these actions, related only specific client's team
-
-scope of work:
-    - show the scope of work list
-    - add button to add any other scope of work
-    - create api for these actions, related only specific client's scope of work
-
-documents:
-    - Show all the list of documents specific to the clients
-    - add button to upload any other document
-    - create api for these actions, related only specific client's documents
-
-meeting logs:
-    - Show all the list of meeting logs specific to the clients
-    - add button to add any other meeting log: open a form to add title, description, createdAt
-    - create api for these actions, related only specific client's meeting logs
-
-Make sure to follow the UI of the image provided
-
-
-You are a senior frontend engineer specializing in React and performance optimization.
+You are a senior full stack engineer specializing in React,performance optimization and backend architect.
 
 Task:
-Build a production-ready.
+Build a production-ready frontend and scalable API for gantt chart.
 
 Requirements:
 - Tech: React + TypeScript
@@ -55,3 +24,20 @@ create route as well as accoring to the
 page requirement and try to maintain database consistency
 
 Avoid unnecessary re-renders and ensure clean separation of concerns.
+
+
+You are a senior backend architect.
+
+Design a scalable API for:
+[use case]
+
+Requirements:
+- RESTful or GraphQL (justify choice)
+- Must handle high traffic
+- Include authentication and rate limiting
+
+Output:
+1. API endpoints
+2. Request/response structure
+3. Database schema
+4. Scaling strategy

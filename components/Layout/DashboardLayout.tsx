@@ -39,7 +39,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main content area */}
-      <div className="lg:pl-52 flex flex-col min-h-screen">
+      <div className="lg:pl-58 flex flex-col min-h-screen">
         <Header onOpenSidebar={() => setSidebarOpen(true)} />
 
         <main className="flex-1 p-6 bg-gray-50 text-gray-900" id="main-content">
