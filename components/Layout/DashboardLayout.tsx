@@ -25,7 +25,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100/30">
+    <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -42,7 +42,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <div className="lg:pl-52 flex flex-col min-h-screen">
         <Header onOpenSidebar={() => setSidebarOpen(true)} />
 
-        <main className="flex-1 p-6" id="main-content">
+        <main className="flex-1 p-6 bg-gray-50 text-gray-900" id="main-content">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

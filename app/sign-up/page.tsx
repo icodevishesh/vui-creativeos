@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
-export default function SignIn() {
+export default function SignUp() {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -17,10 +18,10 @@ export default function SignIn() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('/api/auth/sign-in', {
+            const response = await fetch('/api/auth/sign-up', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ name, email, password }),
             });
 
             const data = await response.json();
@@ -29,8 +30,8 @@ export default function SignIn() {
                 throw new Error(data.error || 'Something went wrong');
             }
 
-            toast.success('Successfully signed in!');
-            router.push('/dashboard');
+            toast.success('Account created successfully! Please sign in.');
+            router.push('/sign-in');
         } catch (error: any) {
             toast.error(error.message);
         } finally {
@@ -42,11 +43,26 @@ export default function SignIn() {
         <div className="min-h-screen flex items-center justify-center bg-white px-4">
             <div className="w-full max-w-sm">
                 <div className="text-center mb-8">
-                    <h1 className="text-2xl font-semibold text-gray-900 mb-1">Sign in</h1>
-                    <p className="text-sm text-gray-500">Enter your credentials to continue</p>
+                    <h1 className="text-2xl font-semibold text-gray-900 mb-1">Create an account</h1>
+                    <p className="text-sm text-gray-500">Join us to start managing your projects</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+                            Full Name
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow text-sm text-black"
+                            placeholder="John Doe"
+                        />
+                    </div>
+
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
                             Email
@@ -74,7 +90,7 @@ export default function SignIn() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow text-black text-sm pr-10"
-                                placeholder="Enter your password"
+                                placeholder="Create a password"
                             />
                             <button
                                 type="button"
@@ -96,26 +112,20 @@ export default function SignIn() {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-end">
-                        <a href="/forgot-password" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                            Forgot password?
-                        </a>
-                    </div>
-
                     <button
                         type="submit"
                         disabled={isLoading}
                         className="w-full bg-gray-900 text-white py-2.5 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
                     >
-                        {isLoading ? 'Signing in...' : 'Sign in'}
+                        {isLoading ? 'Creating account...' : 'Create account'}
                     </button>
                 </form>
 
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-500">
-                        Don't have an account?{' '}
-                        <Link href="/sign-up" className="text-gray-900 hover:underline font-medium">
-                            Sign up
+                        Already have an account?{' '}
+                        <Link href="/sign-in" className="text-gray-900 hover:underline font-medium">
+                            Sign in
                         </Link>
                     </p>
                 </div>
