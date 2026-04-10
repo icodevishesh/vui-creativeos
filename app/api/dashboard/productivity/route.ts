@@ -11,7 +11,7 @@ export async function GET() {
     // Get all completed/in-review tasks with their assignees
     const tasks = await prisma.task.findMany({
       where: {
-        status: { in: ['COMPLETED', 'IN_REVIEW'] },
+        status: { in: ['APPROVED', 'IN_REVIEW'] },
         assignedToId: { not: null },
       },
       select: {

@@ -9,13 +9,18 @@ import { Calendar, Download, Plus } from 'lucide-react';
 import GanttChart from '@/components/GanttChart';
 import { ProjectSelector } from '@/components/gantt/ProjectSelector';
 import { CreateProjectModal } from '@/components/gantt/CreateProjectModal';
-import { ganttKeys } from '@/lib/gantt/hooks';
+import { ganttKeys, useGanttProjects } from '@/lib/gantt/hooks';
 
 export default function GanttPage() {
   const queryClient = useQueryClient();
   const [projectId, setProjectId] = useState<string | null>(null);
   const [ganttApi, setGanttApi] = useState<IApi | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Derive the selected project's createdAt for the Gantt date range
+  const { data: projects } = useGanttProjects();
+  const selectedProject = projects?.find((p) => p.id === projectId);
+  const projectCreatedAt = selectedProject?.createdAt ?? null;
 
   // Stable callback — avoids GanttChart re-mounting on every parent render
   const handleApiReady = useCallback((api: IApi) => {
@@ -119,6 +124,7 @@ export default function GanttPage() {
       <div className="flex-1 overflow-hidden mb-2">
         <GanttChart
           projectId={projectId}
+          projectCreatedAt={projectCreatedAt}
           onApiReady={handleApiReady}
         />
       </div>

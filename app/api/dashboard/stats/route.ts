@@ -14,7 +14,7 @@ export async function GET() {
 
         // Tasks not yet completed
         prisma.task.count({
-          where: { status: { in: ['TODO', 'IN_PROGRESS', 'IN_REVIEW'] } },
+          where: { status: { in: ['OPEN_TASK', 'IN_PROGRESS', 'IN_REVIEW'] } },
         }),
 
         // Approvals awaiting review

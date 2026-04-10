@@ -96,7 +96,7 @@ export async function POST(
                 description: body.description || "",
                 dueDate: new Date(startString),
                 completedAt: startRaw === endRaw ? null : new Date(endString),
-                status: TaskStatus.TODO,
+                status: TaskStatus.OPEN_TASK,
                 priority: body.calendarId === "deadline" ? TaskPriority.URGENT : TaskPriority.MEDIUM,
                 projectId: project.id,
                 createdById: creatorId,

@@ -14,6 +14,7 @@ export async function GET() {
         startDate: true,
         endDate: true,
         clientId: true,
+        createdAt: true,
         client: { 
           select: { 
             companyName: true,
@@ -31,6 +32,7 @@ export async function GET() {
       description: p.description,
       startDate: p.startDate?.toISOString(),
       endDate: p.endDate?.toISOString(),
+      createdAt: p.createdAt.toISOString(),
       clientId: p.clientId,
       clientName: p.client.companyName,
       clientIndustry: p.client.industry,

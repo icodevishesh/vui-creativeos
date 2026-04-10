@@ -102,6 +102,7 @@ export interface GanttProject {
   description?: string;
   startDate?: string | null;
   endDate?: string | null;
+  createdAt: string;
 }
 
 /** Shape of POST body when creating a project linked to a client */
