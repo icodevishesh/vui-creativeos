@@ -9,6 +9,9 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@mantine/core": "^9.0.1",
+    "@mantine/dates": "^9.0.1",
+    "@mantine/hooks": "^9.0.1",
     "@preact/signals": "^2.9.0",
     "@prisma/adapter-pg": "^7.6.0",
     "@prisma/client": "6.19",
@@ -19,6 +22,7 @@
     "@schedule-x/theme-default": "^4.3.1",
     "@svar-ui/gantt-data-provider": "^2.6.1",
     "@svar-ui/react-gantt": "^2.6.1",
+    "@tabler/icons-react": "^3.41.1",
     "@tanstack/react-query": "^5.96.2",
     "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",
@@ -26,6 +30,7 @@
     "framer-motion": "^12.38.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.7.0",
+    "mantine-react-table": "^2.0.0-beta.9",
     "next": "16.2.2",
     "pg": "^8.20.0",
     "preact": "^10.29.1",

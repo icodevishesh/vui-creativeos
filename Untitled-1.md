@@ -1,7 +1,7 @@
-You are a senior full stack engineer specializing in React,performance optimization and backend architect.
+You are a senior frontend engineer specializing in React,performance optimization.
 
 Task:
-Build a production-ready frontend and scalable API for gantt chart.
+Build a production-ready frontend.
 
 Requirements:
 - Tech: React + TypeScript

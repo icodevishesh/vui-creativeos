@@ -44,7 +44,7 @@ export default function GanttPage() {
   const handleProjectCreated = useCallback((newId: string) => {
     // Invalidate project list to show the new one in the selector
     queryClient.invalidateQueries({ queryKey: ganttKeys.projects() });
-    
+
     // Switch to the new project
     setProjectId(newId);
   }, [queryClient]);
@@ -60,7 +60,7 @@ export default function GanttPage() {
       <div className="flex flex-col gap-3 shrink-0">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-1">Project Timeline</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1">Gantt Chart</h1>
             <p className="text-sm text-gray-500 font-medium">Strategic planning and phase tracking</p>
           </div>
 
@@ -129,8 +129,8 @@ export default function GanttPage() {
         />
       </div>
 
-      <CreateProjectModal 
-        isOpen={isModalOpen} 
+      <CreateProjectModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleProjectCreated}
       />

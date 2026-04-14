@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { RefreshCw, Calendar, Building } from "lucide-react";
-import CalendarApp, { CalendarEvent } from "@/components/Calendar";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { RefreshCw, Building, Target, Loader2, Check } from "lucide-react";
+import { Calendar } from "@/components/Calendar";
 
 export default function CalendarPage() {
     const [selectedClientId, setSelectedClientId] = useState<string>("");
+    const [localObjective, setLocalObjective] = useState<string>("");
+    const queryClient = useQueryClient();
 
     // Fetch available clients for the dropdown filtering context
     const { data: clients, isLoading: clientsLoading } = useQuery({
@@ -14,31 +16,57 @@ export default function CalendarPage() {
         queryFn: () => fetch("/api/clients").then(res => res.json())
     });
 
-    // Fetch calendar events mapped physically to the current selected client
-    const { data: events, isLoading: eventsLoading } = useQuery({
-        queryKey: ["calendar-events", selectedClientId],
-        queryFn: () => fetch(`/api/calendar/${selectedClientId}`).then(res => res.json()),
+    // Fetch tasks for the selected client
+    const { data: tasks, isLoading: tasksLoading } = useQuery({
+        queryKey: ["tasks", selectedClientId],
+        queryFn: () => fetch(`/api/tasks?clientId=${selectedClientId}`).then(res => res.json()),
         enabled: !!selectedClientId,
     });
 
-    // Fetch available Team structure directly for the active client mapping
-    const { data: teamMembers } = useQuery({
-        queryKey: ["client-team", selectedClientId],
-        queryFn: () => fetch(`/api/clients/${selectedClientId}/team`).then(res => res.json()),
+    // Fetch projects for the selected client
+    const { data: projects, isLoading: projectsLoading } = useQuery({
+        queryKey: ["projects", selectedClientId],
+        queryFn: () => fetch(`/api/projects?clientId=${selectedClientId}`).then(res => res.json()),
         enabled: !!selectedClientId,
     });
 
     const activeClient = clients?.find((c: any) => c.id === selectedClientId);
 
-    const handleEventAdded = async (event: CalendarEvent) => {
-        try {
-            await fetch(`/api/calendar/${selectedClientId}`, {
-                method: "POST",
+
+    // 2. Fetch objective for selected client
+    const { data: objectiveData, isLoading: objectiveLoading } = useQuery({
+        queryKey: ["client-objective", selectedClientId],
+        queryFn: () => 
+            fetch(`/api/clients/${selectedClientId}/objective`).then((res) => res.json()),
+        enabled: !!selectedClientId,
+    });
+
+    // Sync fetched objective to local state for editing
+    useEffect(() => {
+        if (objectiveData) {
+            setLocalObjective(objectiveData.objective || "");
+        }
+    }, [objectiveData]);
+
+    // 3. Mutation to save objective
+    const updateObjective = useMutation({
+        mutationFn: async (newObjective: string) => {
+            const res = await fetch(`/api/clients/${selectedClientId}/objective`, {
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(event)
+                body: JSON.stringify({ objective: newObjective }),
             });
-        } catch (error) {
-            console.error("Failed to commit event to database", error);
+            return res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["client-objective", selectedClientId] });
+        },
+    });
+
+    const handleObjectiveBlur = () => {
+        // Only save if the text actually changed
+        if (localObjective !== objectiveData?.objective) {
+            updateObjective.mutate(localObjective);
         }
     };
 
@@ -50,10 +78,12 @@ export default function CalendarPage() {
         );
     }
 
+    const isLoadingClientData = !!selectedClientId && (tasksLoading || projectsLoading || objectiveLoading);
+
     return (
-        <main className="flex flex-col h-screen bg-gray-50">
+        <main className="flex flex-col bg-gray-50">
             {/* Header / Client Configuration Row */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Content Calendar</h1>
@@ -79,31 +109,97 @@ export default function CalendarPage() {
             </div>
 
             {/* Application Bridge Wrapper */}
-            <div className="flex-1 overflow-hidden pt-4 relative">
+            <div className="flex-1 overflow-y-auto pt-4 relative">
                 {!selectedClientId ? (
                     <div className="h-full border-dashed flex flex-col items-center justify-center">
                         <Building size={48} className="text-gray-300 mb-4" />
                         <h3 className="text-lg font-bold text-gray-600">No Client Selected</h3>
                         <p className="text-sm text-gray-400">Choose a client from the dropdown map to load their task scheduling pipeline.</p>
                     </div>
-                ) : eventsLoading ? (
-                    <div className="h-full flex items-center justify-center">
-                        <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
+                ) : isLoadingClientData ? (
+                    <div className="w-full pb-8 animate-pulse">
+                        <div className="px-2 mb-6">
+                            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="h-5 bg-gray-200 rounded w-48"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-16"></div>
+                                </div>
+                                <div className="h-24 bg-gray-100 rounded-lg w-full mb-2"></div>
+                                <div className="flex justify-end mt-4">
+                                    <div className="h-10 bg-gray-200 rounded-lg w-32"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="p-4 w-full">
+                            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm h-[600px]">
+                                <div className="flex justify-between items-center mb-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-8 bg-gray-200 rounded-md w-32"></div>
+                                        <div className="h-8 bg-gray-200 rounded-md w-24"></div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <div className="h-8 bg-gray-200 rounded-md w-20"></div>
+                                        <div className="h-8 bg-gray-200 rounded-md w-20"></div>
+                                        <div className="h-8 bg-gray-200 rounded-md w-20"></div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-7 gap-[1px] bg-gray-100 border border-gray-100 rounded-lg overflow-hidden h-[500px]">
+                                    {Array.from({ length: 7 }).map((_, i) => (
+                                        <div key={`header-${i}`} className="bg-gray-50 h-10"></div>
+                                    ))}
+                                    {Array.from({ length: 35 }).map((_, i) => (
+                                        <div key={`cell-${i}`} className="bg-white w-full h-full min-h-[80px]"></div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 ) : (
-                    <div className="h-full overflow-hidden">
-                        <CalendarApp
-                            teamId={activeClient?.id}
-                            teamName={activeClient?.companyName}
-                            teamColor="#3b82f6"
-                            // Map the returned client team members structure securely into our explicitly typed list
-                            teamMembers={teamMembers?.map((m: any) => ({
-                                id: m.userId,
-                                name: m.userName
-                            })) || []}
-                            initialEvents={events || []}
-                            onEventAdded={handleEventAdded}
+                <div className="w-full pb-8">
+                        
+                        {/* --- Define calendar objective --- */}
+                        <div className="mb-6 px-2">
+                            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2 text-gray-700">
+                                        <Target size={18} className="text-blue-500" />
+                                        <h3 className="font-semibold text-sm">Monthly Calendar Objective</h3>
+                                    </div>
+                                    {/* Saving Indicator */}
+                                    <div className="text-xs font-medium text-gray-400 flex items-center gap-1">
+                                        {updateObjective.isPending ? (
+                                            <><Loader2 size={14} className="animate-spin" /> Saving...</>
+                                        ) : updateObjective.isSuccess ? (
+                                            <><Check size={14} className="text-green-500" /> Saved</>
+                                        ) : null}
+                                    </div>
+                                </div>
+                                <textarea
+                                    value={localObjective}
+                                    onChange={(e) => setLocalObjective(e.target.value)}
+                                    placeholder="Define the calendar's primary objective"
+                                    className="w-full text-sm text-gray-800 bg-gray-50 border border-gray-100 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all resize-none min-h-[80px]"
+                                />
+                            </div>
+                            <div className="flex item-center justify-end">
+                                <button
+                                    onClick={handleObjectiveBlur}
+                                    className="px-4 py-2 mt-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Add objective
+                                </button>
+                            </div>
+                        </div>
+
+
+                        <div className="p-4 w-full">
+                        <Calendar
+                            tasks={tasks || []}
+                            clients={clients || []}
+                            projects={projects || []}
                         />
+                    </div>
                     </div>
                 )}
             </div>

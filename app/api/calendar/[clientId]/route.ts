@@ -16,8 +16,8 @@ export async function GET(
         // Map Prisma Task records to Schedule-X CalendarEvent structural interface
         const mappedEvents = tasks.map((task) => {
             // Reconstruct Schedule-X safe timestamp standard strings
-            const startDateObj = task.dueDate ? new Date(task.dueDate) : new Date(task.createdAt);
-            const endDateObj = task.completedAt ? new Date(task.completedAt) : startDateObj;
+            const startDateObj = task.startDate ? new Date(task.startDate) : new Date(task.createdAt);
+            const endDateObj = task.endDate ? new Date(task.endDate) : startDateObj;
             
             // Format to YYYY-MM-DD HH:mm for simple events
             const formatTemporal = (d: Date) => d.toISOString().replace('T', ' ').substring(0, 16);
@@ -94,11 +94,13 @@ export async function POST(
             data: {
                 title: body.title || "Untitled Event",
                 description: body.description || "",
-                dueDate: new Date(startString),
-                completedAt: startRaw === endRaw ? null : new Date(endString),
-                status: TaskStatus.OPEN_TASK,
+                startDate: new Date(startString),
+                endDate: startRaw === endRaw ? null : new Date(endString),
+                status: TaskStatus.OPEN,
                 priority: body.calendarId === "deadline" ? TaskPriority.URGENT : TaskPriority.MEDIUM,
                 projectId: project.id,
+                clientId: clientId,
+                organizationId: project.organizationId,
                 createdById: creatorId,
                 assignedToId: body.assignedTo || null,
             }
@@ -110,8 +112,8 @@ export async function POST(
         return NextResponse.json({
             id: newTask.id,
             title: newTask.title,
-            start: formatTemporal(newTask.dueDate || newTask.createdAt),
-            end: formatTemporal(newTask.completedAt || newTask.dueDate || newTask.createdAt),
+            start: formatTemporal(newTask.startDate || newTask.createdAt),
+            end: formatTemporal(newTask.endDate || newTask.startDate || newTask.createdAt),
             calendarId: body.calendarId,
             description: newTask.description,
             assignedTo: newTask.assignedToId

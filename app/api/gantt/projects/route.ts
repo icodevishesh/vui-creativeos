@@ -15,17 +15,17 @@ export async function GET() {
         endDate: true,
         clientId: true,
         createdAt: true,
-        client: { 
-          select: { 
+        client: {
+          select: {
             companyName: true,
             industry: true
-          } 
+          }
         },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    const data = projects.map((p) => ({
+    const data = projects.map((p: any) => ({
       id: p.id,
       name: p.name,
       status: p.status,

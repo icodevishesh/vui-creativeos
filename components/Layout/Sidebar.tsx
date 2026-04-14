@@ -12,7 +12,8 @@ import {
   Settings,
   X,
   UserPlus,
-  Calendar
+  Calendar,
+  Pen
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,11 +26,12 @@ const NAV_ITEMS = [
   { name: 'Clients', href: '/clients', icon: Users },
   { name: 'Projects', href: '/projects', icon: FolderKanban },
   { name: 'Gantt Chart', href: '/gantt-chart', icon: FolderKanban },
-  { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+  { name: 'Task Board', href: '/tasks', icon: CheckSquare },
+  { name: 'Content Calendar', href: '/calendar', icon: Calendar },
+  { name: 'Writers Workspace', href: '/workspace/writer', icon: Pen },
   { name: 'Approvals', href: '/approvals', icon: FileText },
-  { name: 'Members', href: '/members', icon: UserPlus }, // New item
+  { name: 'Members', href: '/members', icon: UserPlus },
   { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Calendar', href: '/calendar', icon: Calendar },
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
@@ -83,7 +85,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       </nav>
 
       {/* Bottom info */}
-      <div className="absolute bottom-0 left-0 w-full p-4 border-t border-gray-100">
+      {/* <div className="absolute bottom-0 left-0 w-full p-4 border-t border-gray-100">
         <div className="bg-gray-50 rounded-xl p-4">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
           <div className="flex items-center gap-2 text-xs font-semibold text-gray-700">
@@ -91,7 +93,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             Live Environment
           </div>
         </div>
-      </div>
+      </div> */}
     </aside>
   );
 }

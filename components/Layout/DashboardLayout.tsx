@@ -18,7 +18,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
    * List of routes that should NOT use the global dashboard layout.
    * e.g., Onboarding has its own specialized flow header.
    */
-  const isStandalonePage = ['/onboarding'].includes(pathname);
+  const isStandalonePage = ['/sign-in', '/sign-up'].includes(pathname);
 
   if (isStandalonePage) {
     return <>{children}</>;

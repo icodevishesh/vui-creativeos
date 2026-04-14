@@ -51,6 +51,7 @@ model User {
   assignedProjects    ProjectTeamMember[]
   createdTasks        Task[]             @relation("TaskCreator")
   assignedTasks       Task[]             @relation("TaskAssignee")
+  assignedSubTasks    SubTask[]
   meetingLogs         MeetingLog[]
   comments            Comment[]
   notifications       Notification[]
@@ -72,6 +73,8 @@ model Organization {
   clients     ClientProfile[]
   projects    Project[]
   customRoles CustomRole[]
+  tasks       Task[]
+
 
   @@index([ownerId])
 }
@@ -172,7 +175,11 @@ model ClientProfile {
   documents      ClientDocument[]
   meetingLogs    MeetingLog[]
   projects       Project[]
+  tasks          Task[]
+  subTasks       SubTask[]
   ganttTasks     GanttTask[]
+  calendarObjective String?
+
   ganttLinks     GanttLink[]
 
   @@index([organizationId])
@@ -313,7 +320,9 @@ model Project {
 
   teamMembers ProjectTeamMember[]
   tasks       Task[]
+  subTasks    SubTask[]
   approvals   Approval[]
+
   ganttTasks  GanttTask[]
   ganttLinks  GanttLink[]
 
@@ -338,9 +347,9 @@ model ProjectTeamMember {
 }
 
 enum TaskStatus {
-  OPEN_TASK
+  OPEN
   IN_PROGRESS
-  IN_REVIEW
+  INTERNAL_REVIEW
   CLIENT_REVIEW
   APPROVED
   REJECTED
@@ -357,15 +366,23 @@ model Task {
   id          String       @id @default(cuid()) @map("_id")
   title       String
   description String?
-  status      TaskStatus   @default(OPEN_TASK)
+  status      TaskStatus   @default(OPEN)
   priority    TaskPriority @default(MEDIUM)
-  dueDate     DateTime?
-  completedAt DateTime?
+  mediaUrls   String[]
+  feedbacks   String[]
+  countSubTask Int         @default(0)
+  
+  startDate   DateTime?
+  endDate     DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId String
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  client      ClientProfile @relation(fields: [clientId], references: [id])
+  clientId    String
+  organization Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
 
   createdBy   User   @relation("TaskCreator", fields: [createdById], references: [id])
   createdById String
@@ -373,13 +390,45 @@ model Task {
   assignedTo   User?   @relation("TaskAssignee", fields: [assignedToId], references: [id])
   assignedToId String?
 
+  subTasks    SubTask[]
   comments    Comment[]
   attachments TaskAttachment[]
 
   @@index([projectId])
+  @@index([clientId])
   @@index([assignedToId])
   @@index([status])
-  @@index([dueDate])
+  @@index([endDate])
+}
+
+model SubTask {
+  id          String       @id @default(cuid()) @map("_id")
+  title       String
+  description String?
+  status      TaskStatus   @default(OPEN)
+  
+  mediaUrls   String[]
+  feedbacks   String[]
+  
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  mainTask    Task @relation(fields: [mainTaskId], references: [id], onDelete: Cascade)
+  mainTaskId  String
+
+  project     Project      @relation(fields: [projectId], references: [id])
+  projectId   String
+  client      ClientProfile @relation(fields: [clientId], references: [id])
+  clientId    String
+
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+  assignedToId String?
+
+  @@index([mainTaskId])
+  @@index([projectId])
+  @@index([clientId])
 }
 
 model Comment {

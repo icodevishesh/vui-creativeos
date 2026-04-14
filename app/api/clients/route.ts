@@ -7,6 +7,7 @@ export async function GET() {
     const clients = await prisma.clientProfile.findMany({
       include: {
         services: true,
+        teamMembers: true,
         _count: {
           select: {
             projects: true,
@@ -28,14 +29,14 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { 
-      companyName, 
-      contactPerson, 
-      email, 
-      phone, 
-      industry, 
-      engagementType, 
-      services 
+    const {
+      companyName,
+      contactPerson,
+      email,
+      phone,
+      industry,
+      engagementType,
+      services
     } = body;
 
     if (!companyName || !contactPerson || !email || !phone || !industry || !engagementType) {

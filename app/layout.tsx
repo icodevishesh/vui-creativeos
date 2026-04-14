@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
+import 'mantine-react-table/styles.css';
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 import { DashboardLayout } from "../components/Layout/DashboardLayout";
