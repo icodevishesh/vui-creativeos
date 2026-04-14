@@ -8,12 +8,14 @@ import {
   Users,
   FolderKanban,
   CheckSquare,
-  FileText,
+  ShieldCheck,
   Settings,
   X,
   UserPlus,
   Calendar,
-  Pen
+  Pen,
+  UploadCloud,
+  Folder
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -29,7 +31,9 @@ const NAV_ITEMS = [
   { name: 'Task Board', href: '/tasks', icon: CheckSquare },
   { name: 'Content Calendar', href: '/calendar', icon: Calendar },
   { name: 'Writers Workspace', href: '/workspace/writer', icon: Pen },
-  { name: 'Approvals', href: '/approvals', icon: FileText },
+  { name: 'Approvals', href: '/approvals', icon: ShieldCheck },
+  { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud },
+  { name: 'File Repository', href: '/file-repository', icon: Folder },
   { name: 'Members', href: '/members', icon: UserPlus },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

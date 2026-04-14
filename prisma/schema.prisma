@@ -401,17 +401,24 @@ model Task {
   @@index([endDate])
 }
 
+enum ReviewerType {
+  CLIENT
+  ADMIN
+  TEAM_LEAD
+  ACCOUNT_MANAGER
+}
+
 model SubTask {
   id          String       @id @default(cuid()) @map("_id")
   title       String
   description String?
   status      TaskStatus   @default(OPEN)
   
-  mediaUrls   String[]
-  feedbacks   String[]
+  mediaUrls   String[]     // ["url1", "url2", "url3"]
+  feedbacks   String[]     // ["feedback1", "feedback2", "feedback3"]
   
-  startDate   DateTime?
-  endDate     DateTime?
+  startDate   DateTime?    // in progress date
+  endDate     DateTime?    // completed date
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
@@ -426,9 +433,15 @@ model SubTask {
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
   assignedToId String?
 
+  // Reviewer info — who gave feedback / rejected
+  reviewerId    String?       // User ID of the reviewer
+  reviewerType  ReviewerType? // client, admin, team_lead, account_manager
+  reviewerName  String?       // name of the reviewer
+
   @@index([mainTaskId])
   @@index([projectId])
   @@index([clientId])
+  @@index([reviewerId])
 }
 
 model Comment {
