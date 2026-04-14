@@ -32,16 +32,16 @@ export function MemberList() {
         <div key={member.id} className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-indigo-100 transition-all flex items-center justify-between group">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold">
-              {member.user.name.slice(0, 2).toUpperCase()}
+              {member.user?.name?.slice(0, 2).toUpperCase() || '??'}
             </div>
             <div>
               <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
-                {member.user.name}
+                {member.user?.name || 'Unknown Member'}
               </h3>
               <div className="flex items-center gap-3 mt-1">
                 <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">
                   <Mail className="w-3 h-3" />
-                  {member.user.email}
+                  {member.user?.email || 'No Email'}
                 </span>
                 <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
                   <Shield className="w-3 h-3" />

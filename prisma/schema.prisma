@@ -384,8 +384,8 @@ model Task {
   organization Organization @relation(fields: [organizationId], references: [id])
   organizationId String
 
-  createdBy   User   @relation("TaskCreator", fields: [createdById], references: [id])
-  createdById String
+  createdBy   User?   @relation("TaskCreator", fields: [createdById], references: [id])
+  createdById String?
 
   assignedTo   User?   @relation("TaskAssignee", fields: [assignedToId], references: [id])
   assignedToId String?
@@ -393,6 +393,8 @@ model Task {
   subTasks    SubTask[]
   comments    Comment[]
   attachments TaskAttachment[]
+  writerContent   WriterContent?
+  designerContent DesignerContent?
 
   @@index([projectId])
   @@index([clientId])
@@ -406,6 +408,26 @@ enum ReviewerType {
   ADMIN
   TEAM_LEAD
   ACCOUNT_MANAGER
+}
+
+model WriterContent {
+  id        String   @id @default(cuid()) @map("_id")
+  content   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String   @unique
+}
+
+model DesignerContent {
+  id        String   @id @default(cuid()) @map("_id")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId    String   @unique
 }
 
 model SubTask {

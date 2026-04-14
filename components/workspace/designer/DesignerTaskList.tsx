@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ChevronRight,
   Briefcase,
@@ -10,7 +10,8 @@ import {
   Building2,
   Clock,
   ChevronDown,
-  Edit3
+  Upload,
+  File
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -23,16 +24,14 @@ interface Task {
   client?: {
     companyName: string;
   };
-  writerContent?: {
-    content: string;
-  };
+  attachments?: any[];
 }
 
-interface TaskListProps {
+interface DesignerTaskListProps {
   tasks: Task[];
   isLoading: boolean;
   onTaskClick?: (task: Task) => void;
-  onStartWriting?: (task: Task) => void;
+  onUploadDesign?: (task: Task) => void;
 }
 
 const getTaskIcon = (title: string) => {
@@ -49,11 +48,11 @@ const getStatusBadge = (status: string) => {
     case 'OPEN':
       return { label: 'Open Task', classes: 'bg-gray-100 text-gray-600' };
     case 'IN_PROGRESS':
-      return { label: 'Draft', classes: 'bg-blue-100 text-blue-600' };
+      return { label: 'In Progress', classes: 'bg-blue-100 text-blue-600' };
     case 'INTERNAL_REVIEW':
       return { label: 'Internal Review', classes: 'bg-amber-100 text-amber-600' };
     case 'CLIENT_REVIEW':
-      return { label: 'Internal Review', classes: 'bg-amber-100 text-amber-600' }; // Matching mockup label
+      return { label: 'Internal Review', classes: 'bg-amber-100 text-amber-600' };
     case 'APPROVED':
       return { label: 'Approved', classes: 'bg-emerald-100 text-emerald-600' };
     default:
@@ -62,31 +61,31 @@ const getStatusBadge = (status: string) => {
 };
 
 const SkeletonRow = () => (
-  <div className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl p-4 animate-pulse">
-    <div className="w-10 h-10 rounded-xl bg-gray-100"></div>
+  <div className="flex items-center gap-4 bg-white border border-gray-100 rounded-lg p-4 animate-pulse">
+    <div className="w-10 h-10 rounded-xl bg-gray-50"></div>
     <div className="flex-1 space-y-2">
-      <div className="h-5 bg-gray-100 rounded w-1/3"></div>
+      <div className="h-5 bg-gray-50 rounded w-1/3"></div>
       <div className="flex gap-4">
-        <div className="h-4 bg-gray-100 rounded w-20"></div>
-        <div className="h-4 bg-gray-100 rounded w-20"></div>
+        <div className="h-4 bg-gray-50 rounded w-20"></div>
+        <div className="h-4 bg-gray-50 rounded w-20"></div>
       </div>
     </div>
     <div className="w-8 h-8 rounded-lg bg-gray-50"></div>
   </div>
 );
 
-export const TaskList: React.FC<TaskListProps> = ({
+export const DesignerTaskList: React.FC<DesignerTaskListProps> = ({
   tasks,
   isLoading,
   onTaskClick,
-  onStartWriting
+  onUploadDesign
 }) => {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3, 4].map((i) => (
+        {[1, 2, 3].map((i) => (
           <SkeletonRow key={i} />
         ))}
       </div>
@@ -97,10 +96,10 @@ export const TaskList: React.FC<TaskListProps> = ({
     return (
       <div className="bg-white border border-dashed border-gray-200 rounded-lg p-12 text-center">
         <div className="mx-auto w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-          <FileText className="text-gray-400" />
+          <Upload className="text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">No tasks assigned</h3>
-        <p className="text-gray-500">You're all caught up! Check back later for new briefs.</p>
+        <h3 className="text-lg font-semibold text-gray-900">No design tasks</h3>
+        <p className="text-gray-500">You're all caught up! New briefs will appear here.</p>
       </div>
     );
   }
@@ -125,19 +124,15 @@ export const TaskList: React.FC<TaskListProps> = ({
               }}
               className="w-full flex items-center gap-4 p-4 text-left"
             >
-              {/* <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isExpanded ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-400'}`}>
-                <Icon className="w-5 h-5" />
-              </div> */}
-
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold text-gray-900">{task.title}</h4>
+                  <h4 className="font-bold text-gray-900">{task.title}</h4>
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${status.classes}`}>
                     {status.label}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4 text-xs text-gray-500">
+                <div className="flex items-center gap-4 text-xs text-gray-500 font-medium">
                   <div className="flex items-center gap-1">
                     <Building2 size={14} />
                     {task.client?.companyName || 'No Client'}
@@ -159,21 +154,37 @@ export const TaskList: React.FC<TaskListProps> = ({
             {/* Expanded Content */}
             {isExpanded && (
               <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-                <div className="pt-2 border-t border-gray-50">
-                  <div className="mb-4">
-                    <div className='border-t border-gray-300 mb-2'></div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Client Brief</p>
-                    <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                      {task.description || "No specific brief provided for this task."}
+                <div className="pt-4 border-t border-gray-100 flex flex-col gap-6">
+                  <div>
+                    <h5 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Design Brief</h5>
+                    <p className="text-sm text-gray-700 leading-relaxed font-medium">
+                      {task.description || "No specific design requirements provided."}
                     </p>
                   </div>
 
+                  {/* Assets Section */}
+                  <div>
+                    <h5 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Assets Provided</h5>
+                    <div className="flex flex-wrap gap-2">
+                      {task.attachments && task.attachments.length > 0 ? (
+                        task.attachments.map((asset: any, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 border border-gray-200">
+                            <File size={14} />
+                            {asset.fileName}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-xs text-gray-400 italic">No assets attached to this task.</div>
+                      )}
+                    </div>
+                  </div>
+
                   <button
-                    onClick={() => onStartWriting?.(task)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95"
+                    onClick={() => onUploadDesign?.(task)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95 w-fit"
                   >
-                    <Edit3 size={16} />
-                    <span className='text-sm'>Start Writing</span>
+                    <Upload size={18} />
+                    Upload Design
                   </button>
                 </div>
               </div>
