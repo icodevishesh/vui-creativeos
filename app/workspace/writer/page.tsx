@@ -9,9 +9,8 @@ import { EditorEmptyState } from '@/components/workspace/writer/EditorEmptyState
 import { VersionHistory } from '@/components/workspace/writer/VersionHistory';
 import { WritingModal } from '@/components/workspace/writer/WritingModal';
 
-// Dummy fetch function - in production this would use the actual API
 const fetchWriterTasks = async () => {
-  const res = await fetch('/api/tasks');
+  const res = await fetch('/api/workspace/writer');
   if (!res.ok) throw new Error('Network response was not ok');
   return res.json();
 };
@@ -21,6 +20,7 @@ export default function WriterWorkspacePage() {
   const [activeTab, setActiveTab] = useState('tasks');
   const [isWritingModalOpen, setIsWritingModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [selectedSubTaskId, setSelectedSubTaskId] = useState<string | undefined>(undefined);
   const [draftContent, setDraftContent] = useState("");
 
   const { data: tasks, isLoading, error } = useQuery({
@@ -28,8 +28,9 @@ export default function WriterWorkspacePage() {
     queryFn: fetchWriterTasks,
   });
 
-  const handleStartWriting = useCallback(async (task: any) => {
+  const handleStartWriting = useCallback(async (task: any, subtaskId?: string) => {
     setSelectedTask(task);
+    setSelectedSubTaskId(subtaskId);
     try {
       const res = await fetch(`/api/tasks/${task.id}/content`);
       const data = await res.json();
@@ -54,7 +55,7 @@ export default function WriterWorkspacePage() {
           <TaskList
             tasks={tasks || []}
             isLoading={isLoading}
-            onStartWriting={handleStartWriting}
+            onStartWriting={(task, subtaskId) => handleStartWriting(task, subtaskId)}
           />
         );
       case 'write': {
@@ -68,7 +69,7 @@ export default function WriterWorkspacePage() {
           <TaskList
             tasks={inProgressTasks}
             isLoading={isLoading}
-            onStartWriting={handleStartWriting}
+            onStartWriting={(task, subtaskId) => handleStartWriting(task, subtaskId)}
           />
         );
       }
@@ -115,6 +116,7 @@ export default function WriterWorkspacePage() {
         isOpen={isWritingModalOpen}
         onClose={() => setIsWritingModalOpen(false)}
         task={selectedTask}
+        subtaskId={selectedSubTaskId}
         initialContent={draftContent}
         onSuccess={handleRefresh}
       />

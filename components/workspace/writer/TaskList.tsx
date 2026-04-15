@@ -14,6 +14,14 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
+interface RevisionSubTask {
+  id: string;
+  title: string;
+  description?: string;
+  status: string;
+  feedbacks: string[];
+}
+
 interface Task {
   id: string;
   title: string;
@@ -26,13 +34,14 @@ interface Task {
   writerContent?: {
     content: string;
   };
+  revisionSubTasks?: RevisionSubTask[];
 }
 
 interface TaskListProps {
   tasks: Task[];
   isLoading: boolean;
   onTaskClick?: (task: Task) => void;
-  onStartWriting?: (task: Task) => void;
+  onStartWriting?: (task: Task, subtaskId?: string) => void;
 }
 
 const getTaskIcon = (title: string) => {
@@ -56,6 +65,8 @@ const getStatusBadge = (status: string) => {
       return { label: 'Internal Review', classes: 'bg-amber-100 text-amber-600' }; // Matching mockup label
     case 'APPROVED':
       return { label: 'Approved', classes: 'bg-emerald-100 text-emerald-600' };
+    case 'REJECTED':
+      return { label: 'Rejected', classes: 'bg-red-100 text-red-600' };
     default:
       return { label: status, classes: 'bg-gray-100 text-gray-600' };
   }
@@ -168,13 +179,38 @@ export const TaskList: React.FC<TaskListProps> = ({
                     </p>
                   </div>
 
-                  <button
-                    onClick={() => onStartWriting?.(task)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95"
-                  >
-                    <Edit3 size={16} />
-                    <span className='text-sm'>Start Writing</span>
-                  </button>
+                  {/* Revision subtasks — shown for REJECTED or feedback tasks */}
+                  {task.revisionSubTasks && task.revisionSubTasks.length > 0 && (
+                    <div className="mb-4 space-y-2">
+                      <p className="text-xs font-bold text-amber-600 uppercase tracking-widest">Revision Required</p>
+                      {task.revisionSubTasks.map((sub) => (
+                        <div key={sub.id} className="bg-amber-50 border border-amber-100 rounded-lg p-3">
+                          <p className="text-xs font-semibold text-amber-800 mb-1">{sub.title}</p>
+                          {sub.feedbacks.length > 0 && (
+                            <p className="text-xs text-amber-700 mb-2 leading-relaxed">{sub.feedbacks[sub.feedbacks.length - 1]}</p>
+                          )}
+                          <button
+                            onClick={() => onStartWriting?.(task, sub.id)}
+                            className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all text-xs active:scale-95"
+                          >
+                            <Edit3 size={14} />
+                            Write Revision
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Only show Start Writing for non-rejected tasks */}
+                  {task.status !== 'REJECTED' && (
+                    <button
+                      onClick={() => onStartWriting?.(task)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95"
+                    >
+                      <Edit3 size={16} />
+                      <span className='text-sm'>Start Writing</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}

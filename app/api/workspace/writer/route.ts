@@ -18,7 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!user.membership || !isWriter(user.membership.role)) {
+    const isAdmin = user.userType === 'ADMIN_OWNER' || user.membership?.role === 'ADMIN';
+    if (!isAdmin && (!user.membership || !isWriter(user.membership.role))) {
       return NextResponse.json(
         { error: 'Forbidden: writer or copywriter role required' },
         { status: 403 }
@@ -26,14 +27,20 @@ export async function GET() {
     }
 
     const tasks = await prisma.task.findMany({
-      where: { assignedToId: user.id },
+      where: {
+        assignedToId: user.id,
+        // Exclude fully approved tasks from the workspace
+        status: { notIn: ['APPROVED'] as any },
+      },
       include: {
         project: { select: { id: true, name: true } },
         client: { select: { id: true, companyName: true } },
         assignedTo: { select: { id: true, name: true } },
+        writerContent: { select: { content: true } },
         subTasks: {
           orderBy: { createdAt: 'asc' },
           select: {
+            id: true,
             title: true,
             description: true,
             status: true,
@@ -51,9 +58,12 @@ export async function GET() {
 
     const result = tasks.map((task) => {
       const { subTasks, ...rest } = task;
+      // Open revision subtasks (for rejected/feedback tasks)
+      const revisionSubTasks = subTasks.filter((s) => s.status === 'OPEN');
       return {
         ...rest,
         versionHistory: buildVersionHistory(subTasks),
+        revisionSubTasks,
       };
     });
 

@@ -12,14 +12,16 @@ interface WritingModalProps {
   isOpen: boolean;
   onClose: () => void;
   task: Task | null;
+  subtaskId?: string;  // if set, submitting updates the subtask status too
   initialContent?: string;
   onSuccess?: () => void;
 }
 
-export const WritingModal: React.FC<WritingModalProps> = ({ 
-  isOpen, 
-  onClose, 
-  task, 
+export const WritingModal: React.FC<WritingModalProps> = ({
+  isOpen,
+  onClose,
+  task,
+  subtaskId,
   initialContent = "",
   onSuccess
 }) => {
@@ -72,14 +74,22 @@ export const WritingModal: React.FC<WritingModalProps> = ({
 
     setIsSubmitting(true);
     try {
+      // Save content and move main task to internal review
       await fetch(`/api/tasks/${task.id}/content`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            content,
-            status: 'INTERNAL_REVIEW' 
-        }),
+        body: JSON.stringify({ content, status: 'INTERNAL_REVIEW' }),
       });
+
+      // If this is a revision for a subtask, mark the subtask as submitted too
+      if (subtaskId) {
+        await fetch(`/api/subtasks/${subtaskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'INTERNAL_REVIEW' }),
+        });
+      }
+
       onSuccess?.();
       onClose();
     } catch (error) {
@@ -98,7 +108,7 @@ export const WritingModal: React.FC<WritingModalProps> = ({
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
             <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{task.title}</h3>
-            <p className="text-sm text-gray-400">Drafting Content</p>
+            <p className="text-sm text-gray-400">{subtaskId ? 'Writing Revision' : 'Drafting Content'}</p>
           </div>
           <button 
             onClick={() => {

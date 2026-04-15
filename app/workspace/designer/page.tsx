@@ -8,9 +8,8 @@ import { DesignerTaskList } from '@/components/workspace/designer/DesignerTaskLi
 import { UploadAndSubmitTab } from '@/components/workspace/designer/UploadAndSubmitTab';
 import { DesignerVersionHistory } from '@/components/workspace/designer/DesignerVersionHistory';
 
-// In production this would filter by the current user's role/ID
 const fetchDesignerTasks = async () => {
-  const res = await fetch('/api/tasks');
+  const res = await fetch('/api/workspace/designer');
   if (!res.ok) throw new Error('Network response was not ok');
   return res.json();
 };

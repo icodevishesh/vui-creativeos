@@ -18,7 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!user.membership || !isDesigner(user.membership.role)) {
+    const isAdmin = user.userType === 'ADMIN_OWNER' || user.membership?.role === 'ADMIN';
+    if (!isAdmin && (!user.membership || !isDesigner(user.membership.role))) {
       return NextResponse.json(
         { error: 'Forbidden: designer role required' },
         { status: 403 }
@@ -26,11 +27,16 @@ export async function GET() {
     }
 
     const tasks = await prisma.task.findMany({
-      where: { assignedToId: user.id },
+      where: {
+        assignedToId: user.id,
+        status: { notIn: ['APPROVED'] as any },
+      },
       include: {
         project: { select: { id: true, name: true } },
         client: { select: { id: true, companyName: true } },
         assignedTo: { select: { id: true, name: true } },
+        designerContent: { select: { notes: true } },
+        attachments: { select: { id: true, fileName: true, fileUrl: true, mimeType: true } },
         subTasks: {
           orderBy: { createdAt: 'asc' },
           select: {

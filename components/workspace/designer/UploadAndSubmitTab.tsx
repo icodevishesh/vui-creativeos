@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FileText, Upload, Link as LinkIcon, Send, File, X, Image as ImageIcon } from 'lucide-react';
+import { FileText, Upload, Send, File, X, Image as ImageIcon, Clock } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -39,15 +39,17 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
      if (!task) return;
      setIsSubmitting(true);
      try {
-        // First save the notes to designerContent
-        await fetch(`/api/tasks/${task.id}/designer-content`, {
+        const formData = new FormData();
+        files.forEach((file) => formData.append('file', file));
+        if (notes.trim()) formData.append('notes', notes);
+        formData.append('status', 'INTERNAL_REVIEW');
+
+        const res = await fetch(`/api/tasks/${task.id}/designer-content`, {
             method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ notes, status: 'INTERNAL_REVIEW' }),
+            body: formData,
         });
-        
-        // In a real app, we would handle file uploads here
-        // For now, we simulate success
+
+        if (!res.ok) throw new Error('Submission failed');
         onSuccess?.();
      } catch (err) {
         console.error("Submission failed", err);
@@ -162,7 +164,7 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
 
             <button
                onClick={handleSubmit}
-               disabled={isSubmitting || (files.length === 0 && !notes.trim())}
+               disabled={isSubmitting || (files.length === 0 && !notes.trim()) || !task}
                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-100 active:scale-[0.98]"
             >
                {isSubmitting ? (
