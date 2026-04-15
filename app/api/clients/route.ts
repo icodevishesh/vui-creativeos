@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
-import { ClientStatus, EngagementType, ServiceType } from '@prisma/client';
+import { EngagementType, ServiceType } from '@prisma/client';
+import { ensureClientFolder } from '@/lib/storage/file-router';
 
 export async function GET() {
   try {
@@ -102,6 +103,9 @@ export async function POST(req: Request) {
         services: true
       }
     });
+
+    // Auto-create the client's upload folder in the repository
+    await ensureClientFolder(client.id, client.companyName);
 
     return NextResponse.json(client);
   } catch (error) {

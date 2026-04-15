@@ -1,69 +1,57 @@
-import { NextResponse } from "next/server";
-import { prisma } from "../../../lib/prisma";
+import { NextResponse } from 'next/server';
+import { prisma } from '../../../lib/prisma';
 
+/**
+ * GET /api/repository
+ *
+ * Returns:
+ *   folders    — one per client, with file count from the Asset table
+ *   recentFiles — 20 most recent assets across all clients
+ */
 export async function GET() {
   try {
-    // 1. Fetch Clients with aggregate file counts from their tasks
-    const clients = await prisma.clientProfile.findMany({
-      select: {
-        id: true,
-        companyName: true,
-        tasks: {
-          select: {
-            _count: {
-              select: {
-                attachments: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    const folders = clients.map((client) => {
-      const fileCount = client.tasks.reduce((sum, task) => sum + task._count.attachments, 0);
-      return {
-        id: client.id,
-        name: client.companyName,
-        fileCount,
-      };
-    });
-
-    // 2. Fetch Recent Files across all tasks
-    const recentAttachments = await prisma.taskAttachment.findMany({
-      take: 20,
-      orderBy: {
-        uploadedAt: "desc",
-      },
+    // One folder per client, file count sourced from the shared Asset table
+    const folders = await prisma.folder.findMany({
       include: {
-        task: {
+        client: {
           select: {
-            client: {
-              select: {
-                companyName: true,
-              },
-            },
+            id: true,
+            companyName: true,
+            _count: { select: { assets: true } },
           },
         },
       },
+      orderBy: { createdAt: 'asc' },
     });
 
-    const recentFiles = recentAttachments.map((att) => ({
-      id: att.id,
-      name: att.fileName,
-      clientName: att.task.client.companyName,
-      size: att.fileSize,
-      date: att.uploadedAt,
-      url: att.fileUrl,
-      mimeType: att.mimeType,
+    const folderList = folders.map((f) => ({
+      id: f.id,
+      name: f.client.companyName,
+      fileCount: f.client._count.assets,
     }));
 
-    return NextResponse.json({
-      folders,
-      recentFiles,
+    // Recent files across all clients from the shared Asset table
+    const recentAssets = await prisma.asset.findMany({
+      take: 20,
+      orderBy: { uploadedAt: 'desc' },
+      include: {
+        client: { select: { companyName: true } },
+      },
     });
+
+    const recentFiles = recentAssets.map((a) => ({
+      id: a.id,
+      name: a.assetName,
+      clientName: a.client.companyName,
+      size: a.fileSize,
+      date: a.uploadedAt,
+      url: a.fileUrl,
+      mimeType: a.fileType,
+    }));
+
+    return NextResponse.json({ folders: folderList, recentFiles });
   } catch (error) {
-    console.error("[REPOSITORY_GET]", error);
-    return new NextResponse("Internal error", { status: 500 });
+    console.error('[REPOSITORY_GET]', error);
+    return new NextResponse('Internal error', { status: 500 });
   }
 }

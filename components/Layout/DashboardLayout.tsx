@@ -6,46 +6,41 @@ import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
-
-  /**
-   * List of routes that should NOT use the global dashboard layout.
-   * e.g., Onboarding has its own specialized flow header.
-   */
-  const isStandalonePage = ['/sign-in', '/sign-up'].includes(pathname);
-
-  if (isStandalonePage) {
-    return <>{children}</>;
-  }
+  if (['/sign-in', '/sign-up'].includes(pathname)) return <>{children}</>;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
+      {/* Mobile backdrop only */}
+      {mobileOpen && (
         <div
-          className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden backdrop-blur-sm transition-opacity"
-          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-gray-900/50 z-40 lg:hidden backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
       )}
 
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onMobileClose={() => setMobileOpen(false)}
+        collapsed={collapsed}
+        onToggleCollapse={() => setCollapsed((v) => !v)}
+      />
 
-      {/* Main content area */}
-      <div className="lg:pl-60 flex flex-col min-h-screen">
-        <Header onOpenSidebar={() => setSidebarOpen(true)} />
+      {/* Content shifts based on collapsed state */}
+      <div
+        className={`flex flex-col min-h-screen transition-[padding] duration-200 ease-in-out ${
+          collapsed ? 'lg:pl-16' : 'lg:pl-60'
+        }`}
+      >
+        <Header onOpenMobile={() => setMobileOpen(true)} />
 
-        <main className="flex-1 p-6 bg-gray-50 text-gray-900" id="main-content">
-          <div className="max-w-7xl mx-auto">
-            {children}
-          </div>
+        <main className="flex-1 p-6 bg-gray-50" id="main-content">
+          <div className="max-w-7xl mx-auto">{children}</div>
         </main>
       </div>
     </div>

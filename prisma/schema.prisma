@@ -55,6 +55,7 @@ model User {
   meetingLogs         MeetingLog[]
   comments            Comment[]
   notifications       Notification[]
+  uploadedAssets      Asset[]        @relation("UploadedAssets")
 
   @@index([userType])
 }
@@ -181,6 +182,8 @@ model ClientProfile {
   calendarObjective String?
 
   ganttLinks     GanttLink[]
+  assets         Asset[]
+  folder         Folder?
 
   @@index([organizationId])
   @@index([userId])
@@ -602,6 +605,38 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([createdAt])
+}
+
+// ============================================
+// FILE REPOSITORY
+// ============================================
+
+model Folder {
+  id        String   @id @default(cuid()) @map("_id")
+  name      String   // sanitized disk folder name
+  createdAt DateTime @default(now())
+
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String        @unique
+}
+
+model Asset {
+  id           String   @id @default(cuid()) @map("_id")
+  assetName    String
+  fileUrl      String
+  fileType     String   // MIME type
+  fileSize     Int?
+  uploadedAt   DateTime @default(now())
+
+  client       ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId     String
+
+  uploadedBy   User   @relation("UploadedAssets", fields: [uploadedById], references: [id])
+  uploadedById String
+
+  @@index([clientId])
+  @@index([uploadedById])
+  @@index([uploadedAt])
 }
 
 // ============================================

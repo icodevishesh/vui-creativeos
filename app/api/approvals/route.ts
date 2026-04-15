@@ -143,10 +143,11 @@ export async function POST(req: NextRequest) {
                 );
             }
 
-            // Update main task: keep in review but add feedback, increment subtask count
+            // Update main task: move back to OPEN, add feedback, increment subtask count
             const updatedTask = await prisma.task.update({
                 where: { id: taskId },
                 data: {
+                    status: TaskStatus.OPEN,
                     feedbacks: { push: feedback },
                     countSubTask: task.countSubTask + 1,
                 },

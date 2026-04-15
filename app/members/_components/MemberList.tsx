@@ -35,7 +35,7 @@ export function MemberList() {
               {member.user?.name?.slice(0, 2).toUpperCase() || '??'}
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+              <h3 className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
                 {member.user?.name || 'Unknown Member'}
               </h3>
               <div className="flex items-center gap-3 mt-1">
@@ -43,15 +43,15 @@ export function MemberList() {
                   <Mail className="w-3 h-3" />
                   {member.user?.email || 'No Email'}
                 </span>
-                <span className="flex items-center gap-1 text-[10px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                <span className="flex items-center gap-1 text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
                   <Shield className="w-3 h-3" />
-                  {member.customRole?.name || member.role.replace(/_/g, ' ')}
+                  {member.customRole?.name || member.role?.replace(/_/g, ' ') || 'Member'}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-gray-400">
+          <div className="hidden sm:flex items-center gap-4 text-xs font-medium text-gray-400">
             <div className="flex flex-col items-end">
               <span className="flex items-center gap-1">
                 <Calendar className="w-3 h-3" />
@@ -65,7 +65,7 @@ export function MemberList() {
           </div>
         </div>
       ))}
-      
+
       {members?.length === 0 && (
         <div className="text-center py-12 border-2 border-dashed border-gray-100 rounded-2xl">
           <p className="text-gray-400 text-sm font-medium">No members found.</p>

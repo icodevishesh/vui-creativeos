@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { TaskStatus } from '@prisma/client';
 
 export interface ProductivityDataPoint {
   name: string;
@@ -11,7 +12,13 @@ export async function GET() {
     // Get all completed/in-review tasks with their assignees
     const tasks = await prisma.task.findMany({
       where: {
-        status: { in: ['APPROVED', 'IN_REVIEW'] },
+        status: {
+          in: [
+            TaskStatus.APPROVED,
+            TaskStatus.INTERNAL_REVIEW,
+            TaskStatus.CLIENT_REVIEW,
+          ],
+        },
         assignedToId: { not: null },
       },
       select: {

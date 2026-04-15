@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "backfill:uploads": "tsx scripts/backfill-uploads.ts"
   },
   "dependencies": {
     "@mantine/core": "^9.0.1",
@@ -29,6 +30,7 @@
     "dayjs": "^1.11.20",
     "dotenv": "^17.4.1",
     "framer-motion": "^12.38.0",
+    "jose": "^6.2.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.7.0",
     "mantine-react-table": "^2.0.0-beta.9",

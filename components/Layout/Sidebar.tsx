@@ -9,31 +9,48 @@ import {
   ListTodo,
   Archive,
   CheckCircle2,
-  Settings,
-  X,
   UserPlus,
   Calendar,
   PenTool,
   Layout,
   Palette,
   UploadCloud,
-  Folder
+  Folder,
+  Bell,
+  BarChart2,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
-import { title } from 'process';
+import { useAuth, formatRole } from '@/context/AuthContext';
 
 interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-const SIDEBAR_SECTIONS = [
+type NavItem = {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  roles?: string[];
+};
+
+type NavSection = {
+  title: string;
+  items: NavItem[];
+};
+
+const SIDEBAR_SECTIONS: NavSection[] = [
   {
     title: 'OVERVIEW',
     items: [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
       { name: 'Clients', href: '/clients', icon: Users },
       { name: 'Team Members', href: '/members', icon: UserPlus },
-    ]
+    ],
   },
   {
     title: 'PROJECTS',
@@ -44,99 +61,193 @@ const SIDEBAR_SECTIONS = [
       { name: 'Task Board', href: '/tasks', icon: Layout },
       { name: 'Approvals', href: '/approvals', icon: CheckCircle2 },
       { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud },
-    ]
+    ],
   },
   {
     title: 'WORKSPACES',
     items: [
-      { name: "Writer's Workspace", href: '/workspace/writer', icon: PenTool },
-      { name: "Designer's Workspace", href: '/workspace/designer', icon: Palette },
-    ]
+      {
+        name: "Writer's Workspace",
+        href: '/workspace/writer',
+        icon: PenTool,
+        roles: ['COPYWRITER', 'CONTENT_WRITER', 'ADMIN', 'ADMIN_OWNER'],
+      },
+      {
+        name: "Designer's Workspace",
+        href: '/workspace/designer',
+        icon: Palette,
+        roles: ['GRAPHIC_DESIGNER', 'ADMIN', 'ADMIN_OWNER'],
+      },
+    ],
   },
   {
-    title: 'MORE',
+    title: 'OTHERS',
     items: [
       { name: 'File Repository', href: '/file-repository', icon: Archive },
-      { name: 'Settings', href: '/settings', icon: Settings },
-    ]
-  }
+      { name: 'Notifications', href: '/notifications', icon: Bell },
+      { name: 'Analytics', href: '/analytics', icon: BarChart2 },
+    ],
+  },
 ];
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+function canSeeItem(item: NavItem, role: string | null, userType: string): boolean {
+  if (!item.roles) return true;
+  return item.roles.includes(role ?? userType);
+}
+
+export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
+  const { user, isLoading, logout } = useAuth();
+
+  const initials = user?.name
+    ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+    : '?';
+
+  const roleLabel = user ? formatRole(user.role, user.userType) : '';
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-50 h-full w-60 bg-white border-r border-gray-200
-        transform transition-transform duration-200 ease-in-out
-        lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      className={`fixed top-0 left-0 z-50 h-full bg-white border-r border-gray-100
+        flex flex-col transition-all duration-200 ease-in-out
+        lg:translate-x-0
+        ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
+        ${collapsed ? 'w-24' : 'w-60'}`}
       aria-label="Sidebar navigation"
     >
-      {/* Logo / brand */}
-      <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-        <div className="flex items-center gap-1">
-          <div className="w-9 h-9 bg-indigo-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-semibold">VUI</span>
+      {/* ── Logo bar ───────────────────────────────────────────── */}
+      <div className="flex items-center justify-between h-16 px-3 border-b border-gray-100 flex-shrink-0">
+        {/* Logo — hidden when collapsed */}
+        <div className={`flex items-center gap-2 ${collapsed ? 'hidden' : 'flex'}`}>
+          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-xs font-bold">VUI</span>
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 tracking-tight">CreativeOS</h2>
+          <h2 className="text-sm font-bold text-gray-900 tracking-tight">CreativeOS</h2>
         </div>
+
+        {/* When collapsed: just the icon centered */}
+        {collapsed && (
+          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-white text-xs font-bold">VUI</span>
+          </div>
+        )}
+
+        {/* Collapse / expand toggle — top-right of sidebar */}
         <button
-          onClick={onClose}
-          className="lg:hidden text-gray-400 hover:text-gray-600 transition-colors"
-          aria-label="Close sidebar"
+          onClick={onToggleCollapse}
+          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all flex-shrink-0"
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <X className="w-5 h-5" />
+          {collapsed
+            ? <PanelLeftOpen className="w-4 h-4" />
+            : <PanelLeftClose className="w-4 h-4" />
+          }
         </button>
       </div>
 
-      <nav className="p-4 space-y-6 overflow-y-auto h-[calc(100vh-64px)] scrollbar-hide" aria-label="Primary navigation">
-        {SIDEBAR_SECTIONS.map((section) => (
-          <div key={section.title} className="space-y-1">
-            <h3 className="px-3 text-[10px] font-semibold text-gray-400 uppercase tracking-wider font-inter">
-              {section.title}
-            </h3>
-            <div className="space-y-1">
-              {section.items.map((item) => {
+      {/* ── Nav ────────────────────────────────────────────────── */}
+      <nav
+        className={`flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-5 ${collapsed ? 'px-2' : 'px-3'}`}
+        aria-label="Primary navigation"
+      >
+        {SIDEBAR_SECTIONS.map((section) => {
+          const visibleItems = section.items.filter((item) =>
+            canSeeItem(item, user?.role ?? null, user?.userType ?? '')
+          );
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={section.title} className="space-y-0.5">
+              {/* Section label — hidden when collapsed */}
+              {!collapsed && (
+                <h3 className="px-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  {section.title}
+                </h3>
+              )}
+
+              {visibleItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link
                     key={item.name}
                     href={item.href}
+                    title={collapsed ? item.name : undefined}
                     onClick={() => {
-                      if (window.innerWidth < 1024) onClose();
+                      if (typeof window !== 'undefined' && window.innerWidth < 1024) onMobileClose();
                     }}
-                    className={`flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded-xl transition-all ${isActive
-                      ? 'bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100/50'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    className={`flex items-center py-2 rounded-xl transition-all
+                      ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'}
+                      ${isActive
+                        ? 'bg-indigo-50 text-indigo-600'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     aria-current={isActive ? 'page' : undefined}
                   >
-                    <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-600' : 'text-gray-400'}`} aria-hidden="true" />
-                    {item.name}
+                    <item.icon
+                      className={`flex-shrink-0 ${collapsed ? 'w-5 h-5' : 'w-4 h-4'} ${isActive ? 'text-indigo-600' : 'text-gray-400'
+                        }`}
+                      aria-hidden="true"
+                    />
+                    {!collapsed && (
+                      <span className="text-[13px] font-semibold">{item.name}</span>
+                    )}
                   </Link>
                 );
               })}
             </div>
-          </div>
-        ))}
-
-        {/* Settings always at bottom of groups */}
-        {/* <div className="pt-4 mt-4 border-t border-gray-100">
-          <Link
-            href="/settings"
-            onClick={() => {
-              if (window.innerWidth < 1024) onClose();
-            }}
-            className={`flex items-center gap-3 px-3 py-2 text-sm font-semibold rounded-xl transition-all ${pathname === '/settings'
-              ? 'bg-indigo-50 text-indigo-600'
-              : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-          >
-            <Settings className={`w-5 h-5 flex-shrink-0 ${pathname === '/settings' ? 'text-indigo-600' : 'text-gray-400'}`} />
-            Settings
-          </Link>
-        </div> */}
+          );
+        })}
       </nav>
+
+      {/* ── User + Logout ───────────────────────────────────────── */}
+      <div className={`flex-shrink-0 border-t border-gray-100 ${collapsed ? 'p-2' : 'p-3'}`}>
+        {isLoading ? (
+          <div className="h-10 bg-gray-50 rounded-xl animate-pulse" />
+        ) : user ? (
+          collapsed ? (
+            /* Collapsed: avatar + logout icon stacked */
+            <div className="flex flex-col items-center gap-2">
+              <div
+                className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-bold"
+                title={user.name}
+              >
+                {initials}
+              </div>
+              <button
+                onClick={logout}
+                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                title="Logout"
+                aria-label="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            /* Expanded: avatar + name/role + logout */
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-gray-900 truncate leading-tight">
+                  {user.name}
+                </p>
+                <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider leading-tight truncate">
+                  {roleLabel}
+                </p>
+              </div>
+              <button
+                onClick={logout}
+                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0"
+                title="Logout"
+                aria-label="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )
+        ) : null}
+      </div>
     </aside>
   );
 }

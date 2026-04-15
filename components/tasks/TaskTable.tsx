@@ -93,7 +93,8 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         }
       },
       {
-        accessorKey: 'project.name',
+        id: 'projectName',
+        accessorFn: (row) => row.project?.name,
         header: 'Project',
         size: 150,
         Cell: ({ cell }) => {
@@ -108,7 +109,8 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         }
       },
       {
-        accessorKey: 'assignedTo.name',
+        id: 'assignedToName',
+        accessorFn: (row) => row.assignedTo?.name,
         header: 'Assignee',
         size: 150,
         Cell: ({ cell }) => {
@@ -155,7 +157,8 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         }
       },
       {
-        accessorKey: 'client.companyName',
+        id: 'clientCompanyName',
+        accessorFn: (row) => row.client?.companyName,
         header: 'Client',
         size: 150,
         Cell: ({ cell }) => {
@@ -194,31 +197,36 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
   const table = useMantineReactTable({
     columns,
     data,
-    state: { isLoading },
+    // isLoading is handled outside the table to avoid mantine-react-table beta
+    // passing in={true} (boolean) to a DOM element, which React 19 rejects.
     enableFullScreenToggle: false,
     enableDensityToggle: false,
     mantineTableBodyRowProps: ({ row }) => ({
       onClick: () => onRowClick(row.original),
-      sx: {
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        '&:hover': {
-          backgroundColor: '#f8fafc',
-        }
-      },
+      style: { cursor: 'pointer' },
     }),
     mantinePaperProps: {
       shadow: 'sm',
       radius: 'lg',
       withBorder: false,
-      style: { border: '1px solid #f3f4f6' }
+      style: { border: '1px solid #f3f4f6' },
     },
     initialState: {
       showGlobalFilter: true,
       pagination: { pageSize: 15, pageIndex: 0 },
     },
-    positionGlobalFilter: "left",
+    positionGlobalFilter: 'left',
   });
+
+  if (isLoading) {
+    return (
+      <div className="w-full space-y-3">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
