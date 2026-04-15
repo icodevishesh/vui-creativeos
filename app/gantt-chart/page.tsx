@@ -65,18 +65,6 @@ export default function GanttPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleExport}
-              disabled={!projectId}
-              className="
-                h-10 px-4 text-sm font-semibold text-gray-600 bg-white border border-gray-200
-                rounded-xl hover:bg-gray-50 transition-all flex items-center gap-2
-                disabled:opacity-30 disabled:cursor-not-allowed shadow-sm
-              "
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
 
             <button
               onClick={() => setIsModalOpen(true)}
@@ -95,10 +83,6 @@ export default function GanttPage() {
         {/* ── Toolbar row ─────────────────────────────────────── */}
         <div className="flex items-center justify-between flex-wrap gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Workspace</span>
-            </div>
             <ProjectSelector value={projectId} onChange={setProjectId} />
           </div>
 

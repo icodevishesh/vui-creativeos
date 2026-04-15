@@ -36,7 +36,7 @@ export default function CalendarPage() {
     // 2. Fetch objective for selected client
     const { data: objectiveData, isLoading: objectiveLoading } = useQuery({
         queryKey: ["client-objective", selectedClientId],
-        queryFn: () => 
+        queryFn: () =>
             fetch(`/api/clients/${selectedClientId}/objective`).then((res) => res.json()),
         enabled: !!selectedClientId,
     });
@@ -86,8 +86,8 @@ export default function CalendarPage() {
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Content Calendar</h1>
-                        <p className="text-sm font-medium text-gray-400">Select a client below to review all relevant project deliveries.</p>
+                        <h1 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">Content Calendar</h1>
+                        <p className="text-xs md:text-sm font-medium text-gray-400">Select a client below to review all relevant project deliveries.</p>
                     </div>
                 </div>
 
@@ -111,10 +111,12 @@ export default function CalendarPage() {
             {/* Application Bridge Wrapper */}
             <div className="flex-1 overflow-y-auto pt-4 relative">
                 {!selectedClientId ? (
-                    <div className="h-full border-dashed flex flex-col items-center justify-center">
-                        <Building size={48} className="text-gray-300 mb-4" />
-                        <h3 className="text-lg font-bold text-gray-600">No Client Selected</h3>
-                        <p className="text-sm text-gray-400">Choose a client from the dropdown map to load their task scheduling pipeline.</p>
+                    <div className="flex items-center justify-center">
+                        <div className="mt-36 flex flex-col items-center justify-center">
+                            <Building size={48} className="text-gray-300 mb-4" />
+                            <h3 className="text-lg font-semibold text-gray-600">No Client Selected</h3>
+                            <p className="text-sm text-gray-400">Choose a client from the dropdown to load their task scheduling pipeline.</p>
+                        </div>
                     </div>
                 ) : isLoadingClientData ? (
                     <div className="w-full pb-8 animate-pulse">
@@ -130,7 +132,7 @@ export default function CalendarPage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="p-4 w-full">
                             <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm h-[600px]">
                                 <div className="flex justify-between items-center mb-6">
@@ -156,8 +158,8 @@ export default function CalendarPage() {
                         </div>
                     </div>
                 ) : (
-                <div className="w-full pb-8">
-                        
+                    <div className="w-full pb-8">
+
                         {/* --- Define calendar objective --- */}
                         <div className="mb-6 px-2">
                             <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
@@ -194,12 +196,12 @@ export default function CalendarPage() {
 
 
                         <div className="p-4 w-full">
-                        <Calendar
-                            tasks={tasks || []}
-                            clients={clients || []}
-                            projects={projects || []}
-                        />
-                    </div>
+                            <Calendar
+                                tasks={tasks || []}
+                                clients={clients || []}
+                                projects={projects || []}
+                            />
+                        </div>
                     </div>
                 )}
             </div>

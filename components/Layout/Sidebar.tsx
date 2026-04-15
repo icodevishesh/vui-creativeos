@@ -32,7 +32,7 @@ const SIDEBAR_SECTIONS = [
     items: [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
       { name: 'Clients', href: '/clients', icon: Users },
-      { name: 'Onboarding', href: '/members', icon: UserPlus },
+      { name: 'Team Members', href: '/members', icon: UserPlus },
     ]
   },
   {

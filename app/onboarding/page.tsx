@@ -5,10 +5,10 @@ import { OnboardingFlow } from './_components/OnboardingFlow';
 
 export default function OnboardingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="">
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="">
+        <div className="h-12 flex items-center justify-between">
           <Link
             href="/clients"
             className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-indigo-600 transition-colors"
@@ -16,16 +16,13 @@ export default function OnboardingPage() {
             <ChevronLeft className="w-5 h-5" />
             Back to Clients
           </Link>
-          <div className="text-sm font-bold text-gray-900">
-            Client Onboarding
-          </div>
           <div className="w-24 px-1" /> {/* Spacer */}
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Onboard New Client</h1>
+      <main className="">
+        <div className="max-w-2xl mx-auto text-start mb-6 mt-2">
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Client Onboarding</h1>
           <p className="text-gray-500 mt-2">Complete the steps below to setup your client profile.</p>
         </div>
 

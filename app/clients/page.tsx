@@ -16,7 +16,7 @@ export default function ClientsPage() {
         </div>
         <Link
           href="/onboarding"
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all w-full sm:w-auto"
+          className="h-10 px-4 text-sm font-semibold text-white bg-gray-900 rounded-xl hover:bg-gray-800 transition-all flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95"
         >
           <Plus className="w-4 h-4" />
           New Client
