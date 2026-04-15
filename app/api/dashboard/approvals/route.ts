@@ -1,49 +1,60 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { TaskStatus } from '@prisma/client';
 
-export interface ApprovalDataPoint {
-  name: string;
-  value: number;
-  color: string;
-}
-
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  APPROVED: { label: 'Approved', color: '#10b981' },
-  PENDING: { label: 'Pending', color: '#f59e0b' },
-  REVISION_REQUESTED: { label: 'Revision', color: '#f59e0b' },
-  REJECTED: { label: 'Rejected', color: '#ef4444' },
-};
-
+/**
+ * GET /api/dashboard/approvals
+ *
+ * Calculates client-review approval rate from Task records:
+ *   - approved       tasks with status = APPROVED
+ *   - rejected       tasks with status = REJECTED
+ *   - feedback       tasks that received feedback and returned to OPEN/IN_PROGRESS
+ *                    (identified by non-empty feedbacks[] array outside review statuses)
+ *   - inReview       tasks currently in CLIENT_REVIEW (still pending, excluded from rate)
+ *
+ *   approvalRate = (approved / (approved + rejected + feedback)) * 100
+ */
 export async function GET() {
   try {
-    // Count approvals per status
-    const approvals = await prisma.approval.groupBy({
-      by: ['status'],
-      _count: { _all: true },
+    const [approved, rejected, inReview, feedback] = await Promise.all([
+      prisma.task.count({
+        where: { status: TaskStatus.APPROVED },
+      }),
+      prisma.task.count({
+        where: { status: TaskStatus.REJECTED },
+      }),
+      prisma.task.count({
+        where: { status: TaskStatus.CLIENT_REVIEW },
+      }),
+      // Tasks that received client feedback and returned to work
+      // (feedbacks array is non-empty, status is back to open/in-progress)
+      prisma.task.count({
+        where: {
+          status: { in: [TaskStatus.OPEN, TaskStatus.IN_PROGRESS, TaskStatus.INTERNAL_REVIEW] },
+          feedbacks: { isEmpty: false },
+        },
+      }),
+    ]);
+
+    // Total decided tasks (excludes still-pending CLIENT_REVIEW)
+    const total = approved + rejected + feedback;
+    const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+    const rejectedRate = total > 0 ? 100 - approvalRate : 0;
+
+    const data = [
+      { name: 'Approved', value: approvalRate, count: approved, color: '#10b981' },
+      { name: 'Rejected', value: rejectedRate, count: rejected + feedback, color: '#ef4444' },
+    ].filter((d) => d.count > 0);
+
+    return NextResponse.json({
+      data,
+      approvalRate,
+      approved,
+      rejected,
+      feedback,
+      inReview,
+      total,
     });
-
-    const total = approvals.reduce((sum: number, a: { _count: { _all: number }; status: string }) => sum + a._count._all, 0);
-
-    // Merge PENDING + REVISION_REQUESTED into "Feedback"
-    const merged: Record<string, number> = {};
-    for (const a of approvals) {
-      const key =
-        a.status === 'REVISION_REQUESTED' ? 'PENDING' : a.status;
-      merged[key] = (merged[key] ?? 0) + a._count._all;
-    }
-
-    const data: ApprovalDataPoint[] = Object.entries(merged)
-      .filter(([, count]) => count > 0)
-      .map(([status, count]) => ({
-        name:
-          status === 'PENDING'
-            ? 'Feedback'
-            : (STATUS_CONFIG[status]?.label ?? status),
-        value: total > 0 ? Math.round((count / total) * 100) : 0,
-        color: STATUS_CONFIG[status]?.color ?? '#6b7280',
-      }));
-
-    return NextResponse.json({ data, total });
   } catch (error) {
     console.error('[dashboard/approvals] Error:', error);
     return NextResponse.json(
