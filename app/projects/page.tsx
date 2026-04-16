@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,7 +48,7 @@ interface CreateProjectPayload {
     description?: string;
 }
 
-// ─── API Helpers ──────────────────────────────────────────────────────────────
+// API Helpers 
 
 const API_BASE = "/api";
 
@@ -99,14 +100,14 @@ async function updateProjectStatus(
     return res.json();
 }
 
-// ─── Query Keys ───────────────────────────────────────────────────────────────
+// Query Keys
 
 const QUERY_KEYS = {
     clients: ["clients"] as const,
     projects: (clientId: string) => ["projects", clientId] as const,
 };
 
-// ─── Utility ──────────────────────────────────────────────────────────────────
+// Utility
 
 function formatDate(dateStr?: string) {
     if (!dateStr) return "—";
@@ -126,7 +127,7 @@ function getInitials(name: string) {
         .slice(0, 2);
 }
 
-// ─── Sub-Components ───────────────────────────────────────────────────────────
+// Sub-Components
 
 const STATUS_CONFIG: Record<
     ProjectStatus,
@@ -152,11 +153,11 @@ const STATUS_CONFIG: Record<
     CANCELLED: { label: "Cancelled", bg: "bg-red-100", text: "text-red-600" },
 };
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// Skeleton
 
 function ProjectCardSkeleton() {
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
+        <div className="bg-white rounded-lg border border-gray-100 p-5 animate-pulse">
             <div className="flex items-start justify-between mb-3">
                 <div className="h-5 bg-gray-100 rounded w-2/5" />
                 <div className="h-5 bg-gray-100 rounded-full w-20" />
@@ -182,7 +183,7 @@ function ClientDropdownSkeleton() {
     );
 }
 
-// ─── Project Card ─────────────────────────────────────────────────────────────
+// Project Card
 
 interface ProjectCardProps {
     project: Project;
@@ -205,7 +206,7 @@ function ProjectCard({
     const busy = isUpdating || isDeleting;
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col gap-0 hover:border-gray-200 hover:shadow-sm transition-all duration-200 group">
+        <div className="bg-white rounded-lg border border-gray-100 p-5 flex flex-col gap-0 hover:border-gray-200 hover:shadow-sm transition-all duration-200 group">
             {/* Header */}
             <div className="flex items-start justify-between mb-1">
                 <div className="flex flex-col gap-0.5">
@@ -226,12 +227,12 @@ function ProjectCard({
             </div>
 
             {/* Description */}
-            <p className="text-sm text-gray-400 line-clamp-2 mb-4 min-h-[40px]">
+            <p className="text-sm text-gray-600 line-clamp-2 mb-4 min-h-[40px]">
                 {project.description || "No description provided."}
             </p>
 
             {/* Timeline */}
-            <div className="flex items-center gap-1 text-xs text-gray-400 mb-1">
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
                 <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <rect x="3" y="4" width="18" height="18" rx="2" />
                     <path d="M16 2v4M8 2v4M3 10h18" />
@@ -242,7 +243,7 @@ function ProjectCard({
             </div>
 
             {/* Created at */}
-            <div className="flex items-center gap-1 text-xs text-gray-300 mb-4">
+            <div className="flex items-center gap-1 text-xs text-gray-400 mb-4">
                 <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 6v6l4 2" />
@@ -265,23 +266,20 @@ function ProjectCard({
                 <button
                     onClick={() => onDelete(project.id)}
                     disabled={busy}
-                    className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 transition-colors ml-auto"
+                    className="inline-flex items-center gap-1 text-xs font-medium px-1 py-1 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 transition-colors ml-auto"
                 >
                     {isDeleting ? (
                         <span className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 border-t-gray-500 animate-spin" />
                     ) : (
-                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <Trash2 className="w-3.5 h-3.5" />
                     )}
-                    Delete
                 </button>
             </div>
         </div>
     );
 }
 
-// ─── New Project Modal ────────────────────────────────────────────────────────
+// New Project Modal
 
 interface NewProjectModalProps {
     clients: ClientProfile[];
@@ -468,7 +466,7 @@ function NewProjectModal({
     );
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
+// Empty State
 
 function EmptyProjects({ onNew }: { onNew: () => void }) {
     return (
@@ -496,7 +494,7 @@ function EmptyProjects({ onNew }: { onNew: () => void }) {
     );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// Main Page
 
 export default function ProjectsPage() {
     const queryClient = useQueryClient();
@@ -506,7 +504,7 @@ export default function ProjectsPage() {
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [projectId, setProjectId] = useState<string | null>(null);
 
-    // ── Queries ──────────────────────────────────────────────────────────────
+    // Queries
 
     const {
         data: clients = [],
@@ -527,7 +525,7 @@ export default function ProjectsPage() {
         staleTime: 2 * 60 * 1000,
     });
 
-    // ── Mutations ────────────────────────────────────────────────────────────
+    // Mutations
 
     const createMutation = useMutation({
         mutationFn: createProject,
@@ -574,7 +572,7 @@ export default function ProjectsPage() {
         onSettled: () => setUpdatingId(null),
     });
 
-    // ── Handlers ─────────────────────────────────────────────────────────────
+    // Handlers
 
     const handleApprove = useCallback(
         (id: string) => statusMutation.mutate({ id, status: "COMPLETED" }),
@@ -600,7 +598,7 @@ export default function ProjectsPage() {
         [createMutation]
     );
 
-    // ── Derived ───────────────────────────────────────────────────────────────
+    // Derived
 
     const selectedClient = useMemo(
         () => clients.find((c) => c.id === selectedClientId),
@@ -610,7 +608,7 @@ export default function ProjectsPage() {
     const projectCount = projects.length;
     const isLoadingProjects = projectsLoading;
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // Render   
 
     return (
         <div className="min-h-screen">
@@ -626,7 +624,7 @@ export default function ProjectsPage() {
                     </div>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-indigo-600 text-sm font-medium text-white hover:bg-indigo-700 transition-colors shadow-sm shadow-indigo-200"
+                        className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-sm font-medium text-white hover:bg-black/90 transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -636,7 +634,7 @@ export default function ProjectsPage() {
                 </div>
 
                 {/* ── Filter Bar ── */}
-                <div className="bg-white shadow-sm rounded-2xl border border-gray-100 px-5 py-2 mb-6 flex items-center justify-between gap-4 flex-wrap">
+                <div className="bg-white shadow-sm rounded-lg border border-gray-100 px-2.5 py-2.5 mb-6 flex items-center justify-between gap-4 flex-wrap">
                     <div className="flex items-center gap-3 flex-wrap">
                         {/* Client Dropdown */}
                         {clientsLoading ? (
@@ -646,7 +644,7 @@ export default function ProjectsPage() {
                                 <select
                                     value={selectedClientId}
                                     onChange={(e) => setSelectedClientId(e.target.value)}
-                                    className="h-8 pl-4 pr-9 rounded-xl border border-gray-200 text-[8px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white appearance-none min-w-[200px]"
+                                    className="h-10 pl-2 pr-9 rounded-lg border border-gray-200 text-[10px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white appearance-none min-w-[200px]"
                                 >
                                     <option value="">All clients</option>
                                     {clients.map((c) => (

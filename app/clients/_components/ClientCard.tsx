@@ -46,7 +46,7 @@ export function ClientCard({ client }: ClientCardProps) {
   };
 
   return (
-    <Link 
+    <Link
       href={`/clients/${client.id}`}
       className="group bg-white rounded-lg border border-gray-100 p-2.5 hover:border-indigo-100 hover:shadow-sm transition-all cursor-pointer block"
     >
@@ -76,9 +76,9 @@ export function ClientCard({ client }: ClientCardProps) {
         <div className="flex items-center gap-6">
           <div className="hidden sm:flex items-center gap-1.5 flex-wrap justify-end max-w-[200px]">
             {client.services.map((s) => (
-              <span 
-                key={s.service} 
-                className="text-[10px] font-medium px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-100"
+              <span
+                key={s.service}
+                className="text-xs font-medium px-2 py-1 bg-gray-50 text-gray-600 rounded-md border border-gray-100"
               >
                 {s.service.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())}
               </span>

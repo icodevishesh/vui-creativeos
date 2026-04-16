@@ -48,10 +48,10 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
 
   const getFileIcon = (type: string) => {
     switch (type) {
-      case 'BRAND_GUIDELINES': return <FileImage className="w-5 h-5 text-indigo-500" />;
-      case 'STRATEGY_DECK': return <FileCode className="w-5 h-5 text-amber-500" />;
-      case 'CONTRACT': return <FileText className="w-5 h-5 text-emerald-500" />;
-      default: return <FileJson className="w-5 h-5 text-gray-500" />;
+      case 'BRAND_GUIDELINES': return <FileImage className="w-4 h-4 text-indigo-500" />;
+      case 'STRATEGY_DECK': return <FileCode className="w-4 h-4 text-amber-500" />;
+      case 'CONTRACT': return <FileText className="w-4 h-4 text-emerald-500" />;
+      default: return <FileJson className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -70,14 +70,14 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
         </div>
         <button
           onClick={() => setIsUploading(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
         >
           <Plus className="w-4 h-4" />
           Add Document
         </button>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead className="bg-gray-50/50 border-b border-gray-100">
             <tr>
@@ -91,11 +91,11 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
             {documents?.map((doc: any) => (
               <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors group">
                 <td className="px-4 py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1 bg-gray-50 rounded-lg group-hover:bg-white transition-colors">
                       {getFileIcon(doc.type)}
                     </div>
-                    <span className="text-sm font-bold text-gray-900">{doc.fileName}</span>
+                    <span className="text-sm font-medium text-gray-900">{doc.fileName}</span>
                   </div>
                 </td>
                 <td className="px-4 py-2">
@@ -103,7 +103,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
                     {doc.type.replace(/_/g, ' ')}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-sm text-gray-500 font-medium">
+                <td className="px-4 py-2 text-sm text-gray-500 font-normal">
                   {new Date(doc.uploadedAt).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-2 text-right">
@@ -126,7 +126,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
       {/* Add Document Modal */}
       {isUploading && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
+          <div className="bg-white w-full max-w-lg rounded-lg p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Log Document</h3>
               <button

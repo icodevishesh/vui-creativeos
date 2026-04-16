@@ -29,13 +29,13 @@ export default function DesignerWorkspacePage() {
     setActiveTab('upload');
     // Set status to IN_PROGRESS if it's currently OPEN
     if (task.status === 'OPEN') {
-        fetch(`/api/tasks/${task.id}/designer-content`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'IN_PROGRESS' }),
-        }).then(() => {
-            queryClient.invalidateQueries({ queryKey: ['designer-tasks'] });
-        });
+      fetch(`/api/tasks/${task.id}/designer-content`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'IN_PROGRESS' }),
+      }).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['designer-tasks'] });
+      });
     }
   }, [queryClient]);
 
@@ -48,16 +48,16 @@ export default function DesignerWorkspacePage() {
     switch (activeTab) {
       case 'tasks':
         return (
-          <DesignerTaskList 
-            tasks={tasks || []} 
-            isLoading={isLoading} 
+          <DesignerTaskList
+            tasks={tasks || []}
+            isLoading={isLoading}
             onUploadDesign={handleUploadDesign}
           />
         );
       case 'upload':
         return (
-          <UploadAndSubmitTab 
-            task={selectedTask} 
+          <UploadAndSubmitTab
+            task={selectedTask}
             onSuccess={handleRefresh}
           />
         );
@@ -73,10 +73,10 @@ export default function DesignerWorkspacePage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1">
             Designer's Workspace
           </h1>
-          <p className="text-base text-gray-500 font-medium">
+          <p className="text-gray-400 text-sm">
             Manage your design tasks, upload assets, and track revisions
           </p>
         </header>

@@ -55,9 +55,9 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Meeting History</h2>
           <p className="text-sm text-gray-500 font-medium">Chronological record of all syncs and reviews.</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
         >
           <Plus className="w-4 h-4" />
           Log Meeting
@@ -70,7 +70,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
             <div className="relative flex items-center justify-center p-2 bg-white border-2 border-indigo-100 rounded-full z-10 shadow-sm mt-1">
               <Calendar className="w-5 h-5 text-indigo-600" />
             </div>
-            
+
             <div className="flex-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div>
@@ -107,7 +107,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
           <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Log Meeting Sync</h3>
-              <button 
+              <button
                 onClick={() => setIsAdding(false)}
                 className="p-2 text-gray-400 hover:text-gray-900 rounded-lg"
               >
@@ -118,7 +118,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
             <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(formData); }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Meeting Title</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Weekly Strategy Review"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
@@ -131,7 +131,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
                 <label className="text-sm font-bold text-gray-700">Date of Meeting</label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
+                  <input
                     type="date"
                     className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                     value={formData.meetingDate}
@@ -142,7 +142,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Detailed Notes</label>
-                <textarea 
+                <textarea
                   placeholder="Summarize the key takeaways and action items..."
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[150px] focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                   value={formData.notes}
@@ -151,14 +151,14 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-6">
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsAdding(false)}
                   className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={mutation.isPending}
                   className="px-10 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-70"

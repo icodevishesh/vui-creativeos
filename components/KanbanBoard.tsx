@@ -5,14 +5,14 @@ import { Clock, AlertCircle, CheckCircle2, Building2 } from 'lucide-react';
 interface Task {
   id: string;
   title: string;
-    description?: string;
-    status: TaskStatus;
-    priority: TaskPriority;
-    startDate?: string;
-    endDate?: string;
-    clientId: string;
-    projectId: string;
-    organizationId: string;
+  description?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  startDate?: string;
+  endDate?: string;
+  clientId: string;
+  projectId: string;
+  organizationId: string;
   mediaUrls?: string[];
   feedbacks: string[];
   countSubTask: number;
@@ -81,7 +81,7 @@ const STATUS_CONFIG = {
 
 const KanbanTaskCard: React.FC<{ task: Task; onClick?: () => void }> = ({ task, onClick }) => {
   const priorityConfig = PRIORITY_CONFIG[task.priority];
-  
+
   // Get initials from assigned user name
   const getInitials = (name?: string) => {
     if (!name) return 'NA';
@@ -89,7 +89,7 @@ const KanbanTaskCard: React.FC<{ task: Task; onClick?: () => void }> = ({ task, 
   };
 
   return (
-    <div 
+    <div
       className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer mb-2"
       onClick={onClick}
     >
@@ -97,20 +97,20 @@ const KanbanTaskCard: React.FC<{ task: Task; onClick?: () => void }> = ({ task, 
       <div className="font-medium text-sm text-gray-900 mb-2 leading-tight">
         {task.title}
       </div>
-      
+
       {/* Client Name */}
       <div className="text-xs text-gray-600 mb-2">
         <Building2 className="inline mr-1 w-4 h-4" />
         {task.client.companyName}
       </div>
-      
+
       {/* Bottom Row: Priority and Assignee */}
       <div className="flex items-center justify-between">
         {/* Priority Badge */}
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${priorityConfig.color}`}>
           {priorityConfig.label}
         </span>
-        
+
         {/* Assignee Initials */}
         <div className="flex items-center">
           <div className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-medium">
@@ -142,14 +142,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasks, onTaskClick }) 
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+    <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
       <div className="flex gap-4 overflow-x-auto pb-4">
         {statusOrder.map((status) => {
           const statusConfig = STATUS_CONFIG[status];
           const statusTasks = tasksByStatus[status] || [];
-          
+
           return (
-            <div 
+            <div
               key={status}
               className={`flex-shrink-0 w-72 min-h-[400px] ${statusConfig.color} rounded-lg border ${statusConfig.color.includes('border-') ? statusConfig.color : 'border-gray-200'}`}
             >
@@ -162,7 +162,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasks, onTaskClick }) 
                   </span>
                 </div>
               </div>
-              
+
               {/* Tasks Container */}
               <div className="p-3 space-y-2 max-h-[400px] overflow-y-auto">
                 {statusTasks.map((task) => (
@@ -172,7 +172,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ tasks, onTaskClick }) 
                     onClick={() => onTaskClick?.(task)}
                   />
                 ))}
-                
+
                 {statusTasks.length === 0 && (
                   <div className="text-center text-gray-500 text-xs py-8">
                     No tasks in this column

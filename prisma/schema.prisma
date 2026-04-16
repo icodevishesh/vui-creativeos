@@ -43,6 +43,7 @@ model User {
   userType      UserType
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  role          MemberRole?
 
   // Relations
   ownedOrganizations  Organization[]     @relation("OrganizationOwner")
@@ -392,7 +393,7 @@ model Task {
 
   assignedTo   User?   @relation("TaskAssignee", fields: [assignedToId], references: [id])
   assignedToId String?
-
+  
   subTasks    SubTask[]
   comments    Comment[]
   attachments TaskAttachment[]
@@ -638,6 +639,7 @@ model Asset {
   @@index([uploadedById])
   @@index([uploadedAt])
 }
+
 
 // ============================================
 // ANALYTICS & REPORTING (Optional)

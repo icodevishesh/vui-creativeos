@@ -74,21 +74,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
       <div className="text-xs font-medium text-gray-600 mb-1">
         {task.assignedTo?.name || 'Unassigned'}
       </div>
-      
+
       {/* Task Name */}
       <div className="text-xs font-semibold text-gray-900 mb-1 leading-tight">
         {task.title}
       </div>
-      
+
       {/* Date Range */}
       {task.endDate && (
         <div className="flex items-center gap-1 text-xs text-red-500/80 mb-1">
           <span>Due date: {format(task.endDate, 'MMM d')}</span>
         </div>
       )}
-      
+
       {/* Status Badge */}
-      <div className={`inline-flex bg-black/10 rounded-2xl items-center px-2 py-0.5 text-xs font-medium ${statusConfig.textColor}`}>
+      <div className={`inline-flex bg-black/10 rounded-lg items-center px-2 py-0.5 text-xs font-medium ${statusConfig.textColor}`}>
         {statusConfig.label}
       </div>
     </div>

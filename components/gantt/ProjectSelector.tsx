@@ -53,7 +53,7 @@ export function ProjectSelector({ value, onChange }: ProjectSelectorProps) {
 
   return (
     <div className="relative flex items-center gap-2">
-      <FolderKanban className="w-4 h-4 text-gray-500 shrink-0" />
+      {/* <FolderKanban className="w-4 h-4 text-gray-500 shrink-0" /> */}
       <div className="relative">
         <select
           id="gantt-project-selector"

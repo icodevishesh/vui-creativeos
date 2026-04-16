@@ -60,8 +60,8 @@ export default function GanttPage() {
       <div className="flex flex-col gap-3 shrink-0">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 tracking-tight mb-1">Gantt Chart</h1>
-            <p className="text-sm text-gray-500 font-medium">Strategic planning and phase tracking</p>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-1">Gantt Chart</h1>
+            <p className="text-sm text-gray-400">Strategic planning and phase tracking</p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -69,7 +69,7 @@ export default function GanttPage() {
             <button
               onClick={() => setIsModalOpen(true)}
               className="
-                h-10 px-4 text-sm font-semibold text-white bg-gray-900 rounded-xl
+                h-10 px-4 text-sm font-semibold text-white bg-gray-900 rounded-lg
                 hover:bg-gray-800 transition-all flex items-center gap-2
                 shadow-md hover:shadow-lg active:scale-95
               "
@@ -81,7 +81,7 @@ export default function GanttPage() {
         </div>
 
         {/* ── Toolbar row ─────────────────────────────────────── */}
-        <div className="flex items-center justify-between flex-wrap gap-4 p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
+        <div className="flex items-center justify-between flex-wrap gap-4 p-4 bg-white border border-gray-100 rounded-lg shadow-sm">
           <div className="flex items-center gap-4">
             <ProjectSelector value={projectId} onChange={setProjectId} />
           </div>

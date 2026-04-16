@@ -139,11 +139,11 @@ export function OverviewTab({ client }: OverviewTabProps) {
         {CARDS.map((card) => (
           <div
             key={card.id}
-            className="relative group bg-white p-2 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all"
+            className="relative group bg-white p-2 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-xl ${card.bg} ${card.color}`}>
+                <div className={`p-2 rounded-lg ${card.bg} ${card.color}`}>
                   <card.icon className="w-4 h-4" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 tracking-tight">{card.title}</h3>
@@ -167,7 +167,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
         ))}
 
         {/* Competitors Card */}
-        <div className="md:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm overflow-hidden relative group">
+        <div className="md:col-span-2 bg-white p-6 rounded-lg border border-gray-100 shadow-sm overflow-hidden relative group">
           <div className="absolute top-0 right-0 p-10 opacity-5 pointer-events-none">
             <Compass className="w-32 h-32 text-emerald-600" />
           </div>
@@ -208,7 +208,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="Add competitor..."
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-2xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all w-48"
+                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all w-48"
                   value={newCompetitor}
                   onChange={(e) => setNewCompetitor(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleAddCompetitor()}
@@ -229,7 +229,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
         </div>
 
         {/* Social Media Presence Card */}
-        <div className="md:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+        <div className="md:col-span-2 bg-white p-6 rounded-lg border border-gray-100 shadow-sm relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
@@ -364,7 +364,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-white w-full max-w-xl rounded-3xl p-8 shadow-2xl overflow-hidden"
+              className="relative bg-white w-full max-w-xl rounded-lg p-8 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
 
@@ -379,7 +379,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
               </div>
 
               <textarea
-                className="w-full min-h-[250px] p-6 bg-gray-50 border border-gray-100 rounded-3xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-medium leading-relaxed"
+                className="w-full min-h-[250px] p-6 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-medium leading-relaxed"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 placeholder="Enter detailed notes..."

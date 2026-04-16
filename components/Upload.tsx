@@ -124,7 +124,7 @@ export default function Upload({ folderName, onUploadComplete, disabled }: Uploa
 							types={fileTypes}
 							disabled={disabled}
 							children={
-								<div className={`border-2 border-dashed border-slate-600 rounded-2xl p-4 text-center transition-all duration-300 ${disabled ? '' : 'cursor-pointer hover:border-blue-500 group-hover:scale-[1.01]'}`}>
+								<div className={`border-2 border-dashed border-slate-600 rounded-lg p-4 text-center transition-all duration-300 ${disabled ? '' : 'cursor-pointer hover:border-blue-500 group-hover:scale-[1.01]'}`}>
 									{/* <div className="text-6xl mb-4">🚀</div> */}
 									<p className="text-sm font-medium text-black">
 										{file ? file.name : (disabled ? "Fill out name before uploading" : "Drag & drop or click to upload")}
@@ -172,13 +172,13 @@ export default function Upload({ folderName, onUploadComplete, disabled }: Uploa
 
 							{uploading && (
 								<div className="grid grid-cols-2 gap-4 text-xs font-medium uppercase tracking-wider text-slate-500">
-									<div className="glass p-3 rounded-xl flex flex-col items-center">
+									<div className="glass p-3 rounded-lg flex flex-col items-center">
 										<span>Speed</span>
 										<span className="text-slate-200 mt-1">
 											{formatSpeed(speed)}
 										</span>
 									</div>
-									<div className="glass p-3 rounded-xl flex flex-col items-center">
+									<div className="glass p-3 rounded-lg flex flex-col items-center">
 										<span>Time Left</span>
 										<span className="text-slate-200 mt-1">
 											{formatEta(eta || 0)}
@@ -198,7 +198,7 @@ export default function Upload({ folderName, onUploadComplete, disabled }: Uploa
 										setCompleted(false);
 										setProgress(0);
 									}}
-									className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-bold hover:opacity-90 transition-opacity"
+									className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 font-bold hover:opacity-90 transition-opacity"
 								>
 									Upload Another
 								</button>

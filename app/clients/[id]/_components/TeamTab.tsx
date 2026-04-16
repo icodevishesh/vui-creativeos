@@ -80,7 +80,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Assigned Team Members</h2>
           <p className="text-sm text-gray-500 font-medium">Internal staff currently allocated to this account.</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsAssigning(true)}
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
         >
@@ -91,16 +91,16 @@ export function TeamTab({ clientId }: TeamTabProps) {
 
       <div className="grid grid-cols-1 gap-4">
         {team?.map((member: any) => (
-          <div 
-            key={member.id} 
-            className="group flex items-center justify-between bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all"
+          <div
+            key={member.id}
+            className="group flex items-center justify-between bg-white p-5 rounded-lg border border-gray-100 shadow-sm hover:border-indigo-100 transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-lg">
+              <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-lg">
                 {member.userName.slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <h4 className="font-bold text-gray-900">{member.userName}</h4>
+                <h4 className="font-semibold text-gray-900">{member.userName}</h4>
                 <div className="flex items-center gap-3 mt-1">
                   <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest bg-gray-100 text-gray-500 px-2.5 py-1 rounded-lg">
                     <Shield className="w-3 h-3" />
@@ -110,7 +110,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => removeMutation.mutate(member.id)}
               disabled={removeMutation.isPending}
               className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
@@ -133,7 +133,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
           <div className="bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Assign Team Member</h3>
-              <button 
+              <button
                 onClick={() => setIsAssigning(false)}
                 className="p-2 text-gray-400 hover:text-gray-900 rounded-lg"
               >
@@ -144,7 +144,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
             <form onSubmit={(e) => { e.preventDefault(); assignMutation.mutate(formData); }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Select Member</label>
-                <select 
+                <select
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
                   value={formData.userId}
                   onChange={(e) => {
@@ -168,7 +168,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Role for this Client</label>
-                <input 
+                <input
                   type="text"
                   placeholder="e.g. Account Manager, Creative Lead"
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
@@ -178,14 +178,14 @@ export function TeamTab({ clientId }: TeamTabProps) {
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-6">
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsAssigning(false)}
                   className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900"
                 >
                   Cancel
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={assignMutation.isPending}
                   className="px-10 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-70"

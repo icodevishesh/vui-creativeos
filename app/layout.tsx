@@ -5,7 +5,6 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import 'mantine-react-table/styles.css';
 import { Providers } from "./providers";
-import { Toaster } from "react-hot-toast";
 import { DashboardLayout } from "../components/Layout/DashboardLayout";
 
 const inter = Inter({
@@ -27,7 +26,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased font-sans`}>
       <body className="min-h-full flex flex-col bg-[#F9FAFB] text-gray-900 text-[14px] font-[400] tracking-[-0.01em]">
-        <Toaster position="top-right" />
         <Providers>
           <DashboardLayout>
             {children}

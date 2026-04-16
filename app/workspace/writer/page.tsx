@@ -85,10 +85,10 @@ export default function WriterWorkspacePage() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1">
             Writer's Workspace
           </h1>
-          <p className="text-base text-gray-500">
+          <p className="text-gray-400 text-sm">
             Your allocated tasks, briefs, and content pipeline
           </p>
         </header>
@@ -102,7 +102,7 @@ export default function WriterWorkspacePage() {
         {/* Dynamic Content Area */}
         <div className="min-h-[500px]">
           {error ? (
-            <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-red-600 font-medium">
+            <div className="bg-red-50 border border-red-100 p-4 rounded-lg text-red-600 font-medium">
               Error loading tasks. Please try refreshing the page.
             </div>
           ) : (

@@ -86,15 +86,15 @@ export default function CalendarPage() {
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
                     <div>
-                        <h1 className="text-lg md:text-2xl font-bold text-gray-900 tracking-tight">Content Calendar</h1>
-                        <p className="text-xs md:text-sm font-medium text-gray-400">Select a client below to review all relevant project deliveries.</p>
+                        <h1 className="text-2xl font-semibold text-gray-900 mb-1">Content Calendar</h1>
+                        <p className="text-sm text-gray-400">Select a client to review all relevant project deliveries.</p>
                     </div>
                 </div>
 
                 <div className="w-64">
                     <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Operating Client Context</label>
                     <select
-                        className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm font-semibold rounded-xl focus:ring-blue-500 focus:border-blue-500 block px-3 py-2.5 transition-all"
+                        className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm font-semibold rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-3 py-2.5 transition-all"
                         value={selectedClientId}
                         onChange={(e) => setSelectedClientId(e.target.value)}
                     >
@@ -121,7 +121,7 @@ export default function CalendarPage() {
                 ) : isLoadingClientData ? (
                     <div className="w-full pb-8 animate-pulse">
                         <div className="px-2 mb-6">
-                            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                            <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="h-5 bg-gray-200 rounded w-48"></div>
                                     <div className="h-4 bg-gray-200 rounded w-16"></div>
@@ -134,7 +134,7 @@ export default function CalendarPage() {
                         </div>
 
                         <div className="p-4 w-full">
-                            <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm h-[600px]">
+                            <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm h-[600px]">
                                 <div className="flex justify-between items-center mb-6">
                                     <div className="flex items-center gap-4">
                                         <div className="h-8 bg-gray-200 rounded-md w-32"></div>
@@ -162,7 +162,7 @@ export default function CalendarPage() {
 
                         {/* --- Define calendar objective --- */}
                         <div className="mb-6 px-2">
-                            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2 text-gray-700">
                                         <Target size={18} className="text-blue-500" />

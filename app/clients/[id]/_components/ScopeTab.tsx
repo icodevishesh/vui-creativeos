@@ -170,41 +170,41 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
               });
               setIsAdding(true);
             }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
           >
             <Plus className="w-4 h-4" />
             Add New Service
           </button>
         </div>
-        <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-2xl flex items-center gap-4">
+        <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-lg flex items-center gap-4">
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-emerald-900">Scope Finalized</h3>
-            <p className="text-sm text-emerald-700 font-medium">This scope was confirmed and is now active for execution.</p>
+            <h3 className="text-md font-semibold text-emerald-900">Scope Finalized</h3>
+            <p className="text-sm text-emerald-700 font-normal">This scope was confirmed and is now active for execution.</p>
           </div>
         </div>
 
         <div className="space-y-6">
           {scope.map((item: any) => (
-            <div key={item.id} className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-8">
+            <div key={item.id} className="bg-white p-8 rounded-lg border border-gray-100 shadow-sm space-y-8">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Service Type</p>
-                  <h2 className="text-xl font-bold text-gray-900">{item.service.replace(/_/g, ' ')}</h2>
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Service Type</p>
+                  <h2 className="text-xl font-semibold text-gray-900">{item.service.replace(/_/g, ' ')}</h2>
                 </div>
                 {item.budget && (
                   <div className="text-right">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
                     <p className="text-xl font-bold text-indigo-600">${item.budget.toLocaleString()}</p>
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-50">
-                <div className="space-y-4">
-                  <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <div className="flex flex-col space-y-4">
+                  <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                     <Monitor className="w-4 h-4 text-gray-400" />
                     Selected Platforms
                   </h4>
@@ -215,11 +215,17 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                       </span>
                     ))}
                   </div>
+                  <div className='mt-4'>
+                    <h4 className="text-sm font-semibold text-gray-900">Detailed Description</h4>
+                    <p className="text-gray-600 text-sm leading-relaxed font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
+                      "{item.description}"
+                    </p>
+                  </div>
                 </div>
 
                 {item.details?.deliverables && Object.keys(item.details.deliverables).length > 0 && (
                   <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                       <ListTodo className="w-4 h-4 text-gray-400" />
                       Deliverables Count
                     </h4>
@@ -235,10 +241,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                 )}
 
                 <div className="space-y-4">
-                  <h4 className="text-sm font-bold text-gray-900">Detailed Description</h4>
-                  <p className="text-gray-600 text-sm leading-relaxed font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
-                    "{item.description}"
-                  </p>
+
                 </div>
               </div>
             </div>
@@ -252,8 +255,8 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 tracking-tight">Scope of Work</h2>
-          <p className="text-xs text-gray-500 font-medium mt-1">
+          <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Scope of Work</h2>
+          <p className="text-sm text-gray-400 font-medium mt-1">
             {isAdding || !isFinalized
               ? `Define specific deliverables for your ${formData.service.replace(/_/g, ' ')} engagement.`
               : 'Detailed roadmap and confirmed deliverables for this account.'}
@@ -283,7 +286,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
         </button>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+      <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm space-y-6">
         {/* Service Selector (Prefilled) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-1.5">
@@ -399,7 +402,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                     <button
                       key={platform.id}
                       onClick={() => handleTogglePlatform(platform.id)}
-                      className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${isSelected
+                      className={`flex items-center justify-between p-5 rounded-lg border-2 transition-all ${isSelected
                         ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
                         : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
                         }`}
@@ -449,12 +452,12 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative bg-white w-full max-w-lg rounded-3xl p-8 shadow-2xl overflow-hidden"
+              className="relative bg-white w-full max-w-lg rounded-lg p-8 shadow-2xl overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
 
               <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+                <div className="w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
 
@@ -469,7 +472,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                   <button
                     disabled={mutation.isPending}
                     onClick={() => mutation.mutate(formData)}
-                    className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                    className="w-full py-4 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
                   >
                     {mutation.isPending ? 'Processing...' : 'Yes, Finalize Now'}
                   </button>

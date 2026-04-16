@@ -193,7 +193,7 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
     return (
         <div
             ref={outerCallbackRef}
-            className="w-full h-full flex flex-col overflow-hidden bg-white rounded-xl shadow-inner border border-gray-100/50"
+            className="w-full h-full flex flex-col overflow-hidden bg-white rounded-lg shadow-inner border border-gray-100/50"
             id="gantt-chart-container"
         >
             {isError && (
@@ -249,7 +249,7 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
                     >
                         {ganttTasks.length === 0 && (
                             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-50/80 backdrop-blur-[2px]">
-                                <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center gap-2 max-w-xs text-center">
+                                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col items-center gap-2 max-w-xs text-center">
                                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                                         <Plus className="w-5 h-5 text-gray-400" />
                                     </div>

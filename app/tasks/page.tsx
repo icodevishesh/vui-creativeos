@@ -203,7 +203,7 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Task Board</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1">Task Board</h1>
           <p className="text-gray-500 text-sm">Kanban view of all tasks.</p>
         </div>
 
@@ -218,13 +218,13 @@ export default function TasksPage() {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mt-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Tasks List</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1">Tasks List</h1>
           <p className="text-gray-500 text-sm">Manage all tasks in a list view.</p>
         </div>
 
         <button
           onClick={() => setIsNewModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-100"
+          className="inline-flex items-center gap-2 bg-black text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-black/90 transition-all"
         >
           <Plus className="w-4 h-4" />
           New Task
@@ -234,7 +234,7 @@ export default function TasksPage() {
       <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm flex flex-wrap gap-4 items-center">
         <div className="flex items-center gap-3 w-full justify-start">
           <select
-            className="pl-3 pr-8 py-2 rounded-xl border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
+            className="pl-3 pr-8 py-2 rounded-lg border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
             value={selectedClientId}
             onChange={(e) => setSelectedClientId(e.target.value)}
           >
@@ -245,7 +245,7 @@ export default function TasksPage() {
           </select>
 
           <select
-            className="pl-3 pr-8 py-2 rounded-xl border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
+            className="pl-3 pr-8 py-2 rounded-lg border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
           >

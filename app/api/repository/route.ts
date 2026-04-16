@@ -10,24 +10,19 @@ import { prisma } from '../../../lib/prisma';
  */
 export async function GET() {
   try {
-    // One folder per client, file count sourced from the shared Asset table
-    const folders = await prisma.folder.findMany({
+    // Fetch all clients to ensure even new clients without assets/folders show up
+    const clients = await prisma.clientProfile.findMany({
       include: {
-        client: {
-          select: {
-            id: true,
-            companyName: true,
-            _count: { select: { assets: true } },
-          },
-        },
+        folder: true,
+        _count: { select: { assets: true } },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { companyName: 'asc' },
     });
-
-    const folderList = folders.map((f) => ({
-      id: f.id,
-      name: f.client.companyName,
-      fileCount: f.client._count.assets,
+    
+    const folderList = clients.map((c) => ({
+      id: c.folder?.id || `folder-${c.id}`,
+      name: c.companyName,
+      fileCount: c._count.assets,
     }));
 
     // Recent files across all clients from the shared Asset table

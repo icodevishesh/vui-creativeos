@@ -128,14 +128,13 @@ function FeedbackModal({
         className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
         {/* Header */}
         <div
-          className={`px-6 py-4 flex items-center justify-between ${
-            isReject
-              ? "bg-gradient-to-r from-red-500 to-rose-500"
-              : "bg-gradient-to-r from-amber-500 to-orange-500"
-          }`}
+          className={`px-6 py-4 flex items-center justify-between ${isReject
+            ? "bg-gradient-to-r from-red-500 to-rose-500"
+            : "bg-gradient-to-r from-amber-500 to-orange-500"
+            }`}
         >
           <div className="flex items-center gap-3">
             {isReject ? (
@@ -157,12 +156,12 @@ function FeedbackModal({
 
         {/* Body */}
         <div className="p-6 space-y-4">
-          <div className="bg-gray-50 rounded-xl p-3">
+          <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-500 font-medium mb-1">Task</p>
             <p className="text-xs font-medium text-gray-900">{taskTitle}</p>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-3 flex flex-col gap-1">
+          <div className="bg-gray-50 rounded-lg p-3 flex flex-col gap-1">
             <p className="text-xs text-gray-500 font-medium">Auto-filled Reviewer</p>
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
@@ -189,7 +188,7 @@ function FeedbackModal({
                   : "Share your feedback or revision notes..."
               }
               rows={4}
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm
                          focus:outline-none focus:ring-2 focus:ring-indigo-500/20
                          bg-white text-gray-900 placeholder:text-gray-400 resize-none"
             />
@@ -201,7 +200,7 @@ function FeedbackModal({
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900
-                       rounded-xl hover:bg-gray-100 transition-all"
+                       rounded-lg hover:bg-gray-100 transition-all"
           >
             Cancel
           </button>
@@ -209,12 +208,11 @@ function FeedbackModal({
             onClick={handleSubmit}
             disabled={isLoading}
             className={`inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold
-                        text-white rounded-xl transition-all shadow-sm disabled:opacity-50
-                        ${
-                          isReject
-                            ? "bg-red-600 hover:bg-red-700 shadow-red-100"
-                            : "bg-amber-600 hover:bg-amber-700 shadow-amber-100"
-                        }`}
+                        text-white rounded-lg transition-all shadow-sm disabled:opacity-50
+                        ${isReject
+                ? "bg-red-600 hover:bg-red-700 shadow-red-100"
+                : "bg-amber-600 hover:bg-amber-700 shadow-amber-100"
+              }`}
           >
             <Send className="w-4 h-4" />
             {isLoading ? "Submitting..." : isReject ? "Reject" : "Send Feedback"}
@@ -244,8 +242,8 @@ function ApprovalCard({
   const currentVersion = `v${(task.subTasks?.length || 0) + 1}`;
 
   return (
-    <div className="bg-white rounded-[20px] border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
-      <div className="p-8 space-y-6">
+    <div className="bg-white rounded-lg border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="p-6 space-y-6">
         {/* Header Row */}
         <div className="flex items-start justify-between">
           <div className="space-y-0.5">
@@ -261,11 +259,10 @@ function ApprovalCard({
             </div>
           </div>
           <span
-            className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg ${
-              isInternal
-                ? "bg-[#FFF8E6] text-[#D97706]"
-                : "bg-indigo-50 text-indigo-600"
-            }`}
+            className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg ${isInternal
+              ? "bg-[#FFF8E6] text-[#D97706]"
+              : "bg-indigo-50 text-indigo-600"
+              }`}
           >
             {isInternal ? "Internal Review" : "Client Review"}
           </span>
@@ -276,16 +273,16 @@ function ApprovalCard({
           <button
             onClick={onApprove}
             disabled={isActioning}
-            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-white bg-[#00AB55] rounded-xl hover:bg-[#00964b] transition-all shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-white bg-[#00AB55] rounded-lg hover:bg-[#00964b] transition-all shadow-sm disabled:opacity-50"
           >
             <Check className="w-3.5 h-3.5" />
             Approve
           </button>
-          
+
           <button
             onClick={onFeedback}
             disabled={isActioning}
-            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all shadow-sm disabled:opacity-50"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             Feedback
@@ -294,7 +291,7 @@ function ApprovalCard({
           <button
             onClick={onReject}
             disabled={isActioning}
-            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-rose-500 bg-white border border-rose-100 rounded-xl hover:bg-rose-50 transition-all shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-rose-500 bg-white border border-rose-100 rounded-lg hover:bg-rose-50 transition-all shadow-sm disabled:opacity-50"
           >
             <X className="w-3.5 h-3.5" />
             Reject
@@ -311,7 +308,7 @@ function ApprovalCard({
               {task.subTasks.map((sub, index) => {
                 const isRejectedStatus = sub.description?.toLowerCase().includes("rejected");
                 const cleanDescription = sub.description?.replace(/^(Rejected — |Feedback — )/, "");
-                
+
                 return (
                   <div key={sub.id} className="flex items-center justify-between group">
                     <div className="flex items-center gap-4 flex-1">
@@ -319,11 +316,10 @@ function ApprovalCard({
                         v{index + 1}
                       </span>
                       <span
-                        className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full shadow-sm ${
-                          isRejectedStatus
-                            ? "bg-[#FFE4E6] text-[#E11D48]"
-                            : "bg-[#FFF8E6] text-[#B45309]"
-                        }`}
+                        className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full shadow-sm ${isRejectedStatus
+                          ? "bg-[#FFE4E6] text-[#E11D48]"
+                          : "bg-[#FFF8E6] text-[#B45309]"
+                          }`}
                       >
                         {isRejectedStatus ? "Rejected" : "Internal Review"}
                       </span>
@@ -420,8 +416,8 @@ export default function ApprovalsPage() {
         variables.action === "approve"
           ? "approved"
           : variables.action === "reject"
-          ? "rejected"
-          : "feedback sent";
+            ? "rejected"
+            : "feedback sent";
 
       toast.success(`Task ${actionLabel} successfully!`);
       setModalState({ isOpen: false, actionType: "reject", task: null });
@@ -485,10 +481,10 @@ export default function ApprovalsPage() {
     <div className="space-y-8">
       {/* Header */}
       <div className="space-y-0.5">
-        <h1 className="text-xl font-medium text-gray-900 tracking-tight">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-1">
           Approvals
         </h1>
-        <p className="text-gray-500 text-xs font-medium">
+        <p className="text-gray-400 text-sm">
           {tasks.length} items pending review
         </p>
       </div>
@@ -497,16 +493,15 @@ export default function ApprovalsPage() {
       <div className="flex items-center gap-4">
         {TABS.filter(t => t.key !== 'all').map((tab) => {
           const isActive = activeTab === tab.key;
-          
+
           return (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${
-                isActive
-                  ? "bg-white text-gray-900 border border-gray-100 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
+              className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${isActive
+                ? "bg-white text-gray-900 border border-gray-100 shadow-sm"
+                : "text-gray-400 hover:text-gray-600"
+                }`}
             >
               {tab.label}
             </button>

@@ -102,6 +102,7 @@ export const Calendar: React.FC<CalendarProps> = ({
     setSelectedProjectId(projectId);
   };
 
+  
   return (
     <div className="w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6">
       {/* Header with Controls */}

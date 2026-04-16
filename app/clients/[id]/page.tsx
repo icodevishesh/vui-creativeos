@@ -113,22 +113,22 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Profile Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-lg font-semibold shadow-xl shadow-indigo-100/50">
+          <div className="w-14 h-14 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-lg font-semibold shadow-xl shadow-indigo-100/50">
             {client.companyName.slice(0, 2).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <h1 className="text-xl font-bold text-gray-900 tracking-tight">{client.companyName}</h1>
+              <h1 className="text-xl font-semibold text-gray-900 tracking-tight">{client.companyName}</h1>
               <span className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest border ${statusColors[client.status] || statusColors.PENDING}`}>
                 {client.status}
               </span>
             </div>
-            <p className="text-gray-400 text-[11px] font-bold uppercase tracking-wider flex items-center gap-2">
+            <p className="text-gray-400 text-[11px] font-normal uppercase tracking-wider flex items-center gap-2">
               {client.engagementType.replace(/_/g, ' ')}
               <span className="w-1 h-1 bg-gray-200 rounded-full" />
-              Managed by <span className="text-gray-900">{accountManagerName}</span>
+              Managed by <span className=" tracking-normal text-gray-900 font-semibold capitalize">{accountManagerName}</span>
             </p>
           </div>
         </div>
@@ -148,7 +148,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-2xl w-fit">
+      <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-lg w-fit">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           return (

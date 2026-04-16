@@ -11,7 +11,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const pathname = usePathname();
-  if (['/sign-in', '/sign-up'].includes(pathname)) return <>{children}</>;
+  if (['/', '/sign-in', '/sign-up'].includes(pathname)) return <>{children}</>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -33,9 +33,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* Content shifts based on collapsed state */}
       <div
-        className={`flex flex-col min-h-screen transition-[padding] duration-200 ease-in-out ${
-          collapsed ? 'lg:pl-16' : 'lg:pl-60'
-        }`}
+        className={`flex flex-col min-h-screen transition-[padding] duration-200 ease-in-out ${collapsed ? 'lg:pl-24' : 'lg:pl-60'
+          }`}
       >
         <Header onOpenMobile={() => setMobileOpen(true)} />
 

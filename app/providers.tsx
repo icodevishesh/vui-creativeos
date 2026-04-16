@@ -28,7 +28,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           {children}
         </AuthProvider>
         <Toaster
-          position="top-right"
+          position="top-center"
           toastOptions={{
             style: {
               borderRadius: '12px',

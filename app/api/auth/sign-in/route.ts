@@ -32,13 +32,18 @@ export async function POST(req: Request) {
 
         // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
+        // password coming from database and password from form are same then continu
+        // 
+        const isPasswordSame = password === user.password;
+        console.log(user.password, password, isPasswordValid, isPasswordSame);
 
-        if (!isPasswordValid) {
+        if (!isPasswordValid && !isPasswordSame) {
             return NextResponse.json(
                 { error: 'Invalid credentials' },
                 { status: 401 }
             );
         }
+
 
         // Generate JWT
         const token = jwt.sign(

@@ -45,7 +45,7 @@ export function ClientList() {
   return (
     <div className="space-y-4">
       {/* Search Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-2.5 rounded-lg border border-gray-100 shadow-sm">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -56,7 +56,7 @@ export function ClientList() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2 text-xs font-medium text-gray-400 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+        <div className="flex items-center gap-2 text-xs font-medium text-gray-500 bg-gray-50 py-3 px-3 rounded-lg border border-gray-100">
           <Users className="w-4 h-4" />
           {filteredClients.length} total clients
         </div>

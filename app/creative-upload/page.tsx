@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   UploadCloud,
   FileImage,
@@ -31,36 +31,31 @@ interface Asset {
   url: string;
 }
 
+const getFileIcon = (type: string) => {
+  switch (type) {
+    case "image":
+      return <FileImage className="w-5 h-5 text-gray-400" />;
+    case "video":
+      return <FileVideo className="w-5 h-5 text-gray-400" />;
+    case "doc":
+      return <FileText className="w-5 h-5 text-gray-400" />;
+    default:
+      return <FileIcon className="w-5 h-5 text-gray-400" />;
+  }
+};
+
+const determineFileType = (mime: string): Asset["type"] => {
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.includes("pdf") || mime.includes("word") || mime.includes("officedocument")) return "doc";
+  return "other";
+};
+
 export default function CreativeUploadPage() {
+  const queryClient = useQueryClient();
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [assets, setAssets] = useState<Asset[]>([
-    {
-      id: "1",
-      name: "spring-carousel-v3.png",
-      mappedTo: "IG Carousel — Spring",
-      type: "image",
-      date: "Apr 2",
-      url: "#",
-    },
-    {
-      id: "2",
-      name: "product-reel-final.mp4",
-      mappedTo: "IG Reel — Product Launch",
-      type: "video",
-      date: "Apr 1",
-      url: "#",
-    },
-    {
-      id: "3",
-      name: "linkedin-ad-copy.docx",
-      mappedTo: "LinkedIn Ad — Q2",
-      type: "doc",
-      date: "Mar 30",
-      url: "#",
-    },
-  ]);
 
   // Fetch Clients
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
@@ -68,32 +63,37 @@ export default function CreativeUploadPage() {
     queryFn: () => fetch("/api/clients").then((res) => res.json()),
   });
 
+  // Fetch Recent Assets from Repository API
+  const { data: repositoryData, isLoading: assetsLoading } = useQuery({
+    queryKey: ["repository"],
+    queryFn: () => fetch("/api/repository").then((res) => res.json()),
+  });
+
+  // Map repository files to our Asset interface
+  const assets: Asset[] = useMemo(() => {
+    if (!repositoryData?.recentFiles) return [];
+
+    return repositoryData.recentFiles.map((file: any) => ({
+      id: file.id,
+      name: file.name,
+      mappedTo: "Unmapped", // Could be enhanced if mapping exists in DB
+      type: determineFileType(file.mimeType || ""),
+      date: new Date(file.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      url: file.url,
+    }));
+  }, [repositoryData]);
+
   const selectedClient = useMemo(
     () => clients.find((c) => c.id === selectedClientId),
     [clients, selectedClientId]
   );
 
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case "image":
-        return <FileImage className="w-5 h-5 text-gray-400" />;
-      case "video":
-        return <FileVideo className="w-5 h-5 text-gray-400" />;
-      case "doc":
-        return <FileText className="w-5 h-5 text-gray-400" />;
-      default:
-        return <FileIcon className="w-5 h-5 text-gray-400" />;
-    }
-  };
 
-  const determineFileType = (mime: string): Asset["type"] => {
-    if (mime.startsWith("image/")) return "image";
-    if (mime.startsWith("video/")) return "video";
-    if (mime.includes("pdf") || mime.includes("word") || mime.includes("officedocument")) return "doc";
-    return "other";
-  };
+  const handleUpload = (file: File | File[]) => {
+    const singleFile = Array.isArray(file) ? file[0] : file;
 
-  const handleUpload = (file: File) => {
+    if (!singleFile) return;
+
     if (!selectedClientId) {
       toast.error("Please select a client first");
       return;
@@ -103,7 +103,8 @@ export default function CreativeUploadPage() {
     setProgress(0);
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", singleFile);
+    formData.append("clientId", selectedClientId); // Crucial: Send clientId to write DB record
     formData.append("folderName", selectedClient?.companyName || "general");
 
     const xhr = new XMLHttpRequest();
@@ -118,17 +119,9 @@ export default function CreativeUploadPage() {
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        const response = JSON.parse(xhr.responseText);
-        const newAsset: Asset = {
-          id: Math.random().toString(36).substr(2, 9),
-          name: response.name,
-          mappedTo: "Unmapped",
-          type: determineFileType(response.mimeType),
-          date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-          url: response.url,
-        };
-        setAssets((prev) => [newAsset, ...prev]);
         toast.success("File uploaded successfully");
+        // Invalidate repository query to refresh the list
+        queryClient.invalidateQueries({ queryKey: ["repository"] });
       } else {
         toast.error("Upload failed");
       }
@@ -149,10 +142,10 @@ export default function CreativeUploadPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-xl font-medium text-gray-900 tracking-tight">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1">
             Creative Upload
           </h1>
-          <p className="text-gray-400 text-xs font-medium">
+          <p className="text-gray-400 text-sm">
             Upload and manage creative assets
           </p>
         </div>
@@ -160,10 +153,10 @@ export default function CreativeUploadPage() {
         {/* Compact Client Selector */}
         <div className="flex items-center gap-4">
           {selectedClient && (
-             <div className="text-right hidden sm:block">
-                <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest leading-none mb-1">Target Folder</p>
-                <p className="text-[11px] font-medium text-indigo-600 leading-none">/uploads/{selectedClient.companyName.toLowerCase().replace(/ /g, "_")}</p>
-             </div>
+            <div className="text-right hidden sm:block">
+              <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest leading-none mb-1">Target Folder</p>
+              <p className="text-[11px] font-medium text-indigo-600 leading-none">/uploads/{selectedClient.companyName.toLowerCase().replace(/ /g, "_")}</p>
+            </div>
           )}
           <div className="relative group w-48">
             <select
@@ -201,30 +194,30 @@ export default function CreativeUploadPage() {
             disabled={!selectedClientId || uploading}
           >
             <div className={`relative group transition-all ${(!selectedClientId || uploading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-              <div className="absolute inset-0 bg-indigo-50/20 rounded-3xl -m-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative border-2 border-dashed border-gray-100 rounded-3xl bg-white p-12 text-center transition-all hover:border-indigo-200">
-                <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
+              <div className="absolute inset-0 bg-indigo-50/20 rounded-lg -m-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative border-2 border-dashed border-gray-100 rounded-lg bg-white p-12 text-center transition-all hover:border-indigo-200">
+                <div className="w-12 h-12 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
                   {uploading ? (
                     <div className="relative">
                       <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
                     </div>
                   ) : (
-                    <UploadCloud className={`w-6 h-6 ${!selectedClientId ? 'text-gray-300' : 'text-gray-400'}`} />
+                    <UploadCloud className={`w-12 h-12 ${!selectedClientId ? 'text-blue-500' : 'text-blue-600'}`} />
                   )}
                 </div>
-                <h3 className="text-xs font-medium text-gray-900 mb-1">
-                  {uploading 
-                    ? "Uploading your file..." 
-                    : !selectedClientId 
-                      ? "Select a client to enable upload" 
+                <h3 className="text-sm font-medium text-gray-900 mb-1">
+                  {uploading
+                    ? "Uploading your file..."
+                    : !selectedClientId
+                      ? "Select a client to enable upload"
                       : "Drop files here or click to upload"
                   }
                 </h3>
                 <p className="text-[11px] font-medium text-gray-400">
-                  {uploading 
-                    ? `${Math.round(progress)}% complete` 
-                    : !selectedClientId 
-                      ? "The file picker is locked" 
+                  {uploading
+                    ? `${Math.round(progress)}% complete`
+                    : !selectedClientId
+                      ? "The file picker is locked"
                       : "PNG, JPG, MP4, PDF up to 50MB"
                   }
                 </p>
@@ -255,10 +248,10 @@ export default function CreativeUploadPage() {
           {assets.map((asset) => (
             <div
               key={asset.id}
-              className="group relative bg-white rounded-2xl border border-gray-100 p-4 flex items-center justify-between transition-all hover:shadow-md hover:shadow-indigo-50/50 hover:border-indigo-100"
+              className="group relative bg-white rounded-lg border border-gray-100 p-4 flex items-center justify-between transition-all hover:shadow-md hover:shadow-indigo-50/50 hover:border-indigo-100"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center group-hover:bg-indigo-50 transition-colors border border-gray-50 group-hover:border-indigo-100">
+                <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-indigo-50 transition-colors border border-gray-50 group-hover:border-indigo-100">
                   {getFileIcon(asset.type)}
                 </div>
                 <div className="space-y-0.5">
