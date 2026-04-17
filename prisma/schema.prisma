@@ -57,6 +57,7 @@ model User {
   comments            Comment[]
   notifications       Notification[]
   uploadedAssets      Asset[]        @relation("UploadedAssets")
+  calendars           Calendar[]     @relation("WriterCalendars")
 
   @@index([userType])
 }
@@ -185,6 +186,7 @@ model ClientProfile {
   ganttLinks     GanttLink[]
   assets         Asset[]
   folder         Folder?
+  calendars      Calendar[]
 
   @@index([organizationId])
   @@index([userId])
@@ -399,6 +401,9 @@ model Task {
   attachments TaskAttachment[]
   writerContent   WriterContent?
   designerContent DesignerContent?
+
+  calendar   Calendar? @relation(fields: [calendarId], references: [id])
+  calendarId String?
 
   @@index([projectId])
   @@index([clientId])
@@ -659,4 +664,69 @@ model ActivityLog {
   @@index([userId])
   @@index([entityType, entityId])
   @@index([createdAt])
+}
+
+// ============================================
+// CALENDAR MODELS
+// ============================================
+
+model Calendar {
+  id               String           @id @default(cuid()) @map("_id")
+  name             String
+  objective        String?
+  status           String?          @default("DRAFT") // DRAFT, ACTIVE, COMPLETED
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  client           ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId         String
+  
+  writer           User             @relation("WriterCalendars", fields: [writerId], references: [id])
+  writerId         String
+
+  buckets          CalendarBucket[]
+  copies           CalendarCopy[]
+
+  tasks            Task[]
+  taskId           String?
+
+  @@index([clientId])
+  @@index([writerId])
+}
+
+model CalendarBucket {
+  id          String   @id @default(cuid()) @map("_id")
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  calendar    Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  calendarId  String
+
+  copies      CalendarCopy[]
+
+  @@index([calendarId])
+}
+
+model CalendarCopy {
+  id             String         @id @default(cuid()) @map("_id")
+  content        String
+  caption        String?
+  hashtags       String?
+  publishDate    DateTime?
+  publishTime    String?        // Store as string like "HH:mm"
+  platform       String?
+  mediaType      String?
+  status         String         @default("DRAFT") // DRAFT, UNDER_REVIEW, APPROVED
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  calendar       Calendar       @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  calendarId     String
+  bucket         CalendarBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  bucketId       String
+
+  @@index([calendarId])
+  @@index([bucketId])
 }

@@ -10,6 +10,7 @@ import {
   Building2,
   Clock,
   ChevronDown,
+  CalendarPlus,
   Edit3
 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -29,19 +30,25 @@ interface Task {
   description?: string;
   endDate?: string | Date;
   client?: {
+    id: string;
     companyName: string;
   };
   writerContent?: {
     content: string;
   };
   revisionSubTasks?: RevisionSubTask[];
+  calendar?: {
+    id: string;
+    name: string;
+    copyCount: number;
+  };
 }
 
 interface TaskListProps {
   tasks: Task[];
   isLoading: boolean;
   onTaskClick?: (task: Task) => void;
-  onStartWriting?: (task: Task, subtaskId?: string) => void;
+  onCreateCalendar?: (task: Task) => void;
 }
 
 const getTaskIcon = (title: string) => {
@@ -90,7 +97,7 @@ export const TaskList: React.FC<TaskListProps> = ({
   tasks,
   isLoading,
   onTaskClick,
-  onStartWriting
+  onCreateCalendar
 }) => {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
@@ -136,16 +143,21 @@ export const TaskList: React.FC<TaskListProps> = ({
               }}
               className="w-full flex items-center gap-4 p-4 text-left"
             >
-              {/* <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isExpanded ? 'bg-blue-600 text-white' : 'bg-gray-50 text-gray-400'}`}>
-                <Icon className="w-5 h-5" />
-              </div> */}
-
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h4 className="font-semibold text-gray-900">{task.title}</h4>
+
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${status.classes}`}>
                     {status.label}
                   </span>
+
+                  {task.calendar && task.calendar.copyCount > 0 && (
+                    <div className='flex items-center justify-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-600'>
+                      <span>{task.calendar.copyCount}</span>
+                      copies
+                    </div>
+                  )}
+
                 </div>
 
                 <div className="flex items-center gap-4 text-xs text-gray-500">
@@ -189,13 +201,9 @@ export const TaskList: React.FC<TaskListProps> = ({
                           {sub.feedbacks.length > 0 && (
                             <p className="text-xs text-amber-700 mb-2 leading-relaxed">{sub.feedbacks[sub.feedbacks.length - 1]}</p>
                           )}
-                          <button
-                            onClick={() => onStartWriting?.(task, sub.id)}
-                            className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all text-xs active:scale-95"
-                          >
-                            <Edit3 size={14} />
-                            Write Revision
-                          </button>
+                          <div className="flex items-center gap-2 text-[10px] font-bold text-amber-600 uppercase">
+                            <Clock size={12} /> Pending Revision
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -204,11 +212,11 @@ export const TaskList: React.FC<TaskListProps> = ({
                   {/* Only show Start Writing for non-rejected tasks */}
                   {task.status !== 'REJECTED' && (
                     <button
-                      onClick={() => onStartWriting?.(task)}
+                      onClick={() => onCreateCalendar?.(task)}
                       className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95"
                     >
-                      <Edit3 size={16} />
-                      <span className='text-sm'>Start Writing</span>
+                      <CalendarPlus size={16} />
+                      <span className='text-sm'>{task.calendar ? 'Continue Calendar' : 'Create Calendar'}</span>
                     </button>
                   )}
                 </div>

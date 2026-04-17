@@ -51,6 +51,13 @@ export async function GET() {
             assignedTo: { select: { id: true, name: true } },
           },
         },
+        calendar: {
+          include: {
+            _count: {
+              select: { copies: true }
+            }
+          }
+        },
         _count: { select: { subTasks: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -60,8 +67,16 @@ export async function GET() {
       const { subTasks, ...rest } = task;
       // Open revision subtasks (for rejected/feedback tasks)
       const revisionSubTasks = subTasks.filter((s) => s.status === 'OPEN');
+      
+      // Transform calendar count for frontend convenience
+      const transformedCalendar = task.calendar ? {
+        ...task.calendar,
+        copyCount: task.calendar._count.copies
+      } : null;
+
       return {
         ...rest,
+        calendar: transformedCalendar,
         versionHistory: buildVersionHistory(subTasks),
         revisionSubTasks,
       };

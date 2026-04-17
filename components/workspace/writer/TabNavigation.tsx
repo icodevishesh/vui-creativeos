@@ -5,18 +5,23 @@ import React from 'react';
 interface TabNavigationProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  calendarName?: string;
 }
 
-const TABS = [
-  { id: 'tasks', label: 'My Tasks' },
-  { id: 'write', label: 'Write & Submit' },
-  { id: 'version', label: 'Version History' },
-];
+export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab, calendarName }) => {
+  const tabs = [
+    { id: 'tasks', label: 'Allocated Tasks' },
+  ];
 
-export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActiveTab }) => {
+  if (calendarName) {
+    tabs.push({ id: 'calendar', label: `Calendar: ${calendarName}` });
+  } else {
+    tabs.push({ id: 'calendar', label: 'Create Calendar' });
+  }
+
   return (
     <div className="flex items-center gap-1 bg-gray-100/50 p-1 rounded-lg w-fit mb-8 text-sm font-semibold">
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}

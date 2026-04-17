@@ -8,6 +8,7 @@ import { TaskList } from '@/components/workspace/writer/TaskList';
 import { EditorEmptyState } from '@/components/workspace/writer/EditorEmptyState';
 import { VersionHistory } from '@/components/workspace/writer/VersionHistory';
 import { WritingModal } from '@/components/workspace/writer/WritingModal';
+import { CalendarWorkspace } from '@/components/workspace/writer/CalendarWorkspace';
 
 const fetchWriterTasks = async () => {
   const res = await fetch('/api/workspace/writer');
@@ -20,27 +21,21 @@ export default function WriterWorkspacePage() {
   const [activeTab, setActiveTab] = useState('tasks');
   const [isWritingModalOpen, setIsWritingModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
-  const [selectedSubTaskId, setSelectedSubTaskId] = useState<string | undefined>(undefined);
-  const [draftContent, setDraftContent] = useState("");
+  const [initialClientId, setInitialClientId] = useState<string | undefined>(undefined);
+  const [initialCalendarId, setInitialCalendarId] = useState<string | undefined>(undefined);
+  const [activeTaskId, setActiveTaskId] = useState<string | undefined>(undefined);
 
   const { data: tasks, isLoading, error } = useQuery({
     queryKey: ['writer-tasks'],
     queryFn: fetchWriterTasks,
   });
 
-  const handleStartWriting = useCallback(async (task: any, subtaskId?: string) => {
+  const handleCreateCalendar = useCallback((task: any) => {
     setSelectedTask(task);
-    setSelectedSubTaskId(subtaskId);
-    try {
-      const res = await fetch(`/api/tasks/${task.id}/content`);
-      const data = await res.json();
-      setDraftContent(data.content || "");
-      setIsWritingModalOpen(true);
-    } catch (error) {
-      console.error("Error fetching draft:", error);
-      setDraftContent("");
-      setIsWritingModalOpen(true);
-    }
+    setInitialClientId(task.client?.id);
+    setInitialCalendarId(task.calendar?.id);
+    setActiveTaskId(task.id);
+    setActiveTab('calendar');
   }, []);
 
   const handleRefresh = useCallback(() => {
@@ -55,30 +50,25 @@ export default function WriterWorkspacePage() {
           <TaskList
             tasks={tasks || []}
             isLoading={isLoading}
-            onStartWriting={(task, subtaskId) => handleStartWriting(task, subtaskId)}
+            onCreateCalendar={(task) => handleCreateCalendar(task)}
           />
         );
-      case 'write': {
-        const inProgressTasks = (tasks || []).filter((t: any) =>
-          t.status === 'IN_PROGRESS' || (t.writerContent && t.writerContent.content)
-        );
-
-        if (inProgressTasks.length === 0) return <EditorEmptyState />;
-
+      case 'calendar':
         return (
-          <TaskList
-            tasks={inProgressTasks}
-            isLoading={isLoading}
-            onStartWriting={(task, subtaskId) => handleStartWriting(task, subtaskId)}
+          <CalendarWorkspace
+            initialClientId={initialClientId}
+            initialCalendarId={initialCalendarId}
+            taskId={activeTaskId}
+            onBack={() => {
+              setActiveTab('tasks');
+              handleRefresh();
+            }}
           />
         );
-      }
-      case 'version':
-        return <VersionHistory tasks={tasks || []} isLoading={isLoading} />;
       default:
         return null;
     }
-  }, [activeTab, tasks, isLoading, handleStartWriting]);
+  }, [activeTab, tasks, isLoading, handleCreateCalendar, initialClientId, initialCalendarId, activeTaskId, handleRefresh]);
 
   return (
     <main className="min-h-screen">
@@ -97,7 +87,11 @@ export default function WriterWorkspacePage() {
         <Stats tasks={tasks || []} isLoading={isLoading} />
 
         {/* Navigation Tabs */}
-        <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
+        <TabNavigation
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          calendarName={activeTab === 'calendar' ? 'TechFlow' : undefined}
+        />
 
         {/* Dynamic Content Area */}
         <div className="min-h-[500px]">
@@ -110,16 +104,6 @@ export default function WriterWorkspacePage() {
           )}
         </div>
       </div>
-
-      {/* Shared Modals */}
-      <WritingModal
-        isOpen={isWritingModalOpen}
-        onClose={() => setIsWritingModalOpen(false)}
-        task={selectedTask}
-        subtaskId={selectedSubTaskId}
-        initialContent={draftContent}
-        onSuccess={handleRefresh}
-      />
     </main>
   );
 }

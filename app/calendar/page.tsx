@@ -159,42 +159,6 @@ export default function CalendarPage() {
                     </div>
                 ) : (
                     <div className="w-full pb-8">
-
-                        {/* --- Define calendar objective --- */}
-                        <div className="mb-6 px-2">
-                            <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2 text-gray-700">
-                                        <Target size={18} className="text-blue-500" />
-                                        <h3 className="font-semibold text-sm">Monthly Calendar Objective</h3>
-                                    </div>
-                                    {/* Saving Indicator */}
-                                    <div className="text-xs font-medium text-gray-400 flex items-center gap-1">
-                                        {updateObjective.isPending ? (
-                                            <><Loader2 size={14} className="animate-spin" /> Saving...</>
-                                        ) : updateObjective.isSuccess ? (
-                                            <><Check size={14} className="text-green-500" /> Saved</>
-                                        ) : null}
-                                    </div>
-                                </div>
-                                <textarea
-                                    value={localObjective}
-                                    onChange={(e) => setLocalObjective(e.target.value)}
-                                    placeholder="Define the calendar's primary objective"
-                                    className="w-full text-sm text-gray-800 bg-gray-50 border border-gray-100 rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all resize-none min-h-[80px]"
-                                />
-                            </div>
-                            <div className="flex item-center justify-end">
-                                <button
-                                    onClick={handleObjectiveBlur}
-                                    className="px-4 py-2 mt-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    Add objective
-                                </button>
-                            </div>
-                        </div>
-
-
                         <div className="p-4 w-full">
                             <Calendar
                                 tasks={tasks || []}

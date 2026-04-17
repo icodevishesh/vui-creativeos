@@ -11,12 +11,14 @@ export async function GET(req: NextRequest) {
         const clientId = searchParams.get("clientId");
         const organizationId = searchParams.get("organizationId");
         const assignedToId = searchParams.get("assignedToId");
+        const calendarId = searchParams.get("calendarId");
 
         const where: any = {};
         if (projectId) where.projectId = projectId;
         if (clientId) where.clientId = clientId;
         if (organizationId) where.organizationId = organizationId;
         if (assignedToId) where.assignedToId = assignedToId;
+        if (calendarId) where.calendarId = calendarId;
 
         const tasks = await prisma.task.findMany({
             where,
@@ -25,6 +27,7 @@ export async function GET(req: NextRequest) {
                 client: { select: { companyName: true } },
                 assignedTo: { select: { id: true, name: true } },
                 _count: { select: { subTasks: true } },
+                calendar: { select: { id: true, name: true } }
             },
             orderBy: { createdAt: "desc" },
         });
