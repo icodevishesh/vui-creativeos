@@ -52,6 +52,10 @@ model User {
   assignedProjects    ProjectTeamMember[]
   createdTasks        Task[]             @relation("TaskCreator")
   assignedTasks       Task[]             @relation("TaskAssignee")
+  writerTasks         Task[]             @relation("TaskWriter")
+  editorTasks         Task[]             @relation("TaskEditor")
+  designerTasks       Task[]             @relation("TaskDesigner")
+  videoEditorTasks    Task[]             @relation("TaskVideoEditor")
   assignedSubTasks    SubTask[]
   meetingLogs         MeetingLog[]
   comments            Comment[]
@@ -354,6 +358,7 @@ model ProjectTeamMember {
 
 enum TaskStatus {
   OPEN
+  OPENED
   IN_PROGRESS
   INTERNAL_REVIEW
   CLIENT_REVIEW
@@ -395,10 +400,35 @@ model Task {
 
   assignedTo   User?   @relation("TaskAssignee", fields: [assignedToId], references: [id])
   assignedToId String?
-  
+
+  // Role-specific assignees
+  writer          User?      @relation("TaskWriter", fields: [writerId], references: [id])
+  writerId        String?
+  editor          User?      @relation("TaskEditor", fields: [editorId], references: [id])
+  editorId        String?
+  designer        User?      @relation("TaskDesigner", fields: [designerId], references: [id])
+  designerId      String?
+  videoEditor     User?      @relation("TaskVideoEditor", fields: [videoEditorId], references: [id])
+  videoEditorId   String?
+
+  // Per-role statuses
+  writerStatus      TaskStatus @default(OPEN)
+  editorStatus      TaskStatus @default(OPEN)
+  designerStatus    TaskStatus @default(OPEN)
+  videoEditorStatus TaskStatus @default(OPEN)
+
+  // Content bucket link
+  contentBucket   CalendarBucket? @relation("TaskBucket", fields: [contentBucketId], references: [id])
+  contentBucketId String?
+
+  // Links a designer/video-editor task to its specific copy
+  calendarCopy    CalendarCopy? @relation("DesignerTask", fields: [calendarCopyId], references: [id])
+  calendarCopyId  String?
+
   subTasks    SubTask[]
   comments    Comment[]
   attachments TaskAttachment[]
+  assets      Asset[]          @relation("TaskAssets")
   writerContent   WriterContent?
   designerContent DesignerContent?
 
@@ -410,6 +440,7 @@ model Task {
   @@index([assignedToId])
   @@index([status])
   @@index([endDate])
+  @@index([contentBucketId])
 }
 
 enum ReviewerType {
@@ -464,6 +495,10 @@ model SubTask {
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
   assignedToId String?
 
+  // Content bucket link
+  contentBucket   CalendarBucket? @relation("SubTaskBucket", fields: [contentBucketId], references: [id])
+  contentBucketId String?
+
   // Reviewer info — who gave feedback / rejected
   reviewerId    String?       // User ID of the reviewer
   reviewerType  ReviewerType? // client, admin, team_lead, account_manager
@@ -473,6 +508,7 @@ model SubTask {
   @@index([projectId])
   @@index([clientId])
   @@index([reviewerId])
+  @@index([contentBucketId])
 }
 
 model Comment {
@@ -640,9 +676,19 @@ model Asset {
   uploadedBy   User   @relation("UploadedAssets", fields: [uploadedById], references: [id])
   uploadedById String
 
+  // Content bucket link
+  contentBucket   CalendarBucket? @relation("AssetBucket", fields: [contentBucketId], references: [id])
+  contentBucketId String?
+
+  // Task link — media uploaded for a specific task
+  task   Task?   @relation("TaskAssets", fields: [taskId], references: [id])
+  taskId String?
+
   @@index([clientId])
   @@index([uploadedById])
   @@index([uploadedAt])
+  @@index([contentBucketId])
+  @@index([taskId])
 }
 
 
@@ -704,7 +750,10 @@ model CalendarBucket {
   calendar    Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
   calendarId  String
 
-  copies      CalendarCopy[]
+  copies        CalendarCopy[]
+  tasks         Task[]    @relation("TaskBucket")
+  subTasks      SubTask[] @relation("SubTaskBucket")
+  assets        Asset[]   @relation("AssetBucket")
 
   @@index([calendarId])
 }
@@ -726,6 +775,9 @@ model CalendarCopy {
   calendarId     String
   bucket         CalendarBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
   bucketId       String
+
+  // Designer/video-editor tasks created from this copy after client approval
+  designerTasks  Task[] @relation("DesignerTask")
 
   @@index([calendarId])
   @@index([bucketId])

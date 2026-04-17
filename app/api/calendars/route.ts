@@ -2,16 +2,36 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { searchParams } = new URL(req.url);
+  const clientId = searchParams.get('clientId');
+
   try {
+    if (clientId) {
+      // Admin / calendar view: return all calendars for a client with their copies
+      const calendars = await prisma.calendar.findMany({
+        where: { clientId },
+        include: {
+          client: { select: { companyName: true } },
+          buckets: true,
+          copies: { orderBy: { publishDate: 'asc' } },
+          _count: { select: { copies: true } }
+        },
+        orderBy: { updatedAt: 'desc' }
+      });
+      return NextResponse.json(calendars);
+    }
+
+    // Writer view: return only this writer's calendars (include copies so the workspace can render them)
     const calendars = await prisma.calendar.findMany({
       where: { writerId: user.id },
       include: {
         client: { select: { companyName: true } },
         buckets: true,
+        copies: { orderBy: { publishDate: 'asc' } },
         _count: { select: { copies: true } }
       },
       orderBy: { updatedAt: 'desc' }

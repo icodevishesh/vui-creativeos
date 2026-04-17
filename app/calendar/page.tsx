@@ -30,6 +30,22 @@ export default function CalendarPage() {
         enabled: !!selectedClientId,
     });
 
+    // Fetch all calendar copies for the selected client (across all calendars)
+    const { data: clientCalendars, isLoading: copiesLoading } = useQuery({
+        queryKey: ["client-calendars", selectedClientId],
+        queryFn: () => fetch(`/api/calendars?clientId=${selectedClientId}`).then(res => res.json()),
+        enabled: !!selectedClientId,
+    });
+
+    // Flatten all copies from all calendars into a single array, enriched with bucket info
+    const calendarCopies = (clientCalendars ?? []).flatMap((cal: any) =>
+        (cal.copies ?? []).map((copy: any) => ({
+            ...copy,
+            calendarName: cal.name,
+            bucket: cal.buckets?.find((b: any) => b.id === copy.bucketId) ?? null,
+        }))
+    );
+
     const activeClient = clients?.find((c: any) => c.id === selectedClientId);
 
 
@@ -78,7 +94,7 @@ export default function CalendarPage() {
         );
     }
 
-    const isLoadingClientData = !!selectedClientId && (tasksLoading || projectsLoading || objectiveLoading);
+    const isLoadingClientData = !!selectedClientId && (tasksLoading || projectsLoading || objectiveLoading || copiesLoading);
 
     return (
         <main className="flex flex-col bg-gray-50">
@@ -164,6 +180,7 @@ export default function CalendarPage() {
                                 tasks={tasks || []}
                                 clients={clients || []}
                                 projects={projects || []}
+                                copies={calendarCopies}
                             />
                         </div>
                     </div>

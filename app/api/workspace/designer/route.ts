@@ -26,9 +26,24 @@ export async function GET() {
       );
     }
 
+    // Find all clients where this user is a team member —
+    // used as a fallback to surface tasks where assignedToId wasn't set correctly.
+    const teamMemberships = await prisma.clientTeamMember.findMany({
+      where: { userId: user.id },
+      select: { clientId: true },
+    });
+    const designerClientIds = teamMemberships.map((m) => m.clientId);
+
     const tasks = await prisma.task.findMany({
       where: {
-        assignedToId: user.id,
+        OR: [
+          // Tasks explicitly assigned to this user
+          { assignedToId: user.id },
+          // Designer tasks for clients this user belongs to (handles null-assignee edge case)
+          ...(designerClientIds.length > 0
+            ? [{ clientId: { in: designerClientIds }, calendarCopyId: { not: null } }]
+            : []),
+        ],
         status: { notIn: ['APPROVED'] as any },
       },
       include: {
@@ -37,6 +52,20 @@ export async function GET() {
         assignedTo: { select: { id: true, name: true } },
         designerContent: { select: { notes: true } },
         attachments: { select: { id: true, fileName: true, fileUrl: true, mimeType: true } },
+        // Linked copy — provides platform, publish date, and copy brief
+        calendarCopy: {
+          select: {
+            id: true,
+            content: true,
+            caption: true,
+            platform: true,
+            mediaType: true,
+            publishDate: true,
+            publishTime: true,
+            status: true,
+            bucket: { select: { id: true, name: true } },
+          },
+        },
         subTasks: {
           orderBy: { createdAt: 'asc' },
           select: {

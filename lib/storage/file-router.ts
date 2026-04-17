@@ -39,8 +39,9 @@ export async function saveFileToClientFolder(params: {
   clientId: string;
   companyName: string;
   uploadedById: string;
+  taskId?: string;
 }) {
-  const { file, clientId, companyName, uploadedById } = params;
+  const { file, clientId, companyName, uploadedById, taskId } = params;
 
   const uploadDir = await ensureClientFolder(clientId, companyName);
 
@@ -67,6 +68,7 @@ export async function saveFileToClientFolder(params: {
       fileSize: file.size,
       clientId,
       uploadedById,
+      ...(taskId ? { taskId } : {}),
     },
   });
 

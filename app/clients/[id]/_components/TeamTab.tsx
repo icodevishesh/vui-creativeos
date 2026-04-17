@@ -150,12 +150,8 @@ export function TeamTab({ clientId }: TeamTabProps) {
                   onChange={(e) => {
                     const newUserId = e.target.value;
                     const selectedMember = orgMembers?.find((m: any) => m.userId === newUserId);
-                    let autoRole = formData.role;
-                    if (selectedMember && selectedMember.role) {
-                      autoRole = selectedMember.role
-                        .replace(/_/g, ' ')
-                        .replace(/\b\w/g, (c: string) => c.toUpperCase());
-                    }
+                    // Keep the raw enum value (e.g. GRAPHIC_DESIGNER) so task-assignment lookups match
+                    const autoRole = selectedMember?.role ?? formData.role;
                     setFormData(p => ({ ...p, userId: newUserId, role: autoRole }));
                   }}
                 >
@@ -167,14 +163,13 @@ export function TeamTab({ clientId }: TeamTabProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Role for this Client</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Account Manager, Creative Lead"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
-                  value={formData.role}
-                  onChange={(e) => setFormData(p => ({ ...p, role: e.target.value }))}
-                />
+                <label className="text-sm font-bold text-gray-700">Role</label>
+                <div className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-sm font-medium text-gray-500 select-none">
+                  {formData.role
+                    ? formData.role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                    : <span className="text-gray-400">Auto-filled from selected member's role</span>
+                  }
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-6">

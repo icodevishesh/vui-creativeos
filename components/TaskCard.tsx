@@ -33,6 +33,12 @@ const STATUS_CONFIG = {
     borderColor: 'border-gray-300',
     label: 'Open'
   },
+  [TaskStatus.OPENED]: {
+    bgColor: 'bg-teal-50',
+    textColor: 'text-teal-700',
+    borderColor: 'border-teal-200',
+    label: 'Opened'
+  },
   [TaskStatus.IN_PROGRESS]: {
     bgColor: 'bg-blue-50',
     textColor: 'text-blue-700',

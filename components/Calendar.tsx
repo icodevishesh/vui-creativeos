@@ -24,6 +24,20 @@ interface Task {
   };
 }
 
+interface CalendarCopy {
+  id: string;
+  content: string;
+  caption?: string;
+  hashtags?: string;
+  publishDate?: string | Date;
+  publishTime?: string;
+  platform?: string;
+  mediaType?: string;
+  status: string; // DRAFT | UNDER_REVIEW | APPROVED
+  calendarName?: string;
+  bucket?: { id: string; name: string } | null;
+}
+
 interface Client {
   id: string;
   companyName: string;
@@ -39,14 +53,28 @@ interface CalendarProps {
   tasks: Task[];
   clients: Client[];
   projects: Project[];
+  copies?: CalendarCopy[];
 }
 
 const DAYS_OF_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const COPY_STATUS_STYLES: Record<string, string> = {
+  DRAFT: 'bg-slate-100 text-slate-600 border-slate-200',
+  UNDER_REVIEW: 'bg-amber-50 text-amber-700 border-amber-200',
+  APPROVED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+};
+
+const COPY_STATUS_DOT: Record<string, string> = {
+  DRAFT: 'bg-slate-400',
+  UNDER_REVIEW: 'bg-amber-400',
+  APPROVED: 'bg-emerald-500',
+};
+
 export const Calendar: React.FC<CalendarProps> = ({
   tasks,
   clients,
-  projects
+  projects,
+  copies = [],
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedClientId, setSelectedClientId] = useState<string>('');
@@ -56,20 +84,17 @@ export const Calendar: React.FC<CalendarProps> = ({
   const monthEnd = endOfMonth(currentDate);
   const monthDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
 
-  // Calculate days to display (including padding for start of week)
   const calendarDays = useMemo(() => {
     const startDayOfWeek = getDay(monthStart);
     const paddingDays = Array(startDayOfWeek).fill(null);
     return [...paddingDays, ...monthDays];
   }, [monthStart, monthDays]);
 
-  // Filter projects based on selected client
   const filteredProjects = useMemo(() => {
     if (!selectedClientId) return projects;
     return projects.filter(project => project.clientId === selectedClientId);
   }, [projects, selectedClientId]);
 
-  // Filter tasks based on selected client and project
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
       if (selectedClientId && task.clientId !== selectedClientId) return false;
@@ -78,11 +103,17 @@ export const Calendar: React.FC<CalendarProps> = ({
     });
   }, [tasks, selectedClientId, selectedProjectId]);
 
-  // Get tasks for a specific day
   const getTasksForDay = (day: Date) => {
-    return filteredTasks.filter(task => 
+    return filteredTasks.filter(task =>
       task.startDate && isSameDay(new Date(task.startDate), day)
     );
+  };
+
+  const getCopiesForDay = (day: Date) => {
+    return copies.filter(copy => {
+      if (!copy.publishDate) return false;
+      return isSameDay(new Date(copy.publishDate), day);
+    });
   };
 
   const handlePreviousMonth = () => {
@@ -95,23 +126,18 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   const handleClientChange = (clientId: string) => {
     setSelectedClientId(clientId);
-    setSelectedProjectId(''); // Reset project when client changes
+    setSelectedProjectId('');
   };
 
-  const handleProjectChange = (projectId: string) => {
-    setSelectedProjectId(projectId);
-  };
-
-  
   return (
     <div className="w-full bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      {/* Header with Controls */}
+      {/* Header */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
           <h2 className="text-xl font-semibold text-gray-900">
             {format(currentDate, 'MMMM yyyy')}
           </h2>
-          
+
           {/* Month Navigation */}
           <div className="flex items-center gap-2">
             <button
@@ -131,31 +157,18 @@ export const Calendar: React.FC<CalendarProps> = ({
           </div>
         </div>
 
-        {/* Filter Controls */}
-        {/* <div className="flex flex-wrap gap-2">
-
-          {/* Project Dropdown */}
-          {/* <div className="relative">
-            <select
-              value={selectedProjectId}
-              onChange={(e) => handleProjectChange(e.target.value)}
-              disabled={!selectedClientId}
-              className="appearance-none bg-white border border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm text-gray-900 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <option value="">Select Project</option>
-              {filteredProjects.map(project => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
-          {/* Task Count 
-          <div className="text-sm text-gray-600">
-            {filteredTasks.length} tasks
+        {/* Legend */}
+        {copies.length > 0 && (
+          <div className="flex items-center gap-4 text-xs font-medium text-gray-500">
+            <span className="font-semibold text-gray-600">Copies:</span>
+            {(['DRAFT', 'UNDER_REVIEW', 'APPROVED'] as const).map(s => (
+              <span key={s} className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${COPY_STATUS_DOT[s]}`} />
+                {s === 'UNDER_REVIEW' ? 'Under Review' : s.charAt(0) + s.slice(1).toLowerCase()}
+              </span>
+            ))}
           </div>
-        </div> */}
+        )}
       </div>
 
       {/* Calendar Grid */}
@@ -187,26 +200,25 @@ export const Calendar: React.FC<CalendarProps> = ({
             }
 
             const dayTasks = getTasksForDay(day);
+            const dayCopies = getCopiesForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isToday = isSameDay(day, new Date());
 
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[100px] p-2 border-r border-b border-gray-100 last:border-r-0 ${
-                  !isCurrentMonth ? 'bg-gray-50/50' : 'bg-white'
-                } ${isToday ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
+                className={`min-h-[100px] p-2 border-r border-b border-gray-100 last:border-r-0 ${!isCurrentMonth ? 'bg-gray-50/50' : 'bg-white'
+                  } ${isToday ? 'ring-2 ring-blue-500 ring-inset' : ''}`}
               >
                 {/* Day Number */}
                 <div className="mb-2">
                   <span
-                    className={`text-sm font-medium ${
-                      isToday
-                        ? 'w-6 h-6 flex items-center justify-center bg-blue-600 text-white rounded-full text-xs'
-                        : !isCurrentMonth
+                    className={`text-sm font-medium ${isToday
+                      ? 'w-6 h-6 flex items-center justify-center bg-blue-600 text-white rounded-full text-xs'
+                      : !isCurrentMonth
                         ? 'text-gray-400'
                         : 'text-gray-900'
-                    }`}
+                      }`}
                   >
                     {format(day, 'd')}
                   </span>
@@ -215,12 +227,39 @@ export const Calendar: React.FC<CalendarProps> = ({
                 {/* Tasks */}
                 <div className="space-y-1">
                   {dayTasks.map(task => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                    />
+                    <TaskCard key={task.id} task={task} />
                   ))}
                 </div>
+
+                {/* Calendar Copies */}
+                {dayCopies.length > 0 && (
+                  <div className="mt-1 space-y-1">
+                    {dayCopies.map(copy => {
+                      const statusStyle = COPY_STATUS_STYLES[copy.status] ?? COPY_STATUS_STYLES.DRAFT;
+                      const dot = COPY_STATUS_DOT[copy.status] ?? COPY_STATUS_DOT.DRAFT;
+                      return (
+                        <div
+                          key={copy.id}
+                          title={copy.content}
+                          className={`flex items-start gap-1.5 px-2 py-1.5 rounded border text-[10px] font-medium leading-tight cursor-default ${statusStyle}`}
+                        >
+                          <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold">
+                              {copy.platform ?? 'Post'}{copy.mediaType ? ` · ${copy.mediaType}` : ''}
+                            </p>
+                            <p className="truncate text-[9px] opacity-70 mt-0.5">
+                              {copy.content.substring(0, 40)}{copy.content.length > 40 ? '…' : ''}
+                            </p>
+                            {copy.bucket && (
+                              <p className="truncate text-[9px] opacity-60">{copy.bucket.name}</p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}

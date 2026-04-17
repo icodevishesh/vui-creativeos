@@ -7,12 +7,19 @@ interface Task {
   id: string;
   title: string;
   description?: string;
-  client?: {
-    companyName: string;
-  };
+  client?: { companyName: string };
   endDate?: string | Date;
   status: string;
   attachments?: any[];
+  calendarCopy?: {
+    content: string;
+    caption?: string;
+    platform?: string;
+    mediaType?: string;
+    publishDate?: string;
+    publishTime?: string;
+    bucket?: { name: string } | null;
+  } | null;
 }
 
 interface UploadAndSubmitTabProps {
@@ -80,6 +87,34 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
              {task.description || "No specific requirements provided."}
            </p>
         </div>
+
+        {/* Copy reference */}
+        {task.calendarCopy && (
+          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 space-y-2">
+            <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Copy Reference</p>
+            <div className="flex flex-wrap gap-1.5 mb-1">
+              {task.calendarCopy.platform && (
+                <span className="text-[10px] font-bold bg-white border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{task.calendarCopy.platform}</span>
+              )}
+              {task.calendarCopy.mediaType && (
+                <span className="text-[10px] font-bold bg-white border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{task.calendarCopy.mediaType}</span>
+              )}
+              {task.calendarCopy.bucket && (
+                <span className="text-[10px] font-bold bg-white border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{task.calendarCopy.bucket.name}</span>
+              )}
+              {task.calendarCopy.publishDate && (
+                <span className="text-[10px] font-bold text-gray-500 bg-white border border-gray-100 px-2 py-0.5 rounded-full">
+                  Publish {new Date(task.calendarCopy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {task.calendarCopy.publishTime && ` at ${task.calendarCopy.publishTime}`}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-indigo-800 leading-relaxed">{task.calendarCopy.content}</p>
+            {task.calendarCopy.caption && (
+              <p className="text-[11px] text-indigo-600 italic">{task.calendarCopy.caption}</p>
+            )}
+          </div>
+        )}
 
         <div>
            <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Assets</h4>

@@ -11,8 +11,11 @@ import {
   Clock,
   ChevronDown,
   CalendarPlus,
-  Edit3
+  Edit3,
+  Send,
+  Loader2
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { format } from 'date-fns';
 
 interface RevisionSubTask {
@@ -49,6 +52,7 @@ interface TaskListProps {
   isLoading: boolean;
   onTaskClick?: (task: Task) => void;
   onCreateCalendar?: (task: Task) => void;
+  onRefresh?: () => void;
 }
 
 const getTaskIcon = (title: string) => {
@@ -97,9 +101,33 @@ export const TaskList: React.FC<TaskListProps> = ({
   tasks,
   isLoading,
   onTaskClick,
-  onCreateCalendar
+  onCreateCalendar,
+  onRefresh,
 }) => {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [submittingTaskId, setSubmittingTaskId] = useState<string | null>(null);
+
+  const handleSubmitForReview = async (task: Task, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSubmittingTaskId(task.id);
+    try {
+      const res = await fetch(`/api/tasks/${task.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'INTERNAL_REVIEW' }),
+      });
+      if (res.ok) {
+        toast.success('Submitted for internal review');
+        onRefresh?.();
+      } else {
+        toast.error('Failed to submit for review');
+      }
+    } catch {
+      toast.error('Failed to submit for review');
+    } finally {
+      setSubmittingTaskId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -211,13 +239,34 @@ export const TaskList: React.FC<TaskListProps> = ({
 
                   {/* Only show Start Writing for non-rejected tasks */}
                   {task.status !== 'REJECTED' && (
-                    <button
-                      onClick={() => onCreateCalendar?.(task)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95"
-                    >
-                      <CalendarPlus size={16} />
-                      <span className='text-sm'>{task.calendar ? 'Continue Calendar' : 'Create Calendar'}</span>
-                    </button>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <button
+                        onClick={() => onCreateCalendar?.(task)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95"
+                      >
+                        <CalendarPlus size={16} />
+                        <span className="text-sm">{task.calendar ? 'Continue Calendar' : 'Create Calendar'}</span>
+                      </button>
+
+                      {/* Submit for Review — only visible when copies exist and task hasn't been submitted yet */}
+                      {task.calendar && task.calendar.copyCount > 0 &&
+                        task.status !== 'INTERNAL_REVIEW' &&
+                        task.status !== 'CLIENT_REVIEW' &&
+                        task.status !== 'APPROVED' && (
+                          <button
+                            onClick={(e) => handleSubmitForReview(task, e)}
+                            disabled={submittingTaskId === task.id}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white text-sm font-semibold rounded-lg transition-all shadow-md shadow-emerald-100 active:scale-95"
+                          >
+                            {submittingTaskId === task.id
+                              ? <Loader2 size={15} className="animate-spin" />
+                              : <Send size={15} />
+                            }
+                            Submit for Review
+                          </button>
+                        )
+                      }
+                    </div>
                   )}
                 </div>
               </div>

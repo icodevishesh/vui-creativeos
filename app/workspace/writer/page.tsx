@@ -51,6 +51,7 @@ export default function WriterWorkspacePage() {
             tasks={tasks || []}
             isLoading={isLoading}
             onCreateCalendar={(task) => handleCreateCalendar(task)}
+            onRefresh={handleRefresh}
           />
         );
       case 'calendar':

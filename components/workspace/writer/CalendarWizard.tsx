@@ -258,6 +258,8 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                     buckets={calendar.buckets}
                     copies={copies}
                     onRefresh={onRefresh}
+                    taskId={taskId}
+                    calendarObjective={calendar.objective}
                 />
             </div>
         );

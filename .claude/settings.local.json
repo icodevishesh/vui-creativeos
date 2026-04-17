@@ -7,7 +7,13 @@
       "Bash(npm run:*)",
       "Bash(python -c \"import sys,json; p=json.load\\(sys.stdin\\); deps={**p.get\\('dependencies',{}\\), **p.get\\('devDependencies',{}\\)}; print\\('jose:', deps.get\\('jose','NOT FOUND'\\)\\); print\\('cookie:', deps.get\\('cookie','NOT FOUND'\\)\\)\")",
       "Bash(npm install:*)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -l \"designer-content\" /d/CryptoSniper/vui-creativeos/components/**/*.tsx /d/CryptoSniper/vui-creativeos/app/**/*.tsx)",
+      "Bash(node -e \"require\\('D:/CryptoSniper/vui-creativeos/node_modules/date-fns/subDays'\\)\")",
+      "Bash(cat app/api/clients/[id]/team/route.ts)",
+      "Bash(grep -A 5 \"userRole\" app/clients/[id]/_components/TeamTab.tsx)",
+      "Bash(grep -B5 -A15 \"role.*option\\\\|select.*role\\\\|roleOption\\\\|GRAPHIC_DESIGNER\\\\|DESIGNER\" app/clients/[id]/_components/TeamTab.tsx)",
+      "Bash(grep -A 30 \"Role for this Client\" app/clients/[id]/_components/TeamTab.tsx)"
     ]
   }
 }
