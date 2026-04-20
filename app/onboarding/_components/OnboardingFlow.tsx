@@ -14,7 +14,11 @@ import {
   Check,
   Briefcase,
   Layers,
-  Sparkles
+  Sparkles,
+  Copy,
+  KeyRound,
+  X,
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,10 +40,103 @@ const SERVICE_OPTIONS = [
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
+function CredentialsModal({
+  isOpen,
+  email,
+  password,
+  companyName,
+  onClose,
+}: {
+  isOpen: boolean;
+  email: string;
+  password: string;
+  companyName: string;
+  onClose: () => void;
+}) {
+  const [copiedField, setCopiedField] = useState<'email' | 'password' | null>(null);
+
+  const copy = (text: string, field: 'email' | 'password') => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
+                <KeyRound className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-white">Client Portal Credentials</h2>
+                <p className="text-xs text-indigo-200">{companyName}</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="text-white/70 hover:text-white transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          <div className="bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
+            <p className="text-xs text-amber-700 font-medium">
+              Save these credentials — the password cannot be recovered later. Share them securely with your client.
+            </p>
+          </div>
+
+          {[
+            { label: 'Email', value: email, field: 'email' as const },
+            { label: 'Password', value: password, field: 'password' as const },
+          ].map(({ label, value, field }) => (
+            <div key={field} className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{label}</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 font-mono text-sm text-gray-900 truncate">
+                  {value}
+                </div>
+                <button
+                  onClick={() => copy(value, field)}
+                  className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-100 transition-all text-gray-500 hover:text-gray-900"
+                >
+                  {copiedField === field ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          ))}
+
+          <div className="pt-2 space-y-1.5">
+            <p className="text-xs text-gray-400 font-medium">Client portal login URL</p>
+            <p className="font-mono text-xs text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg break-all">
+              {typeof window !== 'undefined' ? window.location.origin : ''}/sign-in
+            </p>
+          </div>
+        </div>
+
+        <div className="px-6 pb-6">
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all"
+          >
+            Done — Go to Clients
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function OnboardingFlow() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState(1);
+  const [credentials, setCredentials] = useState<{ email: string; password: string; companyName: string } | null>(null);
   const [formData, setFormData] = useState({
     companyName: '',
     contactPerson: '',
@@ -63,10 +160,14 @@ export function OnboardingFlow() {
       }
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Client onboarded successfully!');
       queryClient.invalidateQueries({ queryKey: ['clients'] });
-      router.push('/clients');
+      if (data.generatedPassword) {
+        setCredentials({ email: data.email, password: data.generatedPassword, companyName: data.companyName });
+      } else {
+        router.push('/clients');
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -311,6 +412,16 @@ export function OnboardingFlow() {
           )}
         </div>
       </div>
+
+      {credentials && (
+        <CredentialsModal
+          isOpen={!!credentials}
+          email={credentials.email}
+          password={credentials.password}
+          companyName={credentials.companyName}
+          onClose={() => { setCredentials(null); router.push('/clients'); }}
+        />
+      )}
     </div>
   );
 }

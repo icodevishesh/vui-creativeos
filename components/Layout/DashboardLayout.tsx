@@ -11,7 +11,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
   const pathname = usePathname();
-  if (['/', '/sign-in', '/sign-up'].includes(pathname)) return <>{children}</>;
+  if (['/', '/sign-in', '/sign-up'].includes(pathname) || pathname.startsWith('/portal')) return <>{children}</>;
 
   return (
     <div className="min-h-screen bg-gray-50">

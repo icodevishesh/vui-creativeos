@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { subDays } from "date-fns";
+import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
 
 // GET /api/approvals
 export async function GET(req: NextRequest) {
@@ -16,6 +17,7 @@ export async function GET(req: NextRequest) {
             where.status = { in: [TaskStatus.INTERNAL_REVIEW, TaskStatus.CLIENT_REVIEW] };
         }
 
+        // calendarCopy is NOT in generated TaskInclude (stale client) — fetch it separately
         const tasks = await prisma.task.findMany({
             where,
             include: {
@@ -23,36 +25,14 @@ export async function GET(req: NextRequest) {
                 client: { select: { id: true, companyName: true } },
                 assignedTo: { select: { id: true, name: true } },
                 createdBy: { select: { id: true, name: true } },
-                calendarCopy: {
-                    select: {
-                        id: true,
-                        content: true,
-                        caption: true,
-                        hashtags: true,
-                        platform: true,
-                        mediaType: true,
-                        publishDate: true,
-                        publishTime: true,
-                        bucket: { select: { id: true, name: true } },
-                    },
-                },
                 calendar: {
                     select: {
-                        id: true,
-                        name: true,
-                        objective: true,
+                        id: true, name: true, objective: true,
                         copies: {
                             select: {
-                                id: true,
-                                content: true,
-                                caption: true,
-                                hashtags: true,
-                                platform: true,
-                                mediaType: true,
-                                publishDate: true,
-                                publishTime: true,
-                                status: true,
-                                bucket: { select: { id: true, name: true } },
+                                id: true, content: true, caption: true, hashtags: true,
+                                platform: true, mediaType: true, publishDate: true, publishTime: true,
+                                status: true, bucket: { select: { id: true, name: true } },
                             },
                             orderBy: { publishDate: 'asc' },
                         },
@@ -65,13 +45,36 @@ export async function GET(req: NextRequest) {
                 _count: { select: { subTasks: true } },
                 subTasks: {
                     orderBy: { createdAt: "asc" },
-                    include: { assignedTo: { select: { id: true, name: true } } }
+                    include: { assignedTo: { select: { id: true, name: true } } },
                 },
             },
             orderBy: { updatedAt: "desc" },
         });
 
-        return NextResponse.json(tasks);
+        // Batch-fetch CalendarCopy for designer tasks
+        const copyIds = tasks
+            .map(t => (t as any).calendarCopyId as string | null)
+            .filter((id): id is string => !!id);
+
+        const copies = copyIds.length > 0
+            ? await prisma.calendarCopy.findMany({
+                  where: { id: { in: copyIds } },
+                  select: {
+                      id: true, content: true, caption: true, hashtags: true,
+                      platform: true, mediaType: true, publishDate: true, publishTime: true,
+                      bucketId: true,
+                  },
+              })
+            : [];
+
+        const copyMap = Object.fromEntries(copies.map(c => [c.id, c]));
+        const result = tasks.map(t => ({
+            ...t,
+            calendarCopyId: (t as any).calendarCopyId ?? null,
+            calendarCopy: (t as any).calendarCopyId ? (copyMap[(t as any).calendarCopyId] ?? null) : null,
+        }));
+
+        return NextResponse.json(result);
     } catch (err) {
         console.error("[GET /api/approvals]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -157,7 +160,7 @@ export async function POST(req: NextRequest) {
 
                 // ── Writer task: create designer tasks for every copy in the calendar ──
                 if (!task.calendarCopyId && task.calendarId) {
-                    await _createDesignerTasksForCalendar(task);
+                    await createDesignerTasksForCalendar(task);
                 }
 
                 return NextResponse.json({ success: true, task: updated });
@@ -175,10 +178,12 @@ export async function POST(req: NextRequest) {
                 );
             }
 
+            // INTERNAL_REVIEW rejection → back to writer (OPEN)
+            // CLIENT_REVIEW rejection → back to writer (OPEN) for revision
             const updatedTask = await prisma.task.update({
                 where: { id: taskId },
                 data: {
-                    status: TaskStatus.REJECTED,
+                    status: TaskStatus.OPEN,
                     feedbacks: { push: feedback },
                     countSubTask: task.countSubTask + 1,
                 },
@@ -250,83 +255,3 @@ export async function POST(req: NextRequest) {
     }
 }
 
-// ─── Helper: create one designer task per copy in the calendar ───────────────
-
-async function _createDesignerTasksForCalendar(task: {
-    id: string;
-    title: string;
-    priority: string;
-    projectId: string;
-    clientId: string;
-    organizationId: string;
-    calendarId: string | null;
-}) {
-    if (!task.calendarId) return;
-
-    // All copies in this calendar
-    const copies = await prisma.calendarCopy.findMany({
-        where: { calendarId: task.calendarId },
-    });
-
-    if (copies.length === 0) return;
-
-    // Look up designer and video editor for this client.
-    // Normalize stored roles so both "GRAPHIC_DESIGNER" and "Graphic Designer" match.
-    const teamMembers = await prisma.clientTeamMember.findMany({
-        where: { clientId: task.clientId },
-    });
-
-    const normalizeRole = (r: string) => r.toUpperCase().replace(/[\s-]+/g, "_");
-    const designerEntry = teamMembers.find(m => normalizeRole(m.userRole) === "GRAPHIC_DESIGNER");
-    const videoEditorEntry = teamMembers.find(m => normalizeRole(m.userRole) === "VIDEO_EDITOR");
-
-    for (const copy of copies) {
-        // Mark the copy as approved
-        await prisma.calendarCopy.update({
-            where: { id: copy.id },
-            data: { status: "APPROVED" },
-        });
-
-        // Determine assignee: prefer designer; fall back to video editor; or leave unassigned
-        const assigneeId = designerEntry?.userId ?? videoEditorEntry?.userId ?? null;
-
-        // Deadline = publishDate − 1 day (or task's own endDate if no publishDate)
-        let deadline: Date | null = null;
-        if (copy.publishDate) {
-            deadline = subDays(new Date(copy.publishDate), 1);
-        }
-
-        const platformLabel = copy.platform ? ` · ${copy.platform}` : "";
-        const dateLabel = copy.publishDate
-            ? ` (${new Date(copy.publishDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })})`
-            : "";
-
-        const briefDescription = [
-            copy.content,
-            copy.caption ? `\nCaption: ${copy.caption}` : "",
-            copy.hashtags ? `\nHashtags: ${copy.hashtags}` : "",
-            copy.mediaType ? `\nMedia type: ${copy.mediaType}` : "",
-        ]
-            .filter(Boolean)
-            .join("");
-
-        await prisma.task.create({
-            data: {
-                title: `Design${platformLabel}${dateLabel}`,
-                description: briefDescription,
-                status: TaskStatus.OPEN,
-                priority: task.priority as any,
-                mediaUrls: [],
-                feedbacks: [],
-                projectId: task.projectId,
-                clientId: task.clientId,
-                organizationId: task.organizationId,
-                assignedToId: assigneeId,
-                calendarId: task.calendarId,
-                calendarCopyId: copy.id,
-                contentBucketId: copy.bucketId ?? null,
-                endDate: deadline,
-            },
-        });
-    }
-}

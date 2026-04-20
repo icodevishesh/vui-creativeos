@@ -30,7 +30,11 @@ export default function SignIn() {
             }
 
             toast.success('Successfully signed in!');
-            router.push('/dashboard');
+            if (data.user?.userType === 'CLIENT') {
+                router.push('/portal/dashboard');
+            } else {
+                router.push('/dashboard');
+            }
         } catch (error: any) {
             toast.error(error.message);
         } finally {

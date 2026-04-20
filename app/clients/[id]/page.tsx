@@ -12,7 +12,11 @@ import {
   FileText,
   MessageSquare,
   ChevronRight,
-  RefreshCw
+  RefreshCw,
+  KeyRound,
+  Copy,
+  CheckCircle2,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,10 +29,77 @@ import { MeetingsTab } from './_components/MeetingsTab';
 
 type TabType = 'overview' | 'team' | 'scope' | 'documents' | 'meetings';
 
+function CredentialsModal({ isOpen, email, password, onClose }: {
+  isOpen: boolean; email: string; password: string; onClose: () => void;
+}) {
+  const [copied, setCopied] = React.useState<'email' | 'password' | null>(null);
+  const copy = (text: string, field: 'email' | 'password') => {
+    navigator.clipboard.writeText(text);
+    setCopied(field);
+    setTimeout(() => setCopied(null), 2000);
+  };
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 px-6 py-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center"><KeyRound className="w-5 h-5 text-white" /></div>
+              <div>
+                <h2 className="text-sm font-bold text-white">Client Portal Credentials</h2>
+                <p className="text-xs text-indigo-200">{email}</p>
+              </div>
+            </div>
+            <button onClick={onClose} className="text-white/70 hover:text-white"><X className="w-5 h-5" /></button>
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
+            <p className="text-xs text-amber-700 font-medium">Save these credentials now — the password cannot be recovered after closing this window.</p>
+          </div>
+          {([['Email', email, 'email'], ['Password', password, 'password']] as const).map(([label, value, field]) => (
+            <div key={field} className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{label}</label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2.5 font-mono text-sm text-gray-900 truncate">{value}</div>
+                <button onClick={() => copy(value, field)} className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-100 transition-all text-gray-500 hover:text-gray-900">
+                  {copied === field ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          ))}
+          <div className="pt-2 space-y-1.5">
+            <p className="text-xs text-gray-400 font-medium">Client portal login</p>
+            <p className="font-mono text-xs text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg">{typeof window !== 'undefined' ? window.location.origin : ''}/sign-in</p>
+          </div>
+        </div>
+        <div className="px-6 pb-6">
+          <button onClick={onClose} className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">Done</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ClientProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = React.use(params);
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [credModal, setCredModal] = useState<{ email: string; password: string } | null>(null);
+
+  const generateCredentials = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/clients/${id}/credentials`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to generate credentials');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setCredModal({ email: data.email, password: data.generatedPassword });
+    },
+    onError: () => toast.error('Failed to generate credentials'),
+  });
 
   const { data: client, isLoading, error } = useQuery({
     queryKey: ['client', id],
@@ -134,6 +205,14 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => generateCredentials.mutate()}
+            disabled={generateCredentials.isPending}
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all shadow-sm disabled:opacity-50"
+          >
+            <KeyRound className="w-3.5 h-3.5" />
+            {generateCredentials.isPending ? 'Generating...' : 'Portal Credentials'}
+          </button>
           <select
             value={client.status}
             onChange={(e) => updateStatus.mutate(e.target.value)}
@@ -146,6 +225,15 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
           </select>
         </div>
       </div>
+
+      {credModal && (
+        <CredentialsModal
+          isOpen={!!credModal}
+          email={credModal.email}
+          password={credModal.password}
+          onClose={() => setCredModal(null)}
+        />
+      )}
 
       {/* Tabs Navigation */}
       <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-lg w-fit">
