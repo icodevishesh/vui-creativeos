@@ -17,3 +17,12 @@ eth4otzz6a
 Admin
 vipinpal7060@gmail.com
 123456
+
+
+It has a few bugs:
+
+- When a task is allocated to the writer and he creates a calendar for that task, he's not able to create it from the beginning, like objective -> buckets -> copies; it redirects to create the copy of the old task's calendar, so fix this so if a new task is assigned, then new calendar copies will be created. Also, in the writer's workspace, only the open task is showing. It should show all the tasks, whether a task is rejected, open, or approved.
+
+- Also again, the issue arose when the writer submitted copies for internal review; the preview was not showing to the admin or client for review.
+
+- The designer uploads an image/pdf, but the preview is not available; show the preview to the admin/client while reviewing in the approvals page.

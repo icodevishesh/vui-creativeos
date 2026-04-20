@@ -20,8 +20,8 @@ async function resolveClientId(email: string): Promise<string | null> {
   return all.find(p => p.email.toLowerCase() === email.toLowerCase())?.id ?? null;
 }
 
-// GET /api/portal/approvals
-export async function GET() {
+// GET /api/portal/approvals?status=CLIENT_REVIEW|APPROVED  (default: CLIENT_REVIEW)
+export async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -35,9 +35,13 @@ export async function GET() {
       return NextResponse.json({ error: 'No client profile found for this account' }, { status: 404 });
     }
 
+    const { searchParams } = new URL(req.url);
+    const statusParam = searchParams.get('status');
+    const taskStatus = statusParam === 'APPROVED' ? TaskStatus.APPROVED : TaskStatus.CLIENT_REVIEW;
+
     // Fetch tasks — calendarCopy omitted from include (stale generated client doesn't have it)
     const tasks = await prisma.task.findMany({
-      where: { clientId, status: TaskStatus.CLIENT_REVIEW },
+      where: { clientId, status: taskStatus },
       include: {
         project: { select: { id: true, name: true } },
         client: { select: { id: true, companyName: true } },

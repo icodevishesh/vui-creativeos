@@ -46,7 +46,7 @@ export default function PortalProfilePage() {
       </div>
 
       {/* Profile header card */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+      <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-200">
             {profile.companyName?.slice(0, 2).toUpperCase()}
@@ -64,7 +64,7 @@ export default function PortalProfilePage() {
       </div>
 
       {/* Details */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
           <h3 className="text-sm font-bold text-gray-900">Company Details</h3>
         </div>
@@ -85,7 +85,7 @@ export default function PortalProfilePage() {
 
       {/* Services */}
       {profile.services?.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
           <h3 className="text-sm font-bold text-gray-900 mb-4">Subscribed Services</h3>
           <div className="flex flex-wrap gap-2">
             {profile.services.map((s: any) => (
@@ -99,7 +99,7 @@ export default function PortalProfilePage() {
 
       {/* Team members */}
       {profile.teamMembers?.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h3 className="text-sm font-bold text-gray-900">Your Account Team</h3>
           </div>

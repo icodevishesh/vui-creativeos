@@ -5,9 +5,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stats } from '@/components/workspace/writer/Stats';
 import { TabNavigation } from '@/components/workspace/writer/TabNavigation';
 import { TaskList } from '@/components/workspace/writer/TaskList';
-import { EditorEmptyState } from '@/components/workspace/writer/EditorEmptyState';
-import { VersionHistory } from '@/components/workspace/writer/VersionHistory';
-import { WritingModal } from '@/components/workspace/writer/WritingModal';
 import { CalendarWorkspace } from '@/components/workspace/writer/CalendarWorkspace';
 
 const fetchWriterTasks = async () => {

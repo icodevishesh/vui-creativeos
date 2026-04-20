@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CalendarWizard } from './CalendarWizard';
-import { CalendarCopiesList } from './CalendarCopiesList';
 import { Loader2 } from 'lucide-react';
 
 interface CalendarWorkspaceProps {
@@ -19,34 +18,44 @@ export const CalendarWorkspace: React.FC<CalendarWorkspaceProps> = ({
     onBack
 }) => {
     const [calendar, setCalendar] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(!!initialCalendarId);
+    // Track the active calendar ID so refresh works after creation
+    const activeCalendarIdRef = useRef<string | undefined>(initialCalendarId);
 
     useEffect(() => {
-        fetchCalendars();
+        activeCalendarIdRef.current = initialCalendarId;
+        if (!initialCalendarId) {
+            // New task — start wizard from scratch
+            setCalendar(null);
+            setIsLoading(false);
+        } else {
+            loadCalendar(initialCalendarId);
+        }
     }, [initialCalendarId]);
 
-    const fetchCalendars = async () => {
+    const loadCalendar = async (calendarId: string) => {
         setIsLoading(true);
         try {
             const res = await fetch('/api/calendars');
             const data = await res.json();
-            if (data && data.length > 0) {
-                // If initialCalendarId is provided, find that one. Otherwise pick most recent.
-                const targetCalendar = initialCalendarId
-                    ? data.find((c: any) => c.id === initialCalendarId)
-                    : data[0];
-
-                setCalendar(targetCalendar || data[0]);
-            }
+            const found = Array.isArray(data) ? data.find((c: any) => c.id === calendarId) : null;
+            setCalendar(found ?? null);
         } catch (error) {
-            console.error('Failed to fetch calendars:', error);
+            console.error('Failed to fetch calendar:', error);
+            setCalendar(null);
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleCalendarCreated = (newCalendar: any) => {
+        activeCalendarIdRef.current = newCalendar.id;
         setCalendar(newCalendar);
+    };
+
+    const handleRefresh = () => {
+        const id = activeCalendarIdRef.current;
+        if (id) loadCalendar(id);
     };
 
     if (isLoading) {
@@ -62,7 +71,7 @@ export const CalendarWorkspace: React.FC<CalendarWorkspaceProps> = ({
             <CalendarWizard
                 calendar={calendar}
                 onCalendarCreated={handleCalendarCreated}
-                onRefresh={fetchCalendars}
+                onRefresh={handleRefresh}
                 onBack={onBack}
                 initialClientId={initialClientId}
                 taskId={taskId}

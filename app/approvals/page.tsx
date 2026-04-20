@@ -392,7 +392,7 @@ function DesignPreviewModal({
                 {/* Copy content */}
                 <div className="bg-white border border-gray-100 rounded-lg p-3 space-y-2">
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Creative Copy</p>
-                  <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap">{copy.content}</p>
+                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{copy.content}</p>
                 </div>
 
                 {copy.caption && (

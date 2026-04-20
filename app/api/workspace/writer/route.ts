@@ -29,8 +29,6 @@ export async function GET() {
     const tasks = await prisma.task.findMany({
       where: {
         assignedToId: user.id,
-        // Exclude fully approved tasks from the workspace
-        status: { notIn: ['APPROVED'] as any },
       },
       include: {
         project: { select: { id: true, name: true } },

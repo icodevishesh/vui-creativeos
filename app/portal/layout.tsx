@@ -4,13 +4,14 @@ import * as React from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, CalendarDays } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
 const NAV_ITEMS = [
   { href: '/portal/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portal/approvals', label: 'Approvals', icon: CheckCircle2 },
+  { href: '/portal/timeline', label: 'Timeline', icon: CalendarDays },
   { href: '/portal/profile', label: 'My Profile', icon: User },
 ];
 
@@ -67,21 +68,6 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </div>
       </div>
 
-      {/* Client info */}
-      {profile && (
-        <div className="px-4 py-4 border-b border-gray-100">
-          <div className="flex items-center gap-3 px-2 py-2.5 bg-indigo-50 rounded-xl">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
-              {profile.companyName?.slice(0, 2).toUpperCase() || 'CL'}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-gray-900 truncate">{profile.companyName}</p>
-              <p className="text-[10px] text-gray-500 truncate">{profile.email}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
@@ -91,11 +77,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
-                  : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-              }`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
+                ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
               {label}
@@ -104,16 +89,31 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="px-4 py-4 border-t border-gray-100">
+
+      <div className='flex flex-col gap-4 py-4 px-4 border-t border-gray-100'>
+        {/* Client info */}
+
+        {profile && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+              {profile.companyName?.slice(0, 2).toUpperCase() || 'CL'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-gray-900 truncate">{profile.companyName}</p>
+              <p className="text-[10px] text-gray-500 truncate">{profile.email}</p>
+            </div>
+          </div>
+        )}
+        {/* Logout */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 transition-all"
+          className="w-full flex items-center p-2 bg-indigo-50 gap-3 rounded-lg text-indigo-600 hover:text-red-600 hover:bg-red-50 transition-all"
         >
           <LogOut className="w-4 h-4 shrink-0" />
-          Sign Out
+          <span className='text-sm font-semibold'>Sign Out</span>
         </button>
       </div>
+
     </div>
   );
 

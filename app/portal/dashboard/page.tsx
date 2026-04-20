@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, Clock, Building2, RefreshCw, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock, Building2, RefreshCw, AlertCircle, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PortalDashboardPage() {
@@ -18,6 +18,15 @@ export default function PortalDashboardPage() {
     queryKey: ['portal-approvals'],
     queryFn: async () => {
       const res = await fetch('/api/portal/approvals');
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  const { data: approvedTasks = [] } = useQuery({
+    queryKey: ['portal-approvals-approved'],
+    queryFn: async () => {
+      const res = await fetch('/api/portal/approvals?status=APPROVED');
       if (!res.ok) return [];
       return res.json();
     },
@@ -41,6 +50,7 @@ export default function PortalDashboardPage() {
   }
 
   const pendingCount = (approvals as any[]).length;
+  const approvedCount = (approvedTasks as any[]).length;
 
   const statusColors: Record<string, string> = {
     ACTIVE: 'bg-emerald-50 text-emerald-600 border-emerald-100',
@@ -59,9 +69,9 @@ export default function PortalDashboardPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-          <div className="w-11 h-11 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="w-11 h-11 bg-amber-50 rounded-lg flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5 text-amber-500" />
           </div>
           <div>
@@ -70,8 +80,18 @@ export default function PortalDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-          <div className="w-11 h-11 bg-indigo-50 rounded-xl flex items-center justify-center shrink-0">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="w-11 h-11 bg-violet-50 rounded-lg flex items-center justify-center shrink-0">
+            <BadgeCheck className="w-5 h-5 text-violet-500" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Approved Works</p>
+            <p className="text-2xl font-bold text-gray-900 mt-0.5">{approvedCount}</p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="w-11 h-11 bg-indigo-50 rounded-lg flex items-center justify-center shrink-0">
             <Building2 className="w-5 h-5 text-indigo-500" />
           </div>
           <div>
@@ -80,8 +100,8 @@ export default function PortalDashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-          <div className="w-11 h-11 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5 flex items-center gap-4">
+          <div className="w-11 h-11 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           </div>
           <div>
@@ -95,7 +115,7 @@ export default function PortalDashboardPage() {
 
       {/* Pending approvals preview */}
       {pendingCount > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <h2 className="text-sm font-bold text-gray-900">Items Awaiting Your Review</h2>
             <Link
@@ -130,7 +150,7 @@ export default function PortalDashboardPage() {
 
       {/* Services */}
       {profile.services?.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
           <h2 className="text-sm font-bold text-gray-900 mb-4">Your Services</h2>
           <div className="flex flex-wrap gap-2">
             {profile.services.map((s: any) => (

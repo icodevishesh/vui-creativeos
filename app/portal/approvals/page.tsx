@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle2, XCircle, MessageSquare, Clock, X, Send, Eye,
   FileText, Download, Image as ImageIcon, Hash, Globe, Calendar,
-  Film, Check, RefreshCw,
+  Film, Check, RefreshCw, BadgeCheck,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -56,7 +56,7 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div>
             <h2 className="text-sm font-bold text-gray-900">{task.title}</h2>
@@ -163,7 +163,7 @@ function DesignPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-950/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-gray-900">{task.title}</h2>
@@ -322,7 +322,7 @@ function ApprovalCard({ task, onApprove, onReject, onFeedback, onPreview, onPrev
   const copyCount = task.calendar?.copies?.length ?? 0;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
       <div className="p-6 space-y-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
@@ -489,6 +489,15 @@ export default function PortalApprovalsPage() {
     },
   });
 
+  const { data: approvedTasks = [] } = useQuery<ApprovalTask[]>({
+    queryKey: ['portal-approvals-approved'],
+    queryFn: async () => {
+      const res = await fetch('/api/portal/approvals?status=APPROVED');
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
   const actionMutation = useMutation({
     mutationFn: (payload: { taskId: string; action: string; feedback?: string }) =>
       fetch('/api/portal/approvals', {
@@ -501,6 +510,8 @@ export default function PortalApprovalsPage() {
       }),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['portal-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['portal-approvals-approved'] });
+      queryClient.invalidateQueries({ queryKey: ['portal-profile'] });
       const label = variables.action === 'approve' ? 'approved' : variables.action === 'reject' ? 'rejected' : 'feedback sent';
       toast.success(`Task ${label}!`);
       setModalState({ isOpen: false, actionType: 'reject', task: null });
@@ -531,7 +542,7 @@ export default function PortalApprovalsPage() {
           <RefreshCw className="w-5 h-5 animate-spin text-indigo-400" />
         </div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-red-100">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border border-red-100">
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
             <X className="w-8 h-8 text-red-400" />
           </div>
@@ -539,7 +550,7 @@ export default function PortalApprovalsPage() {
           <p className="text-sm text-gray-400">{(error as Error).message}</p>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-gray-100">
+        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border border-gray-100">
           <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4">
             <CheckCircle2 className="w-8 h-8 text-emerald-400" />
           </div>
@@ -560,6 +571,50 @@ export default function PortalApprovalsPage() {
               isActioning={actionMutation.isPending}
             />
           ))}
+        </div>
+      )}
+
+      {/* Approved Works */}
+      {approvedTasks.length > 0 && (
+        <div className="space-y-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-2">
+            <BadgeCheck className="w-5 h-5 text-violet-500" />
+            <h2 className="text-base font-bold text-gray-900">Approved Works</h2>
+            <span className="ml-1 px-2 py-0.5 text-[11px] font-bold bg-violet-50 text-violet-600 border border-violet-100 rounded-full">
+              {approvedTasks.length}
+            </span>
+          </div>
+          <div className="flex flex-col gap-4">
+            {approvedTasks.map((task: ApprovalTask) => {
+              const isDesignerTask = !!task.calendarCopy;
+              const copyCount = task.calendar?.copies?.length ?? 0;
+              const hasFiles = (task.attachments?.length ?? 0) > 0;
+              return (
+                <div key={task.id} className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden opacity-80">
+                  <div className="p-5 flex items-start justify-between gap-4">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-sm font-semibold text-gray-900 truncate">{task.title}</h3>
+                        <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full">
+                          <CheckCircle2 className="w-3 h-3" /> Approved
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400">
+                        {task.project?.name}
+                        {isDesignerTask && task.calendarCopy?.platform && ` · ${task.calendarCopy.platform}`}
+                        {isDesignerTask && task.calendarCopy?.publishDate && ` · ${new Date(task.calendarCopy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                        {!isDesignerTask && copyCount > 0 && ` · ${copyCount} ${copyCount === 1 ? 'copy' : 'copies'}`}
+                        {hasFiles && ` · ${task.attachments!.length} file${task.attachments!.length !== 1 ? 's' : ''}`}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs text-gray-400 tabular-nums">
+                      {new Date(task.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
