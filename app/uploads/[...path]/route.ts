@@ -31,7 +31,7 @@ export async function GET(
     };
     const contentType = mimeTypes[ext] ?? 'application/octet-stream';
 
-    return new NextResponse(data, {
+    return new NextResponse(new Uint8Array(data), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=86400',

@@ -62,7 +62,7 @@ export async function createDesignerTasksForCalendar(task: CalendarTaskRef) {
       deadline = subDays(new Date(copy.publishDate), 1);
     }
 
-    const platformLabel = copy.platform ? ` · ${copy.platform}` : '';
+    const platformLabel = copy.platforms && copy.platforms.length > 0 ? ` · ${copy.platforms.join(', ')}` : '';
     const dateLabel = copy.publishDate
       ? ` (${new Date(copy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`
       : '';

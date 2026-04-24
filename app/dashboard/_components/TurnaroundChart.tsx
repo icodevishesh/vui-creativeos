@@ -126,7 +126,7 @@ export function TurnaroundChart() {
               fontSize: '12px',
               boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
             }}
-            formatter={(value: number) => [`${value} days`, 'Avg turnaround']}
+            formatter={(value) => [`${value || 0} days`, 'Avg turnaround']}
           />
           {avgDays > 0 && (
             <ReferenceLine
