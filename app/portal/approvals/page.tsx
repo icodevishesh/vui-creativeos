@@ -12,11 +12,25 @@ import { toast } from 'react-hot-toast';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Attachment {
-  id: string; fileName: string; fileUrl: string; mimeType: string; fileSize?: number;
+  id: string; fileName: string; fileUrl: string; mimeType: string; fileSize?: number; platform?: string; platformType?: string;
+}
+
+function getAspectRatio(platform?: string | null, platformType?: string | null): string {
+  if (platform === 'Twitter') return '16/9';
+  if (platform === 'Instagram') {
+    if (platformType === 'story' || platformType === 'reel') return '9/16';
+    return '4/5';
+  }
+  if (platform === 'Facebook') {
+    if (platformType === 'story') return '9/16';
+    return '4/5';
+  }
+  if (platform === 'LinkedIn') return '4/5';
+  return '4/5';
 }
 interface CalendarCopyRef {
   id: string; content: string; caption?: string; hashtags?: string;
-  platform?: string; mediaType?: string; publishDate?: string;
+  platforms?: string[]; mediaType?: string; publishDate?: string;
   publishTime?: string; status?: string;
   bucket?: { id: string; name: string } | null;
 }
@@ -77,7 +91,6 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
               <button key={copy.id} onClick={() => setActiveIdx(idx)}
                 className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${activeIdx === idx ? 'bg-white border-indigo-200 shadow-sm' : 'border-transparent hover:bg-white hover:border-gray-100'}`}>
                 <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                  {copy.platform && <span className={`text-[9px] font-bold border px-1.5 py-0.5 rounded-full ${platformColor[copy.platform] ?? 'bg-gray-50 text-gray-600 border-gray-100'}`}>{copy.platform}</span>}
                   {copy.mediaType && <span className="text-[9px] font-bold bg-violet-50 text-violet-600 border border-violet-100 px-1.5 py-0.5 rounded-full">{copy.mediaType}</span>}
                 </div>
                 <p className="text-[11px] text-gray-700 font-medium line-clamp-2 leading-snug">{copy.content}</p>
@@ -94,8 +107,6 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
           {activeCopy ? (
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               <div className="flex flex-wrap items-center gap-2">
-                {activeCopy.platform && <span className={`inline-flex items-center gap-1 text-[10px] font-bold border px-2.5 py-1 rounded-full ${platformColor[activeCopy.platform] ?? 'bg-gray-50 text-gray-600 border-gray-100'}`}><Globe className="w-3 h-3" />{activeCopy.platform}</span>}
-                {activeCopy.mediaType && <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-violet-50 text-violet-600 border border-violet-100 px-2.5 py-1 rounded-full"><Film className="w-3 h-3" />{activeCopy.mediaType}</span>}
                 {activeCopy.bucket && <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full"><Hash className="w-3 h-3" />{activeCopy.bucket.name}</span>}
                 {activeCopy.publishDate && (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white text-gray-500 border border-gray-200 px-2.5 py-1 rounded-full">
@@ -105,26 +116,38 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
                   </span>
                 )}
               </div>
-              <div className="space-y-2">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Creative Copy</p>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Creative Copy</p>
                 <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
                   <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{activeCopy.content}</p>
                 </div>
               </div>
               {activeCopy.caption && (
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Caption</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Caption</p>
                   <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
                     <p className="text-sm text-gray-600 leading-relaxed italic">{activeCopy.caption}</p>
                   </div>
                 </div>
               )}
               {activeCopy.hashtags && (
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hashtags</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hashtags</p>
                   <p className="text-sm font-semibold text-indigo-500 break-words">{activeCopy.hashtags}</p>
                 </div>
               )}
+              {activeCopy.platforms && activeCopy.platforms.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Platforms</p>
+                  <p className="text-sm font-semibold text-indigo-500 break-words">{activeCopy.platforms.join(", ")}</p>
+                </div>
+              )}
+              {activeCopy.mediaType &&
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Media Type</p>
+                  <p className="text-sm font-semibold text-indigo-500 break-words">{activeCopy.mediaType}</p>
+                </div>}
+
               {copies.length > 1 && (
                 <div className="flex items-center gap-2 pt-2">
                   {copies.map((_, i) => (
@@ -194,31 +217,95 @@ function DesignPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
                 )}
               </div>
             ) : <p className="text-xs text-gray-400 italic">No copy linked.</p>}
-            {attachments.length > 0 && (
-              <div className="pt-3 border-t border-gray-100 space-y-2">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Uploaded Files ({attachments.length})</p>
-                <div className="space-y-1">
-                  {attachments.map((file, idx) => (
-                    <button key={file.id} onClick={() => setActiveFile(idx)}
-                      className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all text-xs font-medium ${activeFile === idx ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'text-gray-600 hover:bg-gray-100 border border-transparent'}`}>
-                      {isImage(file.mimeType) ? <ImageIcon className="w-3.5 h-3.5 shrink-0" /> : <FileText className="w-3.5 h-3.5 shrink-0" />}
-                      <span className="truncate">{file.fileName}</span>
-                      {file.fileSize && <span className="ml-auto shrink-0 text-[10px] text-gray-400">{formatBytes(file.fileSize)}</span>}
-                    </button>
+            {attachments.length > 0 && (() => {
+              const PILL: Record<string, string> = {
+                Instagram: 'bg-pink-50 text-pink-600 border-pink-100',
+                LinkedIn:  'bg-blue-50 text-blue-700 border-blue-100',
+                Twitter:   'bg-sky-50 text-sky-600 border-sky-100',
+                Facebook:  'bg-indigo-50 text-indigo-600 border-indigo-100',
+              };
+              const pill = (p: string) => PILL[p] ?? 'bg-gray-50 text-gray-500 border-gray-200';
+
+              const groups: Record<string, Array<{ file: Attachment; idx: number }>> = {};
+              attachments.forEach((file, idx) => {
+                const key = file.platform || 'General';
+                if (!groups[key]) groups[key] = [];
+                groups[key].push({ file, idx });
+              });
+              const hasPlatforms = Object.keys(groups).some(k => k !== 'General');
+
+              return (
+                <div className="pt-3 border-t border-gray-100 space-y-3">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Uploaded Files ({attachments.length})</p>
+                  {Object.entries(groups).map(([platform, items]) => (
+                    <div key={platform} className="space-y-1">
+                      {hasPlatforms && (
+                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[10px] font-bold ${pill(platform)}`}>
+                          <Globe className="w-3 h-3 shrink-0" />
+                          {platform}
+                          {items[0]?.file.platformType && (
+                            <span className="capitalize opacity-80">· {items[0].file.platformType}</span>
+                          )}
+                          <span className="ml-auto opacity-60">{items.length} file{items.length !== 1 ? 's' : ''}</span>
+                        </div>
+                      )}
+                      {items.map(({ file, idx }) => (
+                        <button key={file.id} onClick={() => setActiveFile(idx)}
+                          className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all text-xs font-medium ${activeFile === idx ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'text-gray-600 hover:bg-gray-100 border border-transparent'}`}>
+                          {isImage(file.mimeType) ? <ImageIcon className="w-3.5 h-3.5 shrink-0" /> : <FileText className="w-3.5 h-3.5 shrink-0" />}
+                          <span className="truncate">{file.fileName}</span>
+                          {file.fileSize && <span className="ml-auto shrink-0 text-[10px] text-gray-400">{formatBytes(file.fileSize)}</span>}
+                        </button>
+                      ))}
+                    </div>
                   ))}
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
-          <div className="flex-1 overflow-auto bg-gray-900 flex flex-col items-center justify-center p-6">
+          <div className="flex-1 overflow-auto bg-gray-900 flex flex-col items-center justify-center p-6 gap-4">
             {attachments.length === 0 ? (
               <div className="flex flex-col items-center gap-3 text-gray-500"><ImageIcon className="w-10 h-10 opacity-40" /><p className="text-sm font-medium">No files uploaded yet</p></div>
             ) : currentFile ? (
-              <div className="w-full h-full flex flex-col items-center gap-4">
-                {isImage(currentFile.mimeType) && <img src={currentFile.fileUrl} alt={currentFile.fileName} className="max-w-full max-h-[calc(90vh-180px)] object-contain rounded-lg shadow-2xl" />}
-                {isPdf(currentFile.mimeType) && <iframe src={currentFile.fileUrl} className="w-full h-[calc(90vh-180px)] rounded-lg" title={currentFile.fileName} />}
+              <>
+                {/* Platform + type badge */}
+                {currentFile.platform && (
+                  <div className="flex items-center gap-2 flex-wrap justify-center shrink-0">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/10 text-white border border-white/20">
+                      <Globe className="w-3 h-3" />{currentFile.platform}
+                    </span>
+                    {currentFile.platformType && (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/10 text-white border border-white/20 capitalize">
+                        {currentFile.platformType}
+                      </span>
+                    )}
+                    <span className="text-[10px] text-white/40 font-medium">
+                      {getAspectRatio(currentFile.platform, currentFile.platformType).replace('/', ' : ')} ratio
+                    </span>
+                  </div>
+                )}
+
+                {/* Aspect-ratio preview */}
+                {isImage(currentFile.mimeType) && (
+                  <img
+                    src={currentFile.fileUrl}
+                    alt={currentFile.fileName}
+                    className="rounded-lg shadow-2xl shrink-0 block"
+                    style={{
+                      aspectRatio: getAspectRatio(currentFile.platform, currentFile.platformType),
+                      maxHeight: 'calc(90vh - 220px)',
+                      maxWidth: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                )}
+
+                {isPdf(currentFile.mimeType) && (
+                  <iframe src={currentFile.fileUrl} className="w-full rounded-lg shrink-0" style={{ height: 'calc(90vh - 220px)' }} title={currentFile.fileName} />
+                )}
+
                 {!isImage(currentFile.mimeType) && !isPdf(currentFile.mimeType) && (
-                  <div className="flex flex-col items-center gap-4 text-white">
+                  <div className="flex flex-col items-center gap-4 text-white shrink-0">
                     <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center"><FileText className="w-10 h-10 text-white/60" /></div>
                     <p className="text-sm font-medium">{currentFile.fileName}</p>
                     <a href={currentFile.fileUrl} download={currentFile.fileName} className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-900 rounded-lg text-sm font-semibold hover:bg-gray-100">
@@ -226,22 +313,22 @@ function DesignPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
                     </a>
                   </div>
                 )}
-                {(isImage(currentFile.mimeType) || isPdf(currentFile.mimeType)) && (
-                  <div className="flex items-center gap-3">
-                    <p className="text-xs text-white/60">{currentFile.fileName}</p>
-                    <a href={currentFile.fileUrl} download={currentFile.fileName} className="inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors">
-                      <Download className="w-3.5 h-3.5" />Download
-                    </a>
-                  </div>
-                )}
+
+                <div className="flex items-center gap-3 flex-wrap justify-center shrink-0">
+                  <p className="text-xs text-white/60">{currentFile.fileName}</p>
+                  <a href={currentFile.fileUrl} download={currentFile.fileName} className="inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors">
+                    <Download className="w-3.5 h-3.5" />Download
+                  </a>
+                </div>
+
                 {attachments.length > 1 && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {attachments.map((_, idx) => (
                       <button key={idx} onClick={() => setActiveFile(idx)} className={`w-2 h-2 rounded-full transition-all ${idx === activeFile ? 'bg-white' : 'bg-white/30 hover:bg-white/60'}`} />
                     ))}
                   </div>
                 )}
-              </div>
+              </>
             ) : null}
           </div>
         </div>
@@ -330,7 +417,7 @@ function ApprovalCard({ task, onApprove, onReject, onFeedback, onPreview, onPrev
             <h3 className="text-base font-semibold text-gray-900 truncate">{task.title}</h3>
             <div className="flex items-center gap-2 text-xs font-medium text-gray-400 flex-wrap">
               <span>{task.project?.name}</span>
-              {task.calendarCopy?.platform && <><span className="opacity-50">•</span><span>{task.calendarCopy.platform}</span></>}
+              {task.calendarCopy?.platforms && task.calendarCopy.platforms.length > 0 && <><span className="opacity-50">•</span><span>{task.calendarCopy.platforms[0]}</span></>}
               {task.calendarCopy?.publishDate && (
                 <><span className="opacity-50">•</span>
                   <span>{new Date(task.calendarCopy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -366,7 +453,7 @@ function ApprovalCard({ task, onApprove, onReject, onFeedback, onPreview, onPrev
                   <span className="text-[10px] font-bold text-gray-300 w-4 pt-0.5">#{idx + 1}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                      {copy.platform && <span className="text-[9px] font-bold bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">{copy.platform}</span>}
+                      {copy.platforms && copy.platforms.length > 0 && <span className="text-[9px] font-bold bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">{copy.platforms.join(", ")}</span>}
                       {copy.mediaType && <span className="text-[9px] font-bold bg-white border border-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">{copy.mediaType}</span>}
                       {copy.publishDate && <span className="text-[9px] font-bold text-gray-400">{new Date(copy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>}
                     </div>
@@ -601,7 +688,7 @@ export default function PortalApprovalsPage() {
                       </div>
                       <p className="text-xs text-gray-400">
                         {task.project?.name}
-                        {isDesignerTask && task.calendarCopy?.platform && ` · ${task.calendarCopy.platform}`}
+                        {isDesignerTask && task.calendarCopy?.platforms && task.calendarCopy.platforms.length > 0 && ` · ${task.calendarCopy.platforms.join(", ")}`}
                         {isDesignerTask && task.calendarCopy?.publishDate && ` · ${new Date(task.calendarCopy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
                         {!isDesignerTask && copyCount > 0 && ` · ${copyCount} ${copyCount === 1 ? 'copy' : 'copies'}`}
                         {hasFiles && ` · ${task.attachments!.length} file${task.attachments!.length !== 1 ? 's' : ''}`}

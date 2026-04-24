@@ -245,7 +245,7 @@ export default function CreativeUploadPage() {
               {assets.length} items
             </span>
           </div>
-          {assets.map((asset) => (
+          {assets.slice(0, 5).map((asset) => (
             <div
               key={asset.id}
               className="group relative bg-white rounded-lg border border-gray-100 p-4 flex items-center justify-between transition-all hover:shadow-md hover:shadow-indigo-50/50 hover:border-indigo-100"

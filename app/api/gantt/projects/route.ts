@@ -1,11 +1,32 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 
 // GET /api/gantt/projects
-// Returns all projects with client name for the project selector
-export async function GET() {
+// Returns projects for the project selector.
+// - CLIENT users: always scoped to their own clientId (resolved from email)
+// - Internal users: optional ?clientId= filter; omit to get all projects
+export async function GET(req: NextRequest) {
   try {
+    const user = await getCurrentUser();
+
+    let clientIdFilter: string | undefined;
+
+    if (user?.userType === 'CLIENT') {
+      const clientProfile = await prisma.clientProfile.findFirst({
+        where: { email: user.email },
+        select: { id: true },
+      });
+      if (!clientProfile) return NextResponse.json([]);
+      clientIdFilter = clientProfile.id;
+    } else {
+      const { searchParams } = new URL(req.url);
+      const param = searchParams.get('clientId');
+      if (param) clientIdFilter = param;
+    }
+
     const projects = await prisma.project.findMany({
+      where: clientIdFilter ? { clientId: clientIdFilter } : {},
       select: {
         id: true,
         name: true,

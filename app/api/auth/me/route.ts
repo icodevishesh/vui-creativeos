@@ -11,14 +11,10 @@ export async function GET() {
     const token = cookieStore.get('auth_token')?.value;
 
     if (!token) {
-      // For demo/simulated environment, if no token, return a default admin profile
-      // This ensures the feature works even if not logged in during development
-      return NextResponse.json({
-        id: 'clv_demo_admin_id',
-        name: 'Admin User',
-        userType: 'ADMIN_OWNER',
-        role: 'ADMIN',
-      });
+      return NextResponse.json(
+        { error: 'You are not logged in' },
+        { status: 401 }
+      );
     }
 
     const decoded = jwt.verify(token, JWT_SECRET) as {
@@ -50,12 +46,9 @@ export async function GET() {
     });
   } catch (error) {
     console.error('[AUTH_ME_GET]', error);
-    // Fallback for demo purposes if token is invalid
-    return NextResponse.json({
-        id: 'clv_demo_admin_id',
-        name: 'Admin User',
-        userType: 'ADMIN_OWNER',
-        role: 'ADMIN',
-    });
+    return NextResponse.json(
+      { error: 'You are not logged in' },
+      { status: 401 }
+    );
   }
 }

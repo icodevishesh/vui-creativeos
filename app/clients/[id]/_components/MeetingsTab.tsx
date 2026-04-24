@@ -40,6 +40,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
       setIsAdding(false);
       setFormData({ title: '', notes: '', meetingDate: new Date().toISOString().split('T')[0] });
     },
+    onError: (err: any) => toast.error(err.message || 'Failed to save meeting log'),
   });
 
   if (isLoading) return (

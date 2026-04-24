@@ -4,55 +4,49 @@ import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IApi } from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css';
-import { Calendar, Download, Plus } from 'lucide-react';
+import { Plus, ChevronDown, Building2 } from 'lucide-react';
 
 import GanttChart from '@/components/GanttChart';
 import { ProjectSelector } from '@/components/gantt/ProjectSelector';
 import { CreateProjectModal } from '@/components/gantt/CreateProjectModal';
-import { ganttKeys, useGanttProjects } from '@/lib/gantt/hooks';
+import { ganttKeys, useGanttProjects, useGanttClients } from '@/lib/gantt/hooks';
+import { useAuth } from '@/context/AuthContext';
+
+const EDIT_ROLES = new Set(['ADMIN', 'TEAM_LEAD', 'ACCOUNT_MANAGER']);
 
 export default function GanttPage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [ganttApi, setGanttApi] = useState<IApi | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const canEdit =
+    user?.userType === 'ADMIN_OWNER' ||
+    EDIT_ROLES.has(user?.role ?? '');
+
+  // Client filter list — only needed for internal users
+  const { data: clients } = useGanttClients();
+
   // Derive the selected project's createdAt for the Gantt date range
-  const { data: projects } = useGanttProjects();
+  const { data: projects } = useGanttProjects(selectedClientId || undefined);
   const selectedProject = projects?.find((p) => p.id === projectId);
   const projectCreatedAt = selectedProject?.createdAt ?? null;
 
-  // Stable callback — avoids GanttChart re-mounting on every parent render
   const handleApiReady = useCallback((api: IApi) => {
     setGanttApi(api);
   }, []);
 
-  const handleAddTask = useCallback(() => {
-    if (!ganttApi || !projectId) return;
-    ganttApi.exec('add-task', {
-      task: {
-        text: 'New Task',
-        start: new Date(),
-        duration: 5,
-        progress: 0,
-        type: 'task',
-        projectId,
-      },
-    });
-  }, [ganttApi, projectId]);
+  const handleClientChange = useCallback((clientId: string) => {
+    setSelectedClientId(clientId);
+    setProjectId(null); // reset project when client changes
+  }, []);
 
   const handleProjectCreated = useCallback((newId: string) => {
-    // Invalidate project list to show the new one in the selector
     queryClient.invalidateQueries({ queryKey: ganttKeys.projects() });
-
-    // Switch to the new project
     setProjectId(newId);
   }, [queryClient]);
-
-  const handleExport = useCallback(() => {
-    if (!projectId) return;
-    alert('Exporting to CSV... (This would generate a downloadable file in a production environment)');
-  }, [projectId]);
 
   return (
     <div className="flex flex-col h-full gap-4 max-w-[1600px] mx-auto w-full">
@@ -64,8 +58,7 @@ export default function GanttPage() {
             <p className="text-sm text-gray-400">Strategic planning and phase tracking</p>
           </div>
 
-          <div className="flex items-center gap-3">
-
+          {canEdit && (
             <button
               onClick={() => setIsModalOpen(true)}
               className="
@@ -77,13 +70,41 @@ export default function GanttPage() {
               <Plus className="w-4 h-4" />
               New Project
             </button>
-          </div>
+          )}
         </div>
 
         {/* ── Toolbar row ─────────────────────────────────────── */}
         <div className="flex items-center justify-between flex-wrap gap-4 p-4 bg-white border border-gray-100 rounded-lg shadow-sm">
-          <div className="flex items-center gap-4">
-            <ProjectSelector value={projectId} onChange={setProjectId} />
+          <div className="flex items-center gap-3 flex-wrap">
+            {/* Client filter dropdown */}
+            <div className="relative flex items-center gap-2">
+              <div className="relative">
+                <Building2 className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <select
+                  value={selectedClientId}
+                  onChange={(e) => handleClientChange(e.target.value)}
+                  className="
+                    appearance-none h-9 pl-8 pr-8 rounded-lg border border-gray-300 bg-white
+                    text-sm font-medium text-gray-700 leading-none
+                    focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent
+                    hover:border-gray-400 transition-colors cursor-pointer min-w-[160px]
+                  "
+                  aria-label="Filter by client"
+                >
+                  <option value="">All Clients</option>
+                  {clients?.map((c) => (
+                    <option key={c.id} value={c.id}>{c.companyName}</option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+              </div>
+            </div>
+
+            <ProjectSelector
+              value={projectId}
+              onChange={setProjectId}
+              clientId={selectedClientId || undefined}
+            />
           </div>
 
           {/* Legend */}
@@ -110,14 +131,17 @@ export default function GanttPage() {
           projectId={projectId}
           projectCreatedAt={projectCreatedAt}
           onApiReady={handleApiReady}
+          readOnly={!canEdit}
         />
       </div>
 
-      <CreateProjectModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={handleProjectCreated}
-      />
+      {canEdit && (
+        <CreateProjectModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={handleProjectCreated}
+        />
+      )}
     </div>
   );
 }

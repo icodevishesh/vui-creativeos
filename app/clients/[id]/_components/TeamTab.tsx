@@ -49,6 +49,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
     onSuccess: () => {
       toast.success('Team member assigned!');
       queryClient.invalidateQueries({ queryKey: ['client-team', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['client', clientId] });
       setIsAssigning(false);
       setFormData({ userId: '', role: '' });
     },
@@ -64,6 +65,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
     onSuccess: () => {
       toast.success('Member removed from team');
       queryClient.invalidateQueries({ queryKey: ['client-team', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['client', clientId] });
     },
   });
 

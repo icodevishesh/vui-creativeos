@@ -15,12 +15,30 @@ export async function GET(
     const calendar = await prisma.calendar.findUnique({
       where: { id },
       include: {
-        client: { select: { companyName: true } },
-        buckets: true,
+        client: { select: { id: true, companyName: true } },
+        writer: { select: { id: true, name: true } },
+        buckets: { orderBy: { createdAt: 'asc' } },
         copies: {
-            orderBy: { createdAt: 'desc' }
-        }
-      }
+          include: {
+            bucket: { select: { id: true, name: true } },
+          },
+          orderBy: { publishDate: 'asc' },
+        },
+        tasks: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            updatedAt: true,
+            project: { select: { id: true, name: true } },
+            subTasks: {
+              orderBy: { createdAt: 'asc' },
+              select: { id: true, title: true, description: true, status: true, createdAt: true },
+            },
+            _count: { select: { subTasks: true } },
+          },
+        },
+      },
     });
 
     if (!calendar) return NextResponse.json({ error: 'Calendar not found' }, { status: 404 });

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
+import { getCurrentUser } from '../../../../../lib/auth';
 
 export async function GET(
   req: Request,
@@ -37,19 +38,15 @@ export async function POST(
       return new NextResponse('Missing required fields', { status: 400 });
     }
 
-    // Default to the first admin in the organization for creator ID (simulation)
-    const admin = await prisma.organizationMember.findFirst({
-      where: { role: 'ADMIN' },
-    });
-
-    if (!admin) {
-      return new NextResponse('No authorized admin found to log meeting', { status: 403 });
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return new NextResponse('Unauthorized', { status: 401 });
     }
 
     const log = await prisma.meetingLog.create({
       data: {
         clientId: id,
-        createdById: admin.userId,
+        createdById: currentUser.id,
         title,
         notes,
         meetingDate: new Date(meetingDate),

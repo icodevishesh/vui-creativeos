@@ -9,6 +9,7 @@ import type {
   GanttProject,
   GanttTaskRecord,
   GanttLinkRecord,
+  GanttClientItem,
 } from './types';
 
 // ---- helpers ----------------------------------------------------------
@@ -61,6 +62,13 @@ export async function fetchGanttLinks(projectId: string): Promise<GanttLinkClien
   );
 }
 
-export async function fetchGanttProjects(): Promise<GanttProject[]> {
-  return apiFetch<GanttProject[]>('/api/gantt/projects');
+export async function fetchGanttProjects(clientId?: string): Promise<GanttProject[]> {
+  const url = clientId
+    ? `/api/gantt/projects?clientId=${encodeURIComponent(clientId)}`
+    : '/api/gantt/projects';
+  return apiFetch<GanttProject[]>(url);
+}
+
+export async function fetchGanttClients(): Promise<GanttClientItem[]> {
+  return apiFetch<GanttClientItem[]>('/api/gantt/clients');
 }

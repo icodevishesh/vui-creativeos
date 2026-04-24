@@ -40,11 +40,12 @@ interface Task {
     content: string;
   };
   revisionSubTasks?: RevisionSubTask[];
+  calendarId?: string | null;
   calendar?: {
     id: string;
     name: string;
     copyCount: number;
-  };
+  } | null;
 }
 
 interface TaskListProps {
@@ -245,7 +246,7 @@ export const TaskList: React.FC<TaskListProps> = ({
                         className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md shadow-blue-100 active:scale-95"
                       >
                         <CalendarPlus size={16} />
-                        <span className="text-sm">{task.calendar ? 'Continue Calendar' : 'Create Calendar'}</span>
+                        <span className="text-sm">{(task.calendar || task.calendarId) ? 'Continue Calendar' : 'Create Calendar'}</span>
                       </button>
 
                       {/* Submit for Review — only visible when copies exist and task hasn't been submitted yet */}

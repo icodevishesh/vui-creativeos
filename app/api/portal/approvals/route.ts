@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const statusParam = searchParams.get('status');
     const taskStatus = statusParam === 'APPROVED' ? TaskStatus.APPROVED : TaskStatus.CLIENT_REVIEW;
 
-    // Fetch tasks — calendarCopy omitted from include (stale generated client doesn't have it)
+    // Fetch tasks — calendarCopy omitted from include
     const tasks = await prisma.task.findMany({
       where: { clientId, status: taskStatus },
       include: {
@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
             copies: {
               select: {
                 id: true, content: true, caption: true, hashtags: true,
-                platform: true, mediaType: true, publishDate: true, publishTime: true, status: true,
+                platforms: true, mediaType: true, publishDate: true, publishTime: true, status: true,
                 bucket: { select: { id: true, name: true } },
               },
               orderBy: { publishDate: 'asc' },
@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
           },
         },
         attachments: {
-          select: { id: true, fileName: true, fileUrl: true, mimeType: true, fileSize: true },
+          select: { id: true, fileName: true, fileUrl: true, mimeType: true, fileSize: true, platform: true, platformType: true },
           orderBy: { uploadedAt: 'asc' },
         },
         _count: { select: { subTasks: true } },
@@ -83,13 +83,13 @@ export async function GET(req: NextRequest) {
 
     const copies = copyIds.length > 0
       ? await prisma.calendarCopy.findMany({
-          where: { id: { in: copyIds } },
-          select: {
-            id: true, content: true, caption: true, hashtags: true,
-            platform: true, mediaType: true, publishDate: true, publishTime: true,
-            bucketId: true,
-          },
-        })
+        where: { id: { in: copyIds } },
+        select: {
+          id: true, content: true, caption: true, hashtags: true,
+          platforms: true, mediaType: true, publishDate: true, publishTime: true,
+          bucketId: true,
+        },
+      })
       : [];
 
     const copyMap = Object.fromEntries(copies.map(c => [c.id, c]));

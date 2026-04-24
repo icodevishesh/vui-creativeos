@@ -10,8 +10,14 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status");
 
+        const calendarOnly = searchParams.get("calendarOnly") === "true";
+
         const where: any = {};
-        if (status && (status === "INTERNAL_REVIEW" || status === "CLIENT_REVIEW")) {
+        if (calendarOnly) {
+            // Return all writer calendar tasks across review + approved statuses
+            where.calendarId = { not: null };
+            where.status = { in: [TaskStatus.INTERNAL_REVIEW, TaskStatus.CLIENT_REVIEW, TaskStatus.APPROVED] };
+        } else if (status && (status === "INTERNAL_REVIEW" || status === "CLIENT_REVIEW")) {
             where.status = status;
         } else {
             where.status = { in: [TaskStatus.INTERNAL_REVIEW, TaskStatus.CLIENT_REVIEW] };
@@ -31,7 +37,7 @@ export async function GET(req: NextRequest) {
                         copies: {
                             select: {
                                 id: true, content: true, caption: true, hashtags: true,
-                                platform: true, mediaType: true, publishDate: true, publishTime: true,
+                                platforms: true, mediaType: true, publishDate: true, publishTime: true,
                                 status: true, bucket: { select: { id: true, name: true } },
                             },
                             orderBy: { publishDate: 'asc' },
@@ -39,7 +45,7 @@ export async function GET(req: NextRequest) {
                     },
                 },
                 attachments: {
-                    select: { id: true, fileName: true, fileUrl: true, mimeType: true, fileSize: true },
+                    select: { id: true, fileName: true, fileUrl: true, mimeType: true, fileSize: true, platform: true, platformType: true },
                     orderBy: { uploadedAt: "asc" },
                 },
                 _count: { select: { subTasks: true } },
@@ -61,7 +67,7 @@ export async function GET(req: NextRequest) {
                   where: { id: { in: copyIds } },
                   select: {
                       id: true, content: true, caption: true, hashtags: true,
-                      platform: true, mediaType: true, publishDate: true, publishTime: true,
+                      platforms: true, mediaType: true, publishDate: true, publishTime: true,
                       bucketId: true,
                   },
               })
@@ -136,6 +142,15 @@ export async function POST(req: NextRequest) {
                         client: { select: { companyName: true } },
                     },
                 });
+
+                // Advance all calendar copies that are in INTERNAL_REVIEW to CLIENT_REVIEW
+                if (task.calendarId) {
+                    await prisma.calendarCopy.updateMany({
+                        where: { calendarId: task.calendarId, status: 'INTERNAL_REVIEW' },
+                        data: { status: 'CLIENT_REVIEW' },
+                    });
+                }
+
                 return NextResponse.json({ success: true, task: updated });
             }
 
@@ -188,6 +203,17 @@ export async function POST(req: NextRequest) {
                     countSubTask: task.countSubTask + 1,
                 },
             });
+
+            // Revert calendar copies back to DRAFT so the writer can delete/edit them
+            if (task.calendarId) {
+                await prisma.calendarCopy.updateMany({
+                    where: {
+                        calendarId: task.calendarId,
+                        status: { in: ['INTERNAL_REVIEW', 'CLIENT_REVIEW'] },
+                    },
+                    data: { status: 'DRAFT' },
+                });
+            }
 
             await prisma.subTask.create({
                 data: {

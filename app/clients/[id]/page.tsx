@@ -146,10 +146,10 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
     },
   });
 
-  const accountManager = client?.teamMembers?.find(
-    (m: any) => m.userRole.toLowerCase() === 'account manager'
+  const managedByMember = client?.teamMembers?.find(
+    (m: any) => m.userRole === 'TEAM_LEAD' || m.userRole === 'ACCOUNT_MANAGER'
   );
-  const accountManagerName = accountManager ? accountManager.userName : 'Unassigned';
+  const accountManagerName = managedByMember ? managedByMember.userName : 'Unassigned';
 
   if (isLoading) {
     return (

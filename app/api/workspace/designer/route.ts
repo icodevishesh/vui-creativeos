@@ -52,13 +52,13 @@ export async function GET() {
         assignedTo: { select: { id: true, name: true } },
         designerContent: { select: { notes: true } },
         attachments: { select: { id: true, fileName: true, fileUrl: true, mimeType: true } },
-        // Linked copy — provides platform, publish date, and copy brief
+        // Linked copy — provides platforms, publish date, and copy brief
         calendarCopy: {
           select: {
             id: true,
             content: true,
             caption: true,
-            platform: true,
+            platforms: true,
             mediaType: true,
             publishDate: true,
             publishTime: true,

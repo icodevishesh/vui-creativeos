@@ -1,16 +1,40 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
 
 /**
  * GET /api/repository
  *
- * Returns:
- *   folders    — one per client, with file count from the Asset table
- *   recentFiles — 20 most recent assets across all clients
+ * Without ?clientId:
+ *   Returns folders (one per client with fileCount) + 10 most recent assets
+ *
+ * With ?clientId=:
+ *   Returns all assets for that client, ordered newest first
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    // Fetch all clients to ensure even new clients without assets/folders show up
+    const { searchParams } = new URL(req.url);
+    const clientId = searchParams.get('clientId');
+
+    if (clientId) {
+      const assets = await prisma.asset.findMany({
+        where: { clientId },
+        orderBy: { uploadedAt: 'desc' },
+      });
+
+      return NextResponse.json(
+        assets.map((a) => ({
+          id: a.id,
+          name: a.assetName,
+          size: a.fileSize,
+          date: a.uploadedAt,
+          url: a.fileUrl,
+          mimeType: a.fileType,
+          taskId: a.taskId ?? null,
+        }))
+      );
+    }
+
+    // Root view — one folder per client + recent files
     const clients = await prisma.clientProfile.findMany({
       include: {
         folder: true,
@@ -18,16 +42,16 @@ export async function GET() {
       },
       orderBy: { companyName: 'asc' },
     });
-    
-    const folderList = clients.map((c) => ({
-      id: c.folder?.id || `folder-${c.id}`,
+
+    const folders = clients.map((c) => ({
+      id: c.folder?.id ?? `folder-${c.id}`,
+      clientId: c.id,
       name: c.companyName,
       fileCount: c._count.assets,
     }));
 
-    // Recent files across all clients from the shared Asset table
     const recentAssets = await prisma.asset.findMany({
-      take: 20,
+      take: 10,
       orderBy: { uploadedAt: 'desc' },
       include: {
         client: { select: { companyName: true } },
@@ -38,13 +62,14 @@ export async function GET() {
       id: a.id,
       name: a.assetName,
       clientName: a.client.companyName,
+      clientId: a.clientId,
       size: a.fileSize,
       date: a.uploadedAt,
       url: a.fileUrl,
       mimeType: a.fileType,
     }));
 
-    return NextResponse.json({ folders: folderList, recentFiles });
+    return NextResponse.json({ folders, recentFiles });
   } catch (error) {
     console.error('[REPOSITORY_GET]', error);
     return new NextResponse('Internal error', { status: 500 });

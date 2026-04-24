@@ -15,6 +15,10 @@ interface CalendarTaskRef {
 /**
  * When a writer task (linked to a calendar) is approved by the client,
  * create one designer task per CalendarCopy in that calendar.
+ *
+ * Only processes copies that do NOT already have a designer task linked
+ * (calendarCopyId), so re-running after new copies are added never creates
+ * duplicates for previously-approved copies.
  */
 export async function createDesignerTasksForCalendar(task: CalendarTaskRef) {
   if (!task.calendarId) return;
@@ -25,6 +29,19 @@ export async function createDesignerTasksForCalendar(task: CalendarTaskRef) {
 
   if (copies.length === 0) return;
 
+  // Collect copy IDs that already have a designer task to avoid duplicates
+  const existingDesignerRows = await (prisma.task as any).findMany({
+    where: { calendarId: task.calendarId, calendarCopyId: { not: null } },
+    select: { calendarCopyId: true },
+  });
+  const alreadyHasDesignerTask = new Set<string>(
+    existingDesignerRows.map((r: any) => r.calendarCopyId as string)
+  );
+
+  // Only process copies that don't have a designer task yet
+  const newCopies = copies.filter(c => !alreadyHasDesignerTask.has(c.id));
+  if (newCopies.length === 0) return;
+
   const teamMembers = await prisma.clientTeamMember.findMany({
     where: { clientId: task.clientId },
   });
@@ -33,7 +50,7 @@ export async function createDesignerTasksForCalendar(task: CalendarTaskRef) {
   const designerEntry = teamMembers.find(m => normalizeRole(m.userRole) === 'GRAPHIC_DESIGNER');
   const videoEditorEntry = teamMembers.find(m => normalizeRole(m.userRole) === 'VIDEO_EDITOR');
 
-  for (const copy of copies) {
+  for (const copy of newCopies) {
     await prisma.calendarCopy.update({
       where: { id: copy.id },
       data: { status: 'APPROVED' },

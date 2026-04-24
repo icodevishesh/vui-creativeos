@@ -4,30 +4,45 @@
 // =====================================================
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useCallback } from 'react';
+import { useCallback } from 'react';
 import {
   fetchGanttTasks,
   fetchGanttLinks,
   fetchGanttProjects,
+  fetchGanttClients,
 } from './api';
-import type { GanttTaskClient, GanttLinkClient, GanttProject } from './types';
+import type { GanttTaskClient, GanttLinkClient, GanttProject, GanttClientItem } from './types';
 
 // ---- query keys (stable references) ----------------------------------
 
 export const ganttKeys = {
   all: ['gantt'] as const,
+  // Base key — invalidating this matches ALL project queries (any clientId filter)
   projects: () => [...ganttKeys.all, 'projects'] as const,
+  clients: () => [...ganttKeys.all, 'clients'] as const,
   tasks: (projectId: string) => [...ganttKeys.all, 'tasks', projectId] as const,
   links: (projectId: string) => [...ganttKeys.all, 'links', projectId] as const,
 };
 
 // ---- project selector ------------------------------------------------
 
-export function useGanttProjects() {
+// Pass clientId to scope results to a single client (filter dropdown or portal).
+// Omit to get all projects (internal users, no filter selected).
+export function useGanttProjects(clientId?: string) {
   return useQuery<GanttProject[]>({
-    queryKey: ganttKeys.projects(),
-    queryFn: fetchGanttProjects,
-    staleTime: 5 * 60_000, // projects rarely change mid-session
+    queryKey: [...ganttKeys.projects(), clientId ?? 'all'],
+    queryFn: () => fetchGanttProjects(clientId),
+    staleTime: 5 * 60_000,
+  });
+}
+
+// ---- client filter list ----------------------------------------------
+
+export function useGanttClients() {
+  return useQuery<GanttClientItem[]>({
+    queryKey: ganttKeys.clients(),
+    queryFn: fetchGanttClients,
+    staleTime: 5 * 60_000,
   });
 }
 

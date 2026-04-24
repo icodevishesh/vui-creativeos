@@ -11,6 +11,7 @@ interface CalendarWizardProps {
     onBack?: () => void;
     initialClientId?: string;
     taskId?: string;
+    taskTitle?: string;
 }
 
 export const CalendarWizard: React.FC<CalendarWizardProps> = ({
@@ -19,9 +20,11 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     onRefresh,
     onBack,
     initialClientId,
-    taskId
+    taskId,
+    taskTitle,
 }) => {
     const [step, setStep] = useState(1);
+    const [calendarName, setCalendarName] = useState('');
     const [objective, setObjective] = useState('');
     const [buckets, setBuckets] = useState([{ name: '', description: '' }]);
     const [isLoading, setIsLoading] = useState(false);
@@ -29,6 +32,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
     useEffect(() => {
         if (calendar) {
+            setCalendarName(calendar.name && calendar.name !== 'TechFlow' ? calendar.name : '');
             setObjective(calendar.objective || '');
             if (calendar.buckets && calendar.buckets.length > 0) {
                 setBuckets(calendar.buckets.map((b: any) => ({ name: b.name, description: b.description || '' })));
@@ -50,7 +54,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: 'TechFlow',
+                    name: calendarName.trim() || taskTitle || 'Untitled Calendar',
                     objective,
                     clientId: initialClientId,
                     taskId: taskId
@@ -115,7 +119,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                 </button>
                 <div className="h-4 w-[1px] bg-gray-300" />
                 <div className="flex items-center gap-2 text-sm">
-                    <span className="font-bold text-gray-900">TechFlow</span>
+                    <span className="font-bold text-gray-900">{calendarName.trim() || taskTitle || 'New Calendar'}</span>
                     {steps.map((s, i) => (
                         <React.Fragment key={s.id}>
                             <span className="text-gray-400">→</span>
@@ -131,7 +135,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
     if (step === 1) {
         return (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl">
                 {renderStepHeader()}
                 <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
@@ -142,6 +146,19 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                             <h2 className="text-xl font-bold text-gray-900">Step 1: Monthly Objective</h2>
                             <p className="text-gray-500 text-sm">Define the overarching goal for this month's content</p>
                         </div>
+                    </div>
+
+                    <div className="mb-4">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                            Calendar Name <span className="text-gray-400 font-normal normal-case">(optional — defaults to task name)</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={calendarName}
+                            onChange={(e) => setCalendarName(e.target.value)}
+                            placeholder={taskTitle || 'Enter a custom calendar name…'}
+                            className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white transition-all text-gray-700"
+                        />
                     </div>
 
                     <textarea
@@ -167,7 +184,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
     if (step === 2) {
         return (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl">
                 {renderStepHeader()}
                 <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
@@ -230,7 +247,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
     if (step === 3) {
         return (
-            <div className="max-w-5xl mx-auto space-y-6">
+            <div className="max-w-5xl space-y-6">
                 {renderStepHeader()}
 
                 {/* Objective Summary */}

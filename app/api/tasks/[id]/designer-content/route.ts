@@ -65,21 +65,54 @@ export async function PATCH(
 
         // ── Mode 2: FormData — file upload + notes + submit ──────────────────────
         const formData = await req.formData();
-        const files = formData.getAll("file") as File[];
         const notes = (formData.get("notes") as string | null)?.trim() ?? "";
         const statusRaw = (formData.get("status") as string | null) ?? "INTERNAL_REVIEW";
 
-        if (files.length === 0 && !notes) {
+        // Per-file type metadata: fileMetadata is a JSON map of
+        // { [platform]: string[] } where each entry is an ordered list of types
+        // matching the files appended for that platform.
+        let fileMetadata: Record<string, string[]> = {};
+        const rawMeta = formData.get("fileMetadata");
+        if (typeof rawMeta === "string") {
+            try { fileMetadata = JSON.parse(rawMeta); } catch { /* ignore */ }
+        }
+
+        // Legacy fallback: type_{Platform} entries
+        const legacyTypes: Record<string, string> = {};
+        for (const [key, value] of formData.entries()) {
+            if (key.startsWith("type_") && typeof value === "string") {
+                legacyTypes[key.slice(5)] = value;
+            }
+        }
+
+        // Collect files — track per-platform index to resolve per-file types.
+        const platformCursor: Record<string, number> = {};
+        const allFiles: Array<{ file: File; platform: string | null; platformType: string | null }> = [];
+        for (const [key, value] of formData.entries()) {
+            if (!(value instanceof File)) continue;
+            if (key === "file") {
+                allFiles.push({ file: value, platform: null, platformType: null });
+            } else if (key.startsWith("file_")) {
+                const platform = key.slice(5);
+                const idx = platformCursor[platform] ?? 0;
+                platformCursor[platform] = idx + 1;
+                const platformType =
+                    fileMetadata[platform]?.[idx] ??
+                    legacyTypes[platform] ??
+                    null;
+                allFiles.push({ file: value, platform, platformType });
+            }
+        }
+
+        if (allFiles.length === 0 && !notes) {
             return NextResponse.json(
                 { error: "Provide at least one file or design notes" },
                 { status: 400 }
             );
         }
 
-        // Upload files and create attachment + asset records
-        for (const file of files) {
-            if (!(file instanceof File)) continue;
-
+        // Upload files and create attachment records
+        for (const { file, platform, platformType } of allFiles) {
             const { fileUrl } = await saveFileToClientFolder({
                 file,
                 clientId: task.clientId,
@@ -95,6 +128,8 @@ export async function PATCH(
                     fileUrl,
                     fileSize: file.size,
                     mimeType: file.type || "application/octet-stream",
+                    ...(platform ? { platform } : {}),
+                    ...(platformType ? { platformType } : {}),
                 },
             });
         }

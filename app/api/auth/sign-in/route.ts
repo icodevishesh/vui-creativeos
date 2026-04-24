@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         // password coming from database and password from form are same then continu
         // 
         const isPasswordSame = password === user.password;
-        console.log(user.password, password, isPasswordValid, isPasswordSame);
+        // console.log(user.password, password, isPasswordValid, isPasswordSame);
 
         if (!isPasswordValid && !isPasswordSame) {
             return NextResponse.json(

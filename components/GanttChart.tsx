@@ -33,6 +33,7 @@ export interface GanttChartProps {
     projectId: string | null;
     projectCreatedAt?: string | null;
     onApiReady?: (api: IApi) => void;
+    readOnly?: boolean;
 }
 
 // ---- Scales ----------------------------------------------------------
@@ -45,7 +46,7 @@ const SCALES = [
 
 // ---- Component -------------------------------------------------------
 
-export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: GanttChartProps) {
+export default function GanttChart({ projectId, projectCreatedAt, onApiReady, readOnly }: GanttChartProps) {
     const [mounted, setMounted] = useState(false);
     const [api, setApi] = useState<IApi | undefined>();
 
@@ -146,7 +147,9 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
     }, []);
 
     const chartHeight = containerHeight > 0
-        ? containerHeight - (toolbarHeight > 0 ? toolbarHeight : 48)
+        ? readOnly
+            ? containerHeight
+            : containerHeight - (toolbarHeight > 0 ? toolbarHeight : 48)
         : 0;
 
     // ── RestDataProvider (write path) ─────────────────────────────────
@@ -160,7 +163,7 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
         (ganttApi: IApi) => {
             setApi(ganttApi);
             onApiReady?.(ganttApi);
-            ganttApi.setNext(server);
+            if (!readOnly) ganttApi.setNext(server);
 
             // Normalize start/end to Date objects on every task mutation.
             // When RestDataProvider writes a task, SVAR may receive the new/updated
@@ -174,7 +177,7 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
             ganttApi.intercept('add-task', (ev: Record<string, unknown>) => { normalizeDates(ev); });
             ganttApi.intercept('update-task', (ev: Record<string, unknown>) => { normalizeDates(ev); });
         },
-        [server, onApiReady]
+        [server, onApiReady, readOnly]
     );
 
     // ── Guards ────────────────────────────────────────────────────────
@@ -212,8 +215,8 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
 
             {!isError && !showSkeleton && (
                 <Willow>
-                    {/* Toolbar + fullscreen button */}
-                    <div ref={toolbarCallbackRef} style={{ position: 'relative' }}>
+                    {/* Toolbar + fullscreen button — hidden in read-only mode */}
+                    {!readOnly && <div ref={toolbarCallbackRef} style={{ position: 'relative' }}>
                         <Toolbar api={api} />
                         <button
                             onClick={toggleFullscreen}
@@ -238,12 +241,12 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
                         >
                             {isFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
                         </button>
-                    </div>
+                    </div>}
 
                     {/* Chart area */}
                     <div
                         style={{
-                            height: chartHeight > 0 ? `${chartHeight}px` : 'calc(100% - 48px)',
+                            height: chartHeight > 0 ? `${chartHeight}px` : readOnly ? '100%' : 'calc(100% - 48px)',
                             width: '100%', position: 'relative', overflow: 'hidden',
                         }}
                     >
@@ -254,13 +257,19 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
                                         <Plus className="w-5 h-5 text-gray-400" />
                                     </div>
                                     <h3 className="font-medium text-gray-900">No tasks yet</h3>
-                                    <p className="text-xs text-gray-500">Your timeline is empty. Click the button below to add your first milestone or task.</p>
-                                    <button
-                                        onClick={() => onApiReady && api && onApiReady(api)}
-                                        className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
-                                    >
-                                        Add first task
-                                    </button>
+                                    <p className="text-xs text-gray-500">
+                                        {readOnly
+                                            ? 'This project has no tasks yet.'
+                                            : 'Your timeline is empty. Click the button below to add your first milestone or task.'}
+                                    </p>
+                                    {!readOnly && (
+                                        <button
+                                            onClick={() => onApiReady && api && onApiReady(api)}
+                                            className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
+                                        >
+                                            Add first task
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -275,11 +284,12 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady }: 
                                 links={ganttLinks}
                                 scales={SCALES}
                                 init={init}
+                                readonly={readOnly}
                             />
                         </div>
                     </div>
 
-                    {api && <Editor api={api} />}
+                    {api && !readOnly && <Editor api={api} />}
                 </Willow>
             )}
         </div>

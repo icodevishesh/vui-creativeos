@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -534,12 +535,13 @@ export default function ProjectsPage() {
                 QUERY_KEYS.projects(newProject.clientId),
                 (old = []) => [newProject, ...old]
             );
-            // Invalidate project list to show the new one in the selector
             queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects(selectedClientId) });
-            // Switch to the new project
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects('all') });
             setProjectId(newProject.id);
             setShowModal(false);
+            toast.success('Project created successfully!');
         },
+        onError: () => toast.error('Failed to create project'),
     });
 
     const deleteMutation = useMutation({

@@ -528,12 +528,14 @@ model Comment {
 }
 
 model TaskAttachment {
-  id         String   @id @default(cuid()) @map("_id")
-  fileName   String
-  fileUrl    String
-  fileSize   Int?
-  mimeType   String?
-  uploadedAt DateTime @default(now())
+  id           String   @id @default(cuid()) @map("_id")
+  fileName     String
+  fileUrl      String
+  fileSize     Int?
+  mimeType     String?
+  platform     String?
+  platformType String?
+  uploadedAt   DateTime @default(now())
 
   task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
   taskId String
@@ -765,7 +767,7 @@ model CalendarCopy {
   hashtags       String?
   publishDate    DateTime?
   publishTime    String?        // Store as string like "HH:mm"
-  platform       String?
+  platforms      String[]
   mediaType      String?
   status         String         @default("DRAFT") // DRAFT, UNDER_REVIEW, APPROVED
   createdAt      DateTime       @default(now())

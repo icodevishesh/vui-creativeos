@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
@@ -11,6 +12,7 @@ export default function SignIn() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { refresh } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,6 +22,7 @@ export default function SignIn() {
             const response = await fetch('/api/auth/sign-in', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ email, password }),
             });
 
@@ -30,10 +33,11 @@ export default function SignIn() {
             }
 
             toast.success('Successfully signed in!');
+            await refresh();
             if (data.user?.userType === 'CLIENT') {
-                router.push('/portal/dashboard');
+                router.replace('/portal/dashboard');
             } else {
-                router.push('/dashboard');
+                router.replace('/dashboard');
             }
         } catch (error: any) {
             toast.error(error.message);

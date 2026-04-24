@@ -92,7 +92,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error('Failed to submit scope');
+      if (!res.ok) throw new Error('Missing fields');
       return res.json();
     },
     onSuccess: () => {

@@ -21,19 +21,25 @@ function ProjectSelectorSkeleton() {
 interface ProjectSelectorProps {
   value: string | null;
   onChange: (id: string) => void;
+  // When set, only projects belonging to this client are shown (no optgroup needed)
+  clientId?: string;
 }
 
-export function ProjectSelector({ value, onChange }: ProjectSelectorProps) {
-  const { data: projects, isLoading, isError } = useGanttProjects();
+export function ProjectSelector({ value, onChange, clientId }: ProjectSelectorProps) {
+  const { data: projects, isLoading, isError } = useGanttProjects(clientId);
 
-  // Group projects by client name for the optgroup display
+  // Group by client name only when showing all clients (no clientId filter)
   const grouped = useMemo(() => {
     if (!projects) return {};
+    if (clientId) {
+      // Single client — flatten into one group with empty key (no optgroup rendered)
+      return { '': projects };
+    }
     return projects.reduce<Record<string, GanttProject[]>>((acc, p) => {
       (acc[p.clientName] ??= []).push(p);
       return acc;
     }, {});
-  }, [projects]);
+  }, [projects, clientId]);
 
   const selectedProject = useMemo(
     () => projects?.find((p) => p.id === value),
@@ -68,15 +74,19 @@ export function ProjectSelector({ value, onChange }: ProjectSelectorProps) {
           aria-label="Select project for Gantt chart"
         >
           <option value="" disabled>Select a project…</option>
-          {Object.entries(grouped).map(([clientName, clientProjects]) => (
-            <optgroup key={clientName} label={clientName}>
-              {clientProjects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </optgroup>
-          ))}
+          {Object.entries(grouped).map(([groupLabel, groupProjects]) =>
+            groupLabel
+              ? (
+                <optgroup key={groupLabel} label={groupLabel}>
+                  {groupProjects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </optgroup>
+              )
+              : groupProjects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))
+          )}
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
       </div>

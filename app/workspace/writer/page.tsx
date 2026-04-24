@@ -36,7 +36,7 @@ export default function WriterWorkspacePage() {
   }, []);
 
   const handleRefresh = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: ['writer-tasks'] });
+    queryClient.refetchQueries({ queryKey: ['writer-tasks'] });
   }, [queryClient]);
 
   // Performance: Memoize view transition to avoid unmounting logic overhead
@@ -57,6 +57,7 @@ export default function WriterWorkspacePage() {
             initialClientId={initialClientId}
             initialCalendarId={initialCalendarId}
             taskId={activeTaskId}
+            taskTitle={selectedTask?.title}
             onBack={() => {
               setActiveTab('tasks');
               handleRefresh();

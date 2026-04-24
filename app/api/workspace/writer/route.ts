@@ -63,9 +63,12 @@ export async function GET() {
 
     const result = tasks.map((task) => {
       const { subTasks, ...rest } = task;
-      // Open revision subtasks (for rejected/feedback tasks)
-      const revisionSubTasks = subTasks.filter((s) => s.status === 'OPEN');
-      
+      // Only surface revision subtasks when the task is OPEN and needs writer action.
+      // Once the writer resubmits (INTERNAL_REVIEW) or the task is approved, clear them.
+      const revisionSubTasks = task.status === 'OPEN'
+        ? subTasks.filter((s) => s.status === 'OPEN')
+        : [];
+
       // Transform calendar count for frontend convenience
       const transformedCalendar = task.calendar ? {
         ...task.calendar,

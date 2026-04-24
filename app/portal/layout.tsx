@@ -4,14 +4,14 @@ import * as React from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
 const NAV_ITEMS = [
   { href: '/portal/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/portal/gantt', label: 'Gantt Chart', icon: BarChart2 },
   { href: '/portal/approvals', label: 'Approvals', icon: CheckCircle2 },
-  { href: '/portal/timeline', label: 'Timeline', icon: CalendarDays },
   { href: '/portal/profile', label: 'My Profile', icon: User },
 ];
 
@@ -118,7 +118,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:w-60 z-30">
         <Sidebar />
@@ -156,8 +156,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           <div className="w-9" />
         </header>
 
-        <main className="flex-1 p-6">
-          <div className="max-w-5xl mx-auto">{children}</div>
+        <main className="flex-1 overflow-auto p-6">
+          <div className="w-full h-full">{children}</div>
         </main>
       </div>
     </div>

@@ -114,7 +114,7 @@ export default function Upload({ folderName, onUploadComplete, disabled }: Uploa
 	};
 
 	return (
-		<div className="w-full flex flex-col items-center justify-center">
+		<div className="w-full h-50 flex flex-col items-center justify-center">
 			<div className="z-10 w-full font-sans text-sm fade-in">
 				<div className="p-4 rounded-3xl space-y-6">
 					<div className={`relative group ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
@@ -141,11 +141,11 @@ export default function Upload({ folderName, onUploadComplete, disabled }: Uploa
 						<div className="space-y-4 fade-in">
 							<div className="flex justify-between items-end">
 								<div>
-									<h3 className="text-lg font-semibold text-slate-200">
+									<h3 className="text-sm font-semibold text-black">
 										{completed
-											? "✨ Upload Complete!"
+											? "✅ Upload Complete!"
 											: uploading
-												? "⚡ Uploading..."
+												? "🚀 Uploading..."
 												: "❌ Error"}
 									</h3>
 									{file && (
@@ -198,7 +198,7 @@ export default function Upload({ folderName, onUploadComplete, disabled }: Uploa
 										setCompleted(false);
 										setProgress(0);
 									}}
-									className="w-full py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 font-bold hover:opacity-90 transition-opacity"
+									className="w-full py-3 rounded-lg bg-black text-white hover:bg-black/95 font-bold hover:opacity-90 transition-opacity"
 								>
 									Upload Another
 								</button>
