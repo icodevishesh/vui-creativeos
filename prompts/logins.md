@@ -20,3 +20,8 @@ Admin
 vipinpal7060@gmail.com
 123456
 
+pwc:
+pEB5D8mDr$
+
+Akash.Manchanda@vuilive.com
+akash@12345

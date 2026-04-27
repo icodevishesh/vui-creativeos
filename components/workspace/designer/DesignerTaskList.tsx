@@ -117,7 +117,7 @@ export const DesignerTaskList: React.FC<DesignerTaskListProps> = ({
 
   return (
     <div className="space-y-4">
-      {tasks.map((task) => {
+      {tasks.filter(t => t.status !== 'APPROVED').map((task) => {
         const Icon = getTaskIcon(task.title);
         const status = getStatusBadge(task.status);
         const isExpanded = expandedTaskId === task.id;

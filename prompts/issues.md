@@ -110,3 +110,6 @@ Each uploaded file should have its own selectable type (e.g. Post, Story, Reel, 
 Please update the gantt chart view and gantt chart page view. Except admin/team lead/ account manager, dont show the "new project" button, "new task" button and hide the edit grid view only show the gantt chart view to them, no access to edit it. Refer to screenshot "C:\elevana_projects\vui-creativeos\code\prompts\image.png"
 
 Can we also remove this "+" for readOnly. refer uploaded screenshot in C:\elevana_projects\vui-creativeos\code\prompts\image.png
+
+
+Show all the tasks with their latest approved and rejected designes under Work History tab in designer workspace. Currently it is not showing approved and rejected designes so user cannot track it.

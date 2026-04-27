@@ -10,7 +10,7 @@ interface DesignerTabNavigationProps {
 const TABS = [
   { id: 'tasks', label: 'My Tasks' },
   { id: 'upload', label: 'Upload & Submit' },
-  { id: 'version', label: 'Version History' },
+  { id: 'version', label: 'Work History' },
 ];
 
 export const DesignerTabNavigation: React.FC<DesignerTabNavigationProps> = ({ activeTab, setActiveTab }) => {
@@ -20,11 +20,10 @@ export const DesignerTabNavigation: React.FC<DesignerTabNavigationProps> = ({ ac
         <button
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}
-          className={`px-3 py-1 rounded-lg transition-all ${
-            activeTab === tab.id
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
-          }`}
+          className={`px-3 py-1 rounded-lg transition-all ${activeTab === tab.id
+            ? 'bg-white text-blue-600 shadow-sm'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
+            }`}
           aria-current={activeTab === tab.id ? 'page' : undefined}
         >
           {tab.label}

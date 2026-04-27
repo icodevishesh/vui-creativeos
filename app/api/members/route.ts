@@ -11,7 +11,7 @@ async function validateAdminAccess() {
   const adminMember = await prisma.organizationMember.findFirst({
     where: { role: 'ADMIN' },
   });
-  
+
   const adminOwner = await prisma.user.findFirst({
     where: { userType: 'ADMIN_OWNER' },
   });
@@ -23,7 +23,22 @@ async function validateAdminAccess() {
 
 export async function GET() {
   try {
+    const membersCount = await prisma.organizationMember.count();
+
+    if (membersCount === 0) {
+      return NextResponse.json({ message: 'no members yet' });
+    }
+
+    // We query from OrganizationMember but filter to ensure the user exists
+    // to avoid the "Inconsistent query result" error from orphaned records.
     const members = await prisma.organizationMember.findMany({
+      where: {
+        user: {
+          id: {
+            not: ""
+          }
+        }
+      },
       include: {
         user: {
           select: {

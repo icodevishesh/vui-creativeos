@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Menu, Bell } from 'lucide-react';
+import { Menu, Bell, Shield, User } from 'lucide-react';
 import { useAuth, formatRole } from '@/context/AuthContext';
 
 interface HeaderProps {
@@ -50,9 +50,16 @@ export function Header({ onOpenMobile }: HeaderProps) {
             {!isLoading && user && (
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-semibold text-gray-900 leading-tight">{user.name}</p>
-                <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider leading-tight">
-                  {roleLabel}
+                <p className="text-[10px] text-gray-400 leading-tight">
+                  {user.email}
                 </p>
+
+                <div className='flex items-center justify-end gap-1 mt-1'>
+                  {roleLabel === "ADMIN_OWNER" ? <User className="w-3 h-3 text-indigo-600" /> : <Shield className="w-3 h-3 text-indigo-600" />}
+                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider leading-tight">
+                    {roleLabel}
+                  </p>
+                </div>
               </div>
             )}
             <div
@@ -64,6 +71,6 @@ export function Header({ onOpenMobile }: HeaderProps) {
           </div>
         </div>
       </div>
-    </header>
+    </header >
   );
 }

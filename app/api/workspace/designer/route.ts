@@ -44,7 +44,6 @@ export async function GET() {
             ? [{ clientId: { in: designerClientIds }, calendarCopyId: { not: null } }]
             : []),
         ],
-        status: { notIn: ['APPROVED'] as any },
       },
       include: {
         project: { select: { id: true, name: true } },
