@@ -5,18 +5,46 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function SignUp() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
+    const validateEmail = (value: string) =>
+        EMAIL_REGEX.test(value) ? '' : 'Please enter a valid email address';
+
+    const validatePassword = (value: string) =>
+        value.length >= 8 ? '' : 'Password must be at least 8 characters';
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const normalized = e.target.value.toLowerCase().trim();
+        setEmail(normalized);
+        if (emailError) setEmailError(validateEmail(normalized));
+    };
+
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPassword(e.target.value);
+        if (passwordError) setPasswordError(validatePassword(e.target.value));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
 
+        const emailErr = validateEmail(email);
+        const passErr = validatePassword(password);
+
+        if (emailErr) setEmailError(emailErr);
+        if (passErr) setPasswordError(passErr);
+        if (emailErr || passErr) return;
+
+        setIsLoading(true);
         try {
             const response = await fetch('/api/auth/sign-up', {
                 method: 'POST',
@@ -25,10 +53,7 @@ export default function SignUp() {
             });
 
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Something went wrong');
-            }
+            if (!response.ok) throw new Error(data.error || 'Something went wrong');
 
             toast.success('Account created successfully! Please sign in.');
             router.push('/sign-in');
@@ -71,11 +96,19 @@ export default function SignUp() {
                             id="email"
                             type="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={handleEmailChange}
+                            onBlur={() => setEmailError(validateEmail(email))}
                             required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow text-sm text-black"
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow text-sm text-black ${
+                                emailError
+                                    ? 'border-red-400 focus:ring-red-400'
+                                    : 'border-gray-300 focus:ring-gray-900'
+                            }`}
                             placeholder="you@example.com"
                         />
+                        {emailError && (
+                            <p className="mt-1 text-xs text-red-500">{emailError}</p>
+                        )}
                     </div>
 
                     <div>
@@ -87,9 +120,14 @@ export default function SignUp() {
                                 id="password"
                                 type={showPassword ? 'text' : 'password'}
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={handlePasswordChange}
+                                onBlur={() => setPasswordError(validatePassword(password))}
                                 required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow text-black text-sm pr-10"
+                                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow text-black text-sm pr-10 ${
+                                    passwordError
+                                        ? 'border-red-400 focus:ring-red-400'
+                                        : 'border-gray-300 focus:ring-gray-900'
+                                }`}
                                 placeholder="Create a password"
                             />
                             <button
@@ -110,6 +148,9 @@ export default function SignUp() {
                                 )}
                             </button>
                         </div>
+                        {passwordError && (
+                            <p className="mt-1 text-xs text-red-500">{passwordError}</p>
+                        )}
                     </div>
 
                     <button

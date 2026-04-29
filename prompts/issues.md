@@ -1,166 +1,79 @@
-1. Currently a whole task is submitted for review, so all the copies are submitted wether they are already submitted or not. So when a copy is already submitted for review then it should not be submit again, after submiting a copy the submit button still shows on the copy card. And the submitted copies should show as history. Only new copies that will be created under that task's calendar should show submit button. solved
+Follow these rules:
 
-2. PATCH /api/tasks/cmo9ps3ce00033s8cc48hzvmo/designer-content 400 in 187ms (next.js: 25ms, proxy.ts: 18ms, application-code: 145ms)
-[browser] Submission failed Error: Submission failed
-    at handleSubmit (components/workspace/designer/UploadAndSubmitTab.tsx:207:26)
-  205 |       });
-  206 |
-> 207 |       if (!res.ok) throw new Error('Submission failed');
-      |                          ^
-  208 |       toast.success('Design submitted for internal review');
-  209 |       setFilesByPlatform({});
-  210 |       setNotes(''); (components/workspace/designer/UploadAndSubmitTab.tsx:213:15)
- GET /workspace/designer 200 in 203ms (next.js: 47ms, proxy.ts: 24ms, application-code: 132ms)
- GET /api/auth/me 200 in 146ms (next.js: 22ms, proxy.ts: 38ms, application-code: 86ms)
- GET /api/workspace/designer 200 in 452ms (next.js: 17ms, proxy.ts: 36ms, application-code: 398ms)
- PATCH /api/tasks/cmo9ps3ce00033s8cc48hzvmo/designer-content 400 in 176ms (next.js: 19ms, proxy.ts: 5ms, application-code: 152ms)
-[browser] Submission failed Error: Submission failed
-    at handleSubmit (components/workspace/designer/UploadAndSubmitTab.tsx:207:26)
-  205 |       });
-  206 |
-> 207 |       if (!res.ok) throw new Error('Submission failed');
-      |                          ^
-  208 |       toast.success('Design submitted for internal review');
-  209 |       setFilesByPlatform({});
-  210 |       setNotes(''); (components/workspace/designer/UploadAndSubmitTab.tsx:213:15)
-
-  When designer tried to upload files for specific platforms, for example in the copy there are three platforms, instagram, facebook, twitter, when tried to upload for these three platforms only, then it is not submitting. Fix the issue and also state the explaination and logic.
-
-3. Add the types in platforms, like instagram have post, story, reel.
-facebook have post, story. twitter have posts and linkdin have posts.
-
-So update the schema and all the pages that includes platforms accordingly. For eg when designer uploads a creative for a platform, the designer also have to mention the type of creative it is (eg post, story, reel).
-
-If the platform is instagram and type is post then preview the image size ratio in 4:5, if the type is story then preview in 9:16, and if the type is reel then preview in 9:16.
-If the platform is facebook or linkdin the image size ratio in 4:5
-If the platform is twitter then preview the image size ratio in 16:9
-
-
-
-4. There is an issue: For example a task is assigned to the writer, he creates a calendar and after it he creates copies under that calendar, for example he created 10 copies under that calendar and submit it for internal review, and his copies got approved but now if he want to add another copy after approval of other copies in that task, he submits that copy for review but the admin cannot approved that copy which is submitted later, and the status is showing as draft of that copy. So when the admin approves the calendar it is not sent to the client for approval. Fix this issue and state the logic and explanation.
-
-5. when a user logged in initially it shows a account name as Admin User, Admin, after refreshing it once then it shows the actual user who logged in. Address this issue and state the logic and explanation.
-
-6. When a user signed in for example i have signed in with visheshpurkait@gmail.com and usertype is content writer, but after sign in it redirect to the dashboard and showing other user of the same team kim, designer after manual refresh it shows correct signed in user. Fix this issue and state the logic and explanation.
-This issue is similar to previous one, I have also added router.refresh() after successful sign in. But still issue perhaps. Please find the route cause and also explain why this is happening and how can i learn and take care of this in future.
-
-7. Make a complete detailed documnets of all the features implemented so far.
-
-4/23/2026
-bugs:
-1. managed by is not updating after adding team lead to a client, if a team lead is added under a client's team then automatically it should show managed by "team lead name"
-2. Meeting log is not creating thorws error " POST /api/clients/cmobbldd400023scsk8aeu417/meetings 400 in 34ms (next.js: 16ms, proxy.ts: 5ms, application-code: 14ms)"
-3. Add react hot toast success msg after successfully creation of project and refresh the page.
-4. critical issue: I have created a task calendar and added 2 buckets and 2 copies of that calendar, after navigate back to allocated task tab and clicking to the task, it should show "continue calendar" and "submit" button to send task's calendar for approval. But nothing is showing it showing create calendar button again and no created copies showing, but in db both copies are showing with the respected calendar id and also the calendar is showing created for that task.
-
-
-24/04/2026
-bugs:
-1. Admin reject a task then is reassigned to the writer, and status changed to open again. When the writer tries to delete the previous copy of the calendar it is not deleting and throwing error "Delete Failed".
-DELETE /api/calendars/cmobel3i200013so8yqj5cro2/copies/cmobeqe9y00073so8twlbf3ft 404 in 295ms (next.js: 154ms, proxy.ts: 14ms, application-code: 126ms) fix this issue and explain me the reason.
-
-2. When write creates a calendar, also give option to name that calendar else the default name will be task's name. Right now every calendar name shown as "Techflow".
-3. When admin/team lead approved a calendar after which it sent to the client for approval, the approve button should disable, current after approving a calendar it shows approve and publish button which is not correct.
-4. if a task rejected a revision required message is shown to the writer, but after he deleted the rejected copy and created new copy and submit and also got approved still the message is showing as "revision required" after approval. check uploaded screenshot on code\prompts\image.png
-5. In designer's workspace when a designer upload design files/images/video respective to a platform he can upload multiple files/images/videos with different types, like there are 2 platforms: insta and linkdin so desginer need to upload 2 images for instagram post, and for story and both has different ratios so make sure he can select the type for different image/videos, right now the issue is when designer upload two images he can only select one type, but what is he wants one image for post and another for story so both have different ratios and both will be displayed in different ratios.
-
-
-
-Please fix the following issues:
-
-1. Calendar naming on creation
-When a writer creates a calendar, provide an option to enter a custom calendar name.
-
-If no name is provided, the calendar name should default to the task name.
-
-Currently, every calendar is being displayed with the harcoded name "Techflow", which is incorrect.
-
-2. Approval button state after admin/team lead approval
-Once an admin or team lead approves a calendar and it is sent to the client for approval, the Approve button should be disabled or hidden.
-
-Currently, after approval, Approve buttom still visible as "Approve and publish", which is incorrect.
-
-3. Incorrect "Revision Required" status after resubmission
-If a task is rejected, the writer correctly sees a "Revision Required" message.
-
-However, after the writer deletes the rejected copy, creates a new one, resubmits it, and it gets approved, it still shows "Revision Required" message on task card.
-
-This should be cleared once the new submission is approved.
-
-Please refer to the screenshot at: code\prompts\image.png
-
-4. Multiple file uploads with platform-specific content types in designer workspace
-In the designer workspace, designers should be able to upload multiple files (images/videos) for each platform and assign a different content type to each file.
-
-Example:
-
-Platforms: Instagram and LinkedIn
-For Instagram, a designer may need to upload:
-1 image for Post
-1 image for Story
-Since Post and Story have different ratios, each uploaded file should allow its own type selection.
-
-Current issue:
-When a designer uploads two images, they can only select one type for both files.
-
-Expected behavior:
-Each uploaded file should have its own selectable type (e.g. Post, Story, Reel, etc.), so files can be displayed in the correct ratio and context.
-
-
-Please update the gantt chart view and gantt chart page view. Except admin/team lead/ account manager, dont show the "new project" button, "new task" button and hide the edit grid view only show the gantt chart view to them, no access to edit it. Refer to screenshot "C:\elevana_projects\vui-creativeos\code\prompts\image.png"
-
-Can we also remove this "+" for readOnly. refer uploaded screenshot in C:\elevana_projects\vui-creativeos\code\prompts\image.png
-
-
-Show all the tasks with their latest approved and rejected designes under Work History tab in designer workspace. Currently it is not showing approved and rejected designes so user cannot track it.
-
-
+- Do NOT break existing functionality
+- Ensure backward compatibility where possible
+- Update schema, backend logic, and frontend where required
+- Handle edge cases and validation properly
+- Ensure persistence issues (refresh/state loss) are fixed
+- Maintain clean, scalable code
 
 bug:
 
-- optional field (bried des)
-- $ -> ₹
-- missing services in dropdown
-- project card view -> edit and full view and delete
-- gantt page dialouge box showing, remove after refresh - fix
-- just keep open, in progress task update status for members (writer, designer, etc).
-- also upload zip files in file repo and creative upload
-- img, video, carousal (Add carousal view).
+signin page:
+add validation in email, email is case sensitive ✅
 
 client onboarding:
-scope of work: if adding new service, old service get removed
 
-dual role user:
-- assign one user multiple roles at creation
+- Add validation in email and phone number accepts 10 digites with +91 and indian flag icon.✅
+- missing services in dropdown (whatsapp marketing, seo) and update schema
+- services added while onboarding not display on client page, scope of work tab, and social media service is always showing by default even if the admin not chosen it while onboarding
 
-gantt chart:
-- start date and end date: same date
-- option to duplicate gantt chart (new feature)
-- highlight weekends
+clients:
 
-task board:
-- members option -> task status: open, in progress, hold + reason of holding, completed.
+- scope of work tab:
+  - give dropdown in monthly budget estimate field to select currency type ($, ₹)
+  - Adding a new service gets removed/not showing after refresh.
+  - make the description field as optional
 
-writer workspace:
-- after creating copies also give option to edit it after submit it
-- carousel -> give option to choose no. of frames and then generate copies according to wach frame
-- service sync with client onboarding in copies when selecting platform
-- Give option to add refrence url in respective to copies
+Team Members:
+
+- admin can assign a member roles > 1 && <= 2 (dual roles)
+  -> need to update the schema and the authorization logic for dual role user.
+- creating a custom role and assign permissions is not working.
+
+Projects:
+
+- make the projects view in row wise instead of grid/box wise
+- Give edit button in project card.
+- fix the delete button
+- Give option to change the status of the project, default is planning if the project is completed then admin can change the status to completed the status bar should be a dropdown to change status dynamically.
+- Also add created by (user's name) when a user creates a project.
+
+Gantt chart:
+
+- bug: sometimes gantt page shows a dialouge box which not get removed but after refresh it get removed
+- feat: option to duplicate a gantt chart from a project to another project, copy all the details of gantt chart including tasks and subtasks.
+- feat: highlight weekends in gantt chart
+- feat: if start date and end date is same, it should show 1 day only. for eg (28 aprl 2026 - 28 aprl 2026) it should show as a single day.
+
+Content calendar:
+
+- add tooltip to show all the details (date, status, bucket name etc) when hovering over the card.
+
+Task board:
+
+- team members (assigned for the task) can update task status: open, in progress, hold + reason of holding, completed.
+- remove "+ new task button" from team member's interface
 
 Approvals:
-- no task is showing in page 
-- also add record ( approved by name, postion )
 
-also show bucket brief/description in 
-- status task and copies status are not synced properly
+- add record (approved by "name", "role") as Team lead, account manager or admin, anyone could be approver.
+- under calendar, also show bucket description with the name.
+- tasks status and copies status are not synced properly.
 
-client interface:
-- show the task preview same as admin UI
-- clients can add task and admin can accept or reject the task. (new feature)
+Writer workspace:
 
-designer workspace:
+- after creating copies also give option to edit it after submit it
+- If writer chose media type as carousal while creating a copy then, next give option to choose frames (2,3,4...), If the write chose 3 frames so 3 new copies will be created with respect to carousal and everything should be synced. for eg instagram has carousal view (slides) which contains different images and description, so like that if writer choose carousal with 3 or 4 frames that much copies will be created respected to that.
+- service sync with client onboarding in copies when selecting platform for example, if client has social media service with 2 platforms: instagram and linkdin so only only those 2 platform should show when creating the copies with the respected to that client.
+- Give option to add refrence url in respective to copies. A field to add url which will store it as string. (update the schema accordingly)
+
+Client interface:
+
+- show the task preview in approvals page same as admin UI
+- clients can also add task and admin can accept or reject the task if accept then admin will assign it to a team member if not auto assgined and it will be appear on task board and to the respected team member.
+
+Designer workspace:
+
 - editor -> if copy has video the it will assign to editor of the team (editor is for video editing not graphic deisgner)
 - desginer -> if copy contains only image and text/graphics the it will assign to designer
-
-projects:
-- also add created by (name)

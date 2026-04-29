@@ -6,18 +6,32 @@ import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function SignIn() {
     const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { refresh } = useAuth();
 
+    const validateEmail = (value: string) =>
+        EMAIL_REGEX.test(value) ? '' : 'Please enter a valid email address';
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const normalized = e.target.value.toLowerCase().trim();
+        setEmail(normalized);
+        if (emailError) setEmailError(validateEmail(normalized));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
+        const err = validateEmail(email);
+        if (err) { setEmailError(err); return; }
 
+        setIsLoading(true);
         try {
             const response = await fetch('/api/auth/sign-in', {
                 method: 'POST',
@@ -27,18 +41,11 @@ export default function SignIn() {
             });
 
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Something went wrong');
-            }
+            if (!response.ok) throw new Error(data.error || 'Something went wrong');
 
             toast.success('Successfully signed in!');
             await refresh();
-            if (data.user?.userType === 'CLIENT') {
-                router.replace('/portal/dashboard');
-            } else {
-                router.replace('/dashboard');
-            }
+            router.replace(data.user?.userType === 'CLIENT' ? '/portal/dashboard' : '/dashboard');
         } catch (error: any) {
             toast.error(error.message);
         } finally {
@@ -63,11 +70,19 @@ export default function SignIn() {
                             id="email"
                             type="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={handleEmailChange}
+                            onBlur={() => setEmailError(validateEmail(email))}
                             required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow text-sm text-black"
+                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-shadow text-sm text-black ${
+                                emailError
+                                    ? 'border-red-400 focus:ring-red-400'
+                                    : 'border-gray-300 focus:ring-gray-900'
+                            }`}
                             placeholder="you@example.com"
                         />
+                        {emailError && (
+                            <p className="mt-1 text-xs text-red-500">{emailError}</p>
+                        )}
                     </div>
 
                     <div>

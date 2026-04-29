@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +11,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Check,
-  Briefcase,
+  Users,
   Layers,
   Sparkles,
   Copy,
@@ -22,12 +21,11 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-// ─── Step Config ────────────────────────────────────────────────────────────
+import PhoneInput from './PhoneInput';
 
 const STEPS = [
   { id: 1, name: 'Basic Info', icon: Building2 },
-  { id: 2, name: 'Engagement', icon: Briefcase },
+  { id: 2, name: 'Engagement', icon: Users },
   { id: 3, name: 'Services', icon: Layers },
 ];
 
@@ -36,9 +34,11 @@ const SERVICE_OPTIONS = [
   { id: 'PAID_MEDIA', name: 'Paid Media', desc: 'Meta, Google, LinkedIn Ads' },
   { id: 'INFLUENCER_MARKETING', name: 'Influencer Marketing', desc: 'Creator partnerships' },
   { id: 'EMAIL_MARKETING', name: 'Email Marketing', desc: 'Newsletters & automations' },
+  { id: 'WHATSAPP_MARKETING', name: 'WhatsApp Marketing', desc: 'Campaigns via WhatsApp Business API' },
+  { id: 'SEO', name: 'SEO', desc: 'Search engine optimization & ranking' },
 ];
 
-// ─── Component ──────────────────────────────────────────────────────────────
+// Component
 
 function CredentialsModal({
   isOpen,
@@ -67,7 +67,7 @@ function CredentialsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 px-6 py-5">
+        <div className="bg-linear-to-r from-indigo-600 to-indigo-500 px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
@@ -146,6 +146,22 @@ export function OnboardingFlow() {
     engagementType: 'RETAINER',
     services: [] as string[],
   });
+  // Email field — add emailError state + validation (same pattern as sign-in)
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PHONE_REGEX = /^\+91[6-9]\d{9}$/;  // +91 + valid 10-digit Indian mobile
+
+  const validateEmail = (v: string) =>
+    EMAIL_REGEX.test(v) ? '' : 'Please enter a valid email address';
+
+const validatePhone = (v: string) => {
+  const digits = v.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15
+    ? ''
+    : 'Enter a valid phone number';
+};
 
   const mutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -238,6 +254,7 @@ export function OnboardingFlow() {
       {/* Form Content */}
       <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
         <AnimatePresence mode="wait">
+          {/* Adding client details */}
           {currentStep === 1 && (
             <motion.div
               key="step1"
@@ -273,6 +290,7 @@ export function OnboardingFlow() {
                     />
                   </div>
                 </div>
+                {/* Email */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700">Email Address</label>
                   <div className="relative">
@@ -280,24 +298,35 @@ export function OnboardingFlow() {
                     <input
                       type="email"
                       placeholder="john@acme.com"
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                      className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-indigo-500 ${
+                        emailError
+                          ? 'border-red-400 focus:ring-red-400/20'
+                          : 'border-gray-100 focus:ring-indigo-500/10'
+                      }`}
                       value={formData.email}
-                      onChange={(e) => updateField('email', e.target.value)}
+                      onChange={(e) => {
+                        const v = e.target.value.toLowerCase().trim();
+                        updateField('email', v);
+                        if (emailError) setEmailError(validateEmail(v));
+                      }}
+                      onBlur={() => setEmailError(validateEmail(formData.email))}
                     />
                   </div>
+                  {emailError && <p className="text-xs text-red-500">{emailError}</p>}
                 </div>
+
+                {/* Phone */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700">Phone Number</label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="+1 234 567 890"
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
-                      value={formData.phone}
-                      onChange={(e) => updateField('phone', e.target.value)}
-                    />
-                  </div>
+                  <PhoneInput
+                    value={formData.phone}
+                    onChange={(v) => {
+                      updateField('phone', v);
+                      if (phoneError) setPhoneError(validatePhone(v));
+                    }}
+                    onBlur={() => setPhoneError(validatePhone(formData.phone))}
+                    error={phoneError}
+                  />
                 </div>
                 <div className="md:col-span-2 space-y-2">
                   <label className="text-sm font-semibold text-gray-700">Industry</label>
