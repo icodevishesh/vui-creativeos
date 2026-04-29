@@ -113,3 +113,54 @@ Can we also remove this "+" for readOnly. refer uploaded screenshot in C:\elevan
 
 
 Show all the tasks with their latest approved and rejected designes under Work History tab in designer workspace. Currently it is not showing approved and rejected designes so user cannot track it.
+
+
+
+bug:
+
+- optional field (bried des)
+- $ -> ₹
+- missing services in dropdown
+- project card view -> edit and full view and delete
+- gantt page dialouge box showing, remove after refresh - fix
+- just keep open, in progress task update status for members (writer, designer, etc).
+- also upload zip files in file repo and creative upload
+- img, video, carousal (Add carousal view).
+
+client onboarding:
+scope of work: if adding new service, old service get removed
+
+dual role user:
+- assign one user multiple roles at creation
+
+gantt chart:
+- start date and end date: same date
+- option to duplicate gantt chart (new feature)
+- highlight weekends
+
+task board:
+- members option -> task status: open, in progress, hold + reason of holding, completed.
+
+writer workspace:
+- after creating copies also give option to edit it after submit it
+- carousel -> give option to choose no. of frames and then generate copies according to wach frame
+- service sync with client onboarding in copies when selecting platform
+- Give option to add refrence url in respective to copies
+
+Approvals:
+- no task is showing in page 
+- also add record ( approved by name, postion )
+
+also show bucket brief/description in 
+- status task and copies status are not synced properly
+
+client interface:
+- show the task preview same as admin UI
+- clients can add task and admin can accept or reject the task. (new feature)
+
+designer workspace:
+- editor -> if copy has video the it will assign to editor of the team (editor is for video editing not graphic deisgner)
+- desginer -> if copy contains only image and text/graphics the it will assign to designer
+
+projects:
+- also add created by (name)
