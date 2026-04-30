@@ -12,10 +12,20 @@ interface CalendarCopiesListProps {
     onRefresh: () => void;
     taskId?: string;
     calendarObjective?: string;
+    clientPlatforms?: string[];
 }
 
 const ALL_PLATFORMS = ['Instagram', 'LinkedIn', 'Twitter', 'Facebook'] as const;
 type Platform = typeof ALL_PLATFORMS[number];
+
+// Map from scope-of-work IDs (lowercase) to display names
+const PLATFORM_ID_MAP: Record<string, Platform> = {
+    instagram: 'Instagram',
+    linkedin: 'LinkedIn',
+    linkedin_post: 'LinkedIn',
+    twitter: 'Twitter',
+    facebook: 'Facebook',
+};
 
 const PLATFORM_STYLES: Record<Platform, { bg: string; text: string; border: string; active: string }> = {
     Instagram: { bg: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200', active: 'bg-pink-500 text-white border-pink-500' },
@@ -29,9 +39,11 @@ const PLATFORM_STYLES: Record<Platform, { bg: string; text: string; border: stri
 function PlatformMultiSelect({
     selected,
     onChange,
+    availablePlatforms,
 }: {
     selected: string[];
     onChange: (platforms: string[]) => void;
+    availablePlatforms: Platform[];
 }) {
     const toggle = (platform: Platform) => {
         if (selected.includes(platform)) {
@@ -43,7 +55,7 @@ function PlatformMultiSelect({
 
     return (
         <div className="flex flex-wrap gap-2">
-            {ALL_PLATFORMS.map((platform) => {
+            {availablePlatforms.map((platform) => {
                 const isActive = selected.includes(platform);
                 const style = PLATFORM_STYLES[platform];
                 return (
@@ -213,8 +225,16 @@ function SubmitPreviewModal({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
-    calendarId, buckets, copies, onRefresh, taskId, calendarObjective
+    calendarId, buckets, copies, onRefresh, taskId, calendarObjective, clientPlatforms = []
 }) => {
+    // Derive allowed platforms from client's scope; fall back to all if none configured
+    const availablePlatforms: Platform[] = clientPlatforms.length > 0
+        ? [...new Set(
+            clientPlatforms
+                .map(id => PLATFORM_ID_MAP[id.toLowerCase()])
+                .filter(Boolean) as Platform[]
+          )]
+        : [...ALL_PLATFORMS];
     const [isLoading, setIsLoading] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [removingId, setRemovingId] = useState<string | null>(null);
@@ -460,6 +480,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                         <PlatformMultiSelect
                             selected={form.platforms}
                             onChange={(platforms) => setForm({ ...form, platforms })}
+                            availablePlatforms={availablePlatforms}
                         />
                     </div>
 

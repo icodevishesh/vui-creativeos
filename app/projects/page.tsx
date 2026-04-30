@@ -2,19 +2,16 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil, X, Check, User } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type ClientStatus = "ACTIVE" | "INACTIVE" | "PENDING";
 type ProjectStatus =
     | "PLANNING"
-    | "IN_PROGRESS"
-    | "REVIEW"
-    | "COMPLETED"
-    | "ON_HOLD"
-    | "CANCELLED";
+    | "COMPLETED";
 type EngagementType = "RETAINER" | "PROJECT_BASED";
 
 interface ClientProfile {
@@ -36,9 +33,8 @@ interface Project {
     createdAt: string;
     clientId: string;
     organizationId: string;
-    client?: {
-        companyName: string;
-    };
+    client?: { companyName: string };
+    createdBy?: { name: string } | null;
 }
 
 interface CreateProjectPayload {
@@ -47,6 +43,15 @@ interface CreateProjectPayload {
     startDate?: string;
     endDate?: string;
     description?: string;
+    createdById?: string;
+}
+
+interface EditProjectPayload {
+    name?: string;
+    description?: string;
+    startDate?: string;
+    endDate?: string;
+    budget?: number | null;
 }
 
 // API Helpers 
@@ -88,6 +93,16 @@ async function deleteProject(projectId: string): Promise<void> {
     if (!res.ok) throw new Error("Failed to delete project");
 }
 
+async function editProject(projectId: string, data: EditProjectPayload): Promise<Project> {
+    const res = await fetch(`${API_BASE}/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error("Failed to update project");
+    return res.json();
+}
+
 async function updateProjectStatus(
     projectId: string,
     status: ProjectStatus
@@ -97,7 +112,7 @@ async function updateProjectStatus(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
     });
-    if (!res.ok) throw new Error("Failed to update project");
+    if (!res.ok) throw new Error("Failed to update status");
     return res.json();
 }
 
@@ -130,49 +145,26 @@ function getInitials(name: string) {
 
 // Sub-Components
 
-const STATUS_CONFIG: Record<
-    ProjectStatus,
-    { label: string; bg: string; text: string }
-> = {
-    PLANNING: {
-        label: "Planning",
-        bg: "bg-violet-100",
-        text: "text-violet-700",
-    },
-    IN_PROGRESS: {
-        label: "In Progress",
-        bg: "bg-blue-100",
-        text: "text-blue-700",
-    },
-    REVIEW: { label: "Review", bg: "bg-amber-100", text: "text-amber-700" },
-    COMPLETED: {
-        label: "Completed",
-        bg: "bg-emerald-100",
-        text: "text-emerald-700",
-    },
-    ON_HOLD: { label: "On Hold", bg: "bg-gray-100", text: "text-gray-600" },
-    CANCELLED: { label: "Cancelled", bg: "bg-red-100", text: "text-red-600" },
+const STATUS_CONFIG: Record<ProjectStatus, { label: string; bg: string; text: string; ring: string }> = {
+    PLANNING:    { label: "Planning",    bg: "bg-violet-50",  text: "text-violet-700",  ring: "ring-violet-200" },
+    COMPLETED:   { label: "Completed",   bg: "bg-emerald-50", text: "text-emerald-700", ring: "ring-emerald-200"},
 };
 
 // Skeleton
 
-function ProjectCardSkeleton() {
+function ProjectRowSkeleton() {
     return (
-        <div className="bg-white rounded-lg border border-gray-100 p-5 animate-pulse">
-            <div className="flex items-start justify-between mb-3">
-                <div className="h-5 bg-gray-100 rounded w-2/5" />
-                <div className="h-5 bg-gray-100 rounded-full w-20" />
+        <div className="bg-white border border-gray-100 rounded-xl px-5 py-4 animate-pulse flex items-center gap-4">
+            <div className="flex-1 min-w-0">
+                <div className="h-4 bg-gray-100 rounded w-1/3 mb-2" />
+                <div className="h-3 bg-gray-100 rounded w-1/2" />
             </div>
-            <div className="h-4 bg-gray-100 rounded w-3/4 mb-1.5" />
-            <div className="h-4 bg-gray-100 rounded w-1/2 mb-4" />
-            <div className="flex gap-4 mb-4">
-                <div className="h-3.5 bg-gray-100 rounded w-24" />
-                <div className="h-3.5 bg-gray-100 rounded w-24" />
-            </div>
-            <div className="border-t border-gray-50 pt-4 flex gap-2">
-                <div className="h-8 bg-gray-100 rounded-lg w-20" />
-                <div className="h-8 bg-gray-100 rounded-lg w-20" />
-                <div className="h-8 bg-gray-100 rounded-lg w-16 ml-auto" />
+            <div className="h-6 bg-gray-100 rounded-full w-24 shrink-0" />
+            <div className="h-3 bg-gray-100 rounded w-28 shrink-0 hidden sm:block" />
+            <div className="h-3 bg-gray-100 rounded w-20 shrink-0 hidden md:block" />
+            <div className="flex gap-2 shrink-0">
+                <div className="h-7 w-7 bg-gray-100 rounded-lg" />
+                <div className="h-7 w-7 bg-gray-100 rounded-lg" />
             </div>
         </div>
     );
@@ -180,101 +172,216 @@ function ProjectCardSkeleton() {
 
 function ClientDropdownSkeleton() {
     return (
-        <div className="h-10 bg-gray-100 rounded-xl w-52 animate-pulse" />
+        <div className="h-10 bg-gray-100 rounded-lg w-52 animate-pulse" />
     );
 }
 
-// Project Card
+// Status Dropdown
 
-interface ProjectCardProps {
+interface StatusDropdownProps {
+    projectId: string;
+    current: ProjectStatus;
+    disabled: boolean;
+    onChange: (id: string, status: ProjectStatus) => void;
+}
+
+function StatusDropdown({ projectId, current, disabled, onChange }: StatusDropdownProps) {
+    const cfg = STATUS_CONFIG[current];
+    return (
+        <div className="relative">
+            <select
+                value={current}
+                disabled={disabled}
+                onChange={(e) => onChange(projectId, e.target.value as ProjectStatus)}
+                style={{ fontSize: '11px' }}
+                className={`appearance-none font-medium pl-2.5 pr-2 py-1 rounded-full ring-1 cursor-pointer focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${cfg.bg} ${cfg.text} ${cfg.ring}`}
+            >
+                {(Object.keys(STATUS_CONFIG) as ProjectStatus[]).map((s) => (
+                    <option key={s} value={s}>{STATUS_CONFIG[s].label}</option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+// Project Row
+interface ProjectRowProps {
     project: Project;
-    onApprove: (id: string) => void;
-    onReject: (id: string) => void;
+    onEdit: (project: Project) => void;
     onDelete: (id: string) => void;
+    onStatusChange: (id: string, status: ProjectStatus) => void;
     isUpdating: boolean;
     isDeleting: boolean;
 }
 
-function ProjectCard({
-    project,
-    onApprove,
-    onReject,
-    onDelete,
-    isUpdating,
-    isDeleting,
-}: ProjectCardProps) {
-    const cfg = STATUS_CONFIG[project.status];
+function ProjectRow({ project, onEdit, onDelete, onStatusChange, isUpdating, isDeleting }: ProjectRowProps) {
     const busy = isUpdating || isDeleting;
 
     return (
-        <div className="bg-white rounded-lg border border-gray-100 p-5 flex flex-col gap-0 hover:border-gray-200 hover:shadow-sm transition-all duration-200 group">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-1">
-                <div className="flex flex-col gap-0.5">
-                    <h3 className="font-semibold text-gray-900 text-[15px] leading-snug line-clamp-1 group-hover:text-indigo-700 transition-colors">
+        <div className="bg-white border border-gray-100 rounded-xl px-5 py-4 flex flex-col gap-2 hover:border-gray-200 hover:shadow-sm transition-all duration-150 group">
+            <div className="flex justify-between items-center w-full">
+                <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-gray-900 text-[14px] leading-snug group-hover:text-indigo-700 transition-colors">
                         {project.name}
-                    </h3>
-                    {project.client?.companyName && (
-                        <span className="text-[11px] font-medium text-indigo-500 uppercase tracking-wider">
-                            {project.client.companyName}
-                        </span>
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                        {project.client?.companyName && (
+                            <span className="text-[11px] font-medium text-indigo-500 uppercase tracking-wider">
+                                {project.client.companyName}
+                            </span>
+                        )}
+                    </div>
+                </div>
+                {/* Status dropdown */}
+                <div className="shrink-0">
+                    {isUpdating ? (
+                        <span className="w-2 h-2 rounded-full border-2 border-gray-300 border-t-indigo-500 animate-spin inline-block text-xs" />
+                    ) : (
+                        <StatusDropdown
+                            projectId={project.id}
+                            current={project.status}
+                            disabled={busy}
+                            onChange={onStatusChange}
+                        />
                     )}
                 </div>
-                <span
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ml-2 ${cfg.bg} ${cfg.text}`}
-                >
-                    {cfg.label}
-                </span>
             </div>
 
-            {/* Description */}
-            <p className="text-sm text-gray-600 line-clamp-2 mb-4 min-h-[40px]">
-                {project.description || "No description provided."}
-            </p>
-
-            {/* Timeline */}
-            <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+            <div>
+                {project.description && (
+                    <p className="text-sm text-gray-500 mt-1 mb-3 leading-relaxed">{project.description}</p>
+                )}
+            </div>
+            {/* Dates */}
+            <div className="shrink-0 hidden sm:flex items-center gap-1 text-xs text-gray-400">
                 <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <rect x="3" y="4" width="18" height="18" rx="2" />
                     <path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
-                <span>
-                    {formatDate(project.startDate)} → {formatDate(project.endDate)}
-                </span>
+                <span>{formatDate(project.startDate)} → {formatDate(project.endDate)}</span>
             </div>
 
-            {/* Created at */}
-            <div className="flex items-center gap-1 text-xs text-gray-400 mb-4">
+            {/* Created date */}
+            <div className="shrink-0 hidden md:flex items-center gap-1 text-xs text-gray-400">
                 <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <circle cx="12" cy="12" r="10" />
                     <path d="M12 6v6l4 2" />
                 </svg>
-                <span>Created {formatDate(project.createdAt)}</span>
+                <span>{formatDate(project.createdAt)}</span>
+            </div>
+            <div className="shrink-0 hidden md:flex items-center gap-1 text-xs text-gray-400">
+                {project.createdBy?.name && (
+                    <>
+                        <User className="w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs text-gray-400">Created by {project.createdBy.name}</span>
+                    </>
+                )}
             </div>
 
-            {/* Budget */}
-            {project.budget != null && (
-                <div className="text-xs text-gray-400 mb-4">
-                    Budget:{" "}
-                    <span className="font-medium text-gray-600">
-                        ₹{project.budget.toLocaleString("en-IN")}
-                    </span>
-                </div>
-            )}
-
             {/* Actions */}
-            <div className="border-t border-gray-50 pt-4 flex items-center gap-2 flex-wrap">
+            <div className="shrink-0 flex items-center justify-end gap-1.5">
+                <button
+                    onClick={() => onEdit(project)}
+                    disabled={busy}
+                    title="Edit project"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 transition-colors"
+                >
+                    <Pencil className="w-3.5 h-3.5" />
+                </button>
                 <button
                     onClick={() => onDelete(project.id)}
                     disabled={busy}
-                    className="inline-flex items-center gap-1 text-xs font-medium px-1 py-1 rounded-lg bg-gray-50 text-gray-500 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 transition-colors ml-auto"
+                    title="Delete project"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 transition-colors"
                 >
                     {isDeleting ? (
-                        <span className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 border-t-gray-500 animate-spin" />
+                        <span className="w-3.5 h-3.5 rounded-full border-2 border-gray-300 border-t-red-500 animate-spin" />
                     ) : (
                         <Trash2 className="w-3.5 h-3.5" />
                     )}
                 </button>
+            </div>
+        </div>
+    );
+}
+
+// Edit Project Modal
+
+interface EditProjectModalProps {
+    project: Project;
+    onClose: () => void;
+    onSubmit: (id: string, data: EditProjectPayload) => void;
+    isLoading: boolean;
+}
+
+function EditProjectModal({ project, onClose, onSubmit, isLoading }: EditProjectModalProps) {
+    const [name, setName] = useState(project.name);
+    const [description, setDescription] = useState(project.description ?? "");
+    const [startDate, setStartDate] = useState(project.startDate ? project.startDate.slice(0, 10) : "");
+    const [endDate, setEndDate] = useState(project.endDate ? project.endDate.slice(0, 10) : "");
+
+    const handleSubmit = useCallback(
+        (e: React.FormEvent) => {
+            e.preventDefault();
+            if (!name.trim()) return;
+            onSubmit(project.id, {
+                name: name.trim(),
+                description: description.trim() || undefined,
+                startDate: startDate || undefined,
+                endDate: endDate || undefined,
+            });
+        },
+        [name, description, startDate, endDate, project.id, onSubmit]
+    );
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: "rgba(0,0,0,0.35)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+        >
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+                    <h2 className="text-[17px] font-semibold text-gray-900">Edit Project</h2>
+                    <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[13px] font-medium text-gray-600">Project Name</label>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
+                            className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[13px] font-medium text-gray-600">Start Date</label>
+                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                            <label className="text-[13px] font-medium text-gray-600">End Date</label>
+                            <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)}
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[13px] font-medium text-gray-600">Description</label>
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
+                            placeholder="Brief overview..."
+                            className="px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 resize-none" />
+                    </div>
+                    <div className="flex gap-3 mt-1">
+                        <button type="button" onClick={onClose}
+                            className="flex-1 h-10 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+                        <button type="submit" disabled={isLoading || !name.trim()}
+                            className="flex-1 h-10 rounded-lg bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+                            {isLoading
+                                ? <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                                : <><Check className="w-4 h-4" /> Save Changes</>}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
@@ -290,13 +397,7 @@ interface NewProjectModalProps {
     isLoading: boolean;
 }
 
-function NewProjectModal({
-    clients,
-    preselectedClientId,
-    onClose,
-    onSubmit,
-    isLoading,
-}: NewProjectModalProps) {
+function NewProjectModal({ clients, preselectedClientId, onClose, onSubmit, isLoading }: NewProjectModalProps) {
     const [name, setName] = useState("");
     const [clientId, setClientId] = useState(preselectedClientId ?? "");
     const [startDate, setStartDate] = useState("");
@@ -307,158 +408,64 @@ function NewProjectModal({
         (e: React.FormEvent) => {
             e.preventDefault();
             if (!name.trim() || !clientId) return;
-            onSubmit({
-                name: name.trim(),
-                clientId,
-                startDate: startDate || undefined,
-                endDate: endDate || undefined,
-                description: description.trim() || undefined,
-            });
+            onSubmit({ name: name.trim(), clientId, startDate: startDate || undefined, endDate: endDate || undefined, description: description.trim() || undefined });
         },
         [name, clientId, startDate, endDate, description, onSubmit]
     );
 
     return (
-        <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: "rgba(0,0,0,0.35)" }}
-            onClick={(e) => {
-                if (e.target === e.currentTarget) onClose();
-            }}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.35)" }}
+            onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
             <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
-                {/* Modal Header */}
                 <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                     <h2 className="text-[17px] font-semibold text-gray-900">New Project</h2>
-                    <button
-                        onClick={onClose}
-                        className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                    <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
-
-                {/* Modal Body */}
                 <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-4">
-                    {/* Project Name */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-medium text-gray-600">
-                            Project Name
-                        </label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            placeholder="e.g. Q4 Marketing Campaign"
-                            required
-                            className="h-10 px-3.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50"
-                        />
+                        <label className="text-[13px] font-medium text-gray-600">Project Name</label>
+                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Q4 Marketing Campaign" required
+                            className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
                     </div>
-
-                    {/* Client */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-medium text-gray-600">
-                            Client
-                        </label>
+                        <label className="text-[13px] font-medium text-gray-600">Client</label>
                         <div className="relative">
-                            <select
-                                value={clientId}
-                                onChange={(e) => setClientId(e.target.value)}
-                                required
-                                className="w-full h-10 pl-3.5 pr-9 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 appearance-none"
-                            >
-                                <option value="" disabled>
-                                    Select a client...
-                                </option>
-                                {clients.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.companyName}
-                                    </option>
-                                ))}
+                            <select value={clientId} onChange={(e) => setClientId(e.target.value)} required
+                                className="w-full h-10 pl-3.5 pr-9 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 appearance-none">
+                                <option value="" disabled>Select a client...</option>
+                                {clients.map((c) => <option key={c.id} value={c.id}>{c.companyName}</option>)}
                             </select>
-                            <svg
-                                className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                            >
+                            <svg className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                             </svg>
                         </div>
                     </div>
-
-                    {/* Dates */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-[13px] font-medium text-gray-600">
-                                Start Date
-                            </label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="h-10 px-3.5 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50"
-                            />
+                            <label className="text-[13px] font-medium text-gray-600">Start Date</label>
+                            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
                         </div>
                         <div className="flex flex-col gap-1.5">
-                            <label className="text-[13px] font-medium text-gray-600">
-                                End Date
-                            </label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                min={startDate}
-                                className="h-10 px-3.5 rounded-xl border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50"
-                            />
+                            <label className="text-[13px] font-medium text-gray-600">End Date</label>
+                            <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)}
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
                         </div>
                     </div>
-
-                    {/* Description */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[13px] font-medium text-gray-600">
-                            Description
-                        </label>
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Brief overview of the project objectives..."
-                            rows={3}
-                            className="px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 resize-none"
-                        />
+                        <label className="text-[13px] font-medium text-gray-600">Description</label>
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief overview of the project objectives..." rows={3}
+                            className="px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 resize-none" />
                     </div>
-
-                    {/* Footer Actions */}
                     <div className="flex gap-3 mt-1">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 h-10 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isLoading || !name.trim() || !clientId}
-                            className="flex-1 h-10 rounded-xl bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                                    Creating...
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <rect x="3" y="4" width="18" height="18" rx="2" />
-                                        <path d="M16 2v4M8 2v4M3 10h18" />
-                                    </svg>
-                                    Create Project
-                                </>
-                            )}
+                        <button type="button" onClick={onClose} className="flex-1 h-10 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
+                        <button type="submit" disabled={isLoading || !name.trim() || !clientId}
+                            className="flex-1 h-10 rounded-lg bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2">
+                            {isLoading
+                                ? <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Creating...</>
+                                : <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg> Create Project</>}
                         </button>
                     </div>
                 </form>
@@ -484,7 +491,7 @@ function EmptyProjects({ onNew }: { onNew: () => void }) {
             </p>
             <button
                 onClick={onNew}
-                className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+                className="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
             >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -499,11 +506,12 @@ function EmptyProjects({ onNew }: { onNew: () => void }) {
 
 export default function ProjectsPage() {
     const queryClient = useQueryClient();
+    const { user } = useAuth();
     const [selectedClientId, setSelectedClientId] = useState<string>("");
     const [showModal, setShowModal] = useState(false);
+    const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
-    const [projectId, setProjectId] = useState<string | null>(null);
 
     // Queries
 
@@ -530,18 +538,26 @@ export default function ProjectsPage() {
 
     const createMutation = useMutation({
         mutationFn: createProject,
-        onSuccess: (newProject) => {
-            queryClient.setQueryData<Project[]>(
-                QUERY_KEYS.projects(newProject.clientId),
-                (old = []) => [newProject, ...old]
-            );
-            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects(selectedClientId) });
-            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects('all') });
-            setProjectId(newProject.id);
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects(selectedClientId || "all") });
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.projects("all") });
             setShowModal(false);
-            toast.success('Project created successfully!');
+            toast.success("Project created successfully!");
         },
-        onError: () => toast.error('Failed to create project'),
+        onError: () => toast.error("Failed to create project"),
+    });
+
+    const editMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: EditProjectPayload }) => editProject(id, data),
+        onSuccess: (updated) => {
+            queryClient.setQueryData<Project[]>(
+                QUERY_KEYS.projects(selectedClientId || "all"),
+                (old = []) => old.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+            );
+            setEditingProject(null);
+            toast.success("Project updated!");
+        },
+        onError: () => toast.error("Failed to update project"),
     });
 
     const deleteMutation = useMutation({
@@ -549,42 +565,30 @@ export default function ProjectsPage() {
         onMutate: (id) => setDeletingId(id),
         onSuccess: (_, id) => {
             queryClient.setQueryData<Project[]>(
-                QUERY_KEYS.projects(selectedClientId),
+                QUERY_KEYS.projects(selectedClientId || "all"),
                 (old = []) => old.filter((p) => p.id !== id)
             );
+            toast.success("Project deleted");
         },
+        onError: () => toast.error("Failed to delete project"),
         onSettled: () => setDeletingId(null),
     });
 
     const statusMutation = useMutation({
-        mutationFn: ({
-            id,
-            status,
-        }: {
-            id: string;
-            status: ProjectStatus;
-        }) => updateProjectStatus(id, status),
+        mutationFn: ({ id, status }: { id: string; status: ProjectStatus }) =>
+            updateProjectStatus(id, status),
         onMutate: ({ id }) => setUpdatingId(id),
         onSuccess: (updated) => {
             queryClient.setQueryData<Project[]>(
-                QUERY_KEYS.projects(selectedClientId),
-                (old = []) => old.map((p) => (p.id === updated.id ? updated : p))
+                QUERY_KEYS.projects(selectedClientId || "all"),
+                (old = []) => old.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
             );
         },
+        onError: () => toast.error("Failed to update status"),
         onSettled: () => setUpdatingId(null),
     });
 
     // Handlers
-
-    const handleApprove = useCallback(
-        (id: string) => statusMutation.mutate({ id, status: "COMPLETED" }),
-        [statusMutation]
-    );
-
-    const handleReject = useCallback(
-        (id: string) => statusMutation.mutate({ id, status: "CANCELLED" }),
-        [statusMutation]
-    );
 
     const handleDelete = useCallback(
         (id: string) => {
@@ -596,8 +600,18 @@ export default function ProjectsPage() {
     );
 
     const handleCreate = useCallback(
-        (data: CreateProjectPayload) => createMutation.mutate(data),
-        [createMutation]
+        (data: CreateProjectPayload) => createMutation.mutate({ ...data, createdById: user?.id }),
+        [createMutation, user]
+    );
+
+    const handleEdit = useCallback(
+        (id: string, data: EditProjectPayload) => editMutation.mutate({ id, data }),
+        [editMutation]
+    );
+
+    const handleStatusChange = useCallback(
+        (id: string, status: ProjectStatus) => statusMutation.mutate({ id, status }),
+        [statusMutation]
     );
 
     // Derived
@@ -626,7 +640,7 @@ export default function ProjectsPage() {
                     </div>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-black text-sm font-medium text-white hover:bg-black/90 transition-colors"
+                        className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-black text-sm font-medium text-white hover:bg-black/90 transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -646,7 +660,7 @@ export default function ProjectsPage() {
                                 <select
                                     value={selectedClientId}
                                     onChange={(e) => setSelectedClientId(e.target.value)}
-                                    className="h-10 pl-2 pr-9 rounded-lg border border-gray-200 text-[10px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white appearance-none min-w-[200px]"
+                                    className="h-10 pl-2 pr-9 rounded-lg border border-gray-200 text-[10px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white appearance-none min-w-200px"
                                 >
                                     <option value="">All clients</option>
                                     {clients.map((c) => (
@@ -669,7 +683,7 @@ export default function ProjectsPage() {
 
                         {/* Client badge */}
                         {selectedClient && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-50 border border-indigo-100">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-100">
                                 <div className="w-6 h-6 rounded-lg bg-indigo-200 text-indigo-700 flex items-center justify-center text-[10px] font-bold">
                                     {getInitials(selectedClient.companyName)}
                                 </div>
@@ -707,26 +721,21 @@ export default function ProjectsPage() {
 
 
 
-                {/* ── Project Grid ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-
+                {/* ── Project List ── */}
+                <div className="flex flex-col gap-2">
                     {isLoadingProjects
-                        ? Array.from({ length: 6 }).map((_, i) => (
-                            <ProjectCardSkeleton key={i} />
-                        ))
-                        : projects.length === 0
-                            ? null
-                            : projects.map((project) => (
-                                <ProjectCard
-                                    key={project.id}
-                                    project={project}
-                                    onApprove={handleApprove}
-                                    onReject={handleReject}
-                                    onDelete={handleDelete}
-                                    isUpdating={updatingId === project.id}
-                                    isDeleting={deletingId === project.id}
-                                />
-                            ))}
+                        ? Array.from({ length: 6 }).map((_, i) => <ProjectRowSkeleton key={i} />)
+                        : projects.map((project) => (
+                            <ProjectRow
+                                key={project.id}
+                                project={project}
+                                onEdit={setEditingProject}
+                                onDelete={handleDelete}
+                                onStatusChange={handleStatusChange}
+                                isUpdating={updatingId === project.id}
+                                isDeleting={deletingId === project.id}
+                            />
+                        ))}
                 </div>
 
                 {/* ── Empty state ── */}
@@ -735,7 +744,7 @@ export default function ProjectsPage() {
                 )}
             </div>
 
-            {/* ── Modal ── */}
+            {/* ── New Project Modal ── */}
             {showModal && (
                 <NewProjectModal
                     clients={clients}
@@ -743,6 +752,16 @@ export default function ProjectsPage() {
                     onClose={() => setShowModal(false)}
                     onSubmit={handleCreate}
                     isLoading={createMutation.isPending}
+                />
+            )}
+
+            {/* ── Edit Project Modal ── */}
+            {editingProject && (
+                <EditProjectModal
+                    project={editingProject}
+                    onClose={() => setEditingProject(null)}
+                    onSubmit={handleEdit}
+                    isLoading={editMutation.isPending}
                 />
             )}
         </div>

@@ -43,10 +43,20 @@ export function MemberList() {
                   <Mail className="w-3 h-3" />
                   {member.user?.email || 'No Email'}
                 </span>
-                <span className="flex items-center gap-1 text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  <Shield className="w-3 h-3" />
-                  {member.customRole?.name || member.role?.replace(/_/g, ' ') || 'Member'}
-                </span>
+                {(member.roles && member.roles.length > 0
+                  ? member.roles.map((r: string) => (
+                      <span key={r} className="flex items-center gap-1 text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <Shield className="w-3 h-3" />
+                        {r.replace(/_/g, ' ')}
+                      </span>
+                    ))
+                  : (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      <Shield className="w-3 h-3" />
+                      {member.customRole?.name || 'Member'}
+                    </span>
+                  )
+                )}
               </div>
             </div>
           </div>

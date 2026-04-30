@@ -90,9 +90,10 @@ const SIDEBAR_SECTIONS: NavSection[] = [
   },
 ];
 
-function canSeeItem(item: NavItem, role: string | null, userType: string): boolean {
+function canSeeItem(item: NavItem, roles: string[], userType: string): boolean {
   if (!item.roles) return true;
-  return item.roles.includes(role ?? userType);
+  if (item.roles.includes(userType)) return true;
+  return roles.some((r) => item.roles!.includes(r));
 }
 
 export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse }: SidebarProps) {
@@ -103,7 +104,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
     ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : '?';
 
-  const roleLabel = user ? formatRole(user.role, user.userType) : '';
+  const roleLabel = user ? formatRole(user.roles, user.userType) : '';
 
   return (
     <aside
@@ -152,7 +153,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
       >
         {SIDEBAR_SECTIONS.map((section) => {
           const visibleItems = section.items.filter((item) =>
-            canSeeItem(item, user?.role ?? null, user?.userType ?? '')
+            canSeeItem(item, user?.roles ?? [], user?.userType ?? '')
           );
           if (visibleItems.length === 0) return null;
 

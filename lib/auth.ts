@@ -9,7 +9,7 @@ export type AuthUser = {
   name: string;
   email: string;
   userType: string;
-  membership: { role: string; organizationId: string } | null;
+  membership: { roles: string[]; organizationId: string } | null;
 };
 
 export async function getCurrentUser(): Promise<AuthUser | null> {
@@ -22,14 +22,10 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        userType: true,
+      include: {
         memberships: {
           take: 1,
-          select: { role: true, organizationId: true },
+          select: { roles: true, organizationId: true },
         },
       },
     });
@@ -42,7 +38,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       email: user.email,
       userType: user.userType,
       membership: user.memberships[0]
-        ? { role: user.memberships[0].role, organizationId: user.memberships[0].organizationId }
+        ? { roles: user.memberships[0].roles, organizationId: user.memberships[0].organizationId }
         : null,
     };
   } catch {

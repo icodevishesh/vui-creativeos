@@ -37,18 +37,32 @@ export async function POST(req: Request) {
       return new NextResponse('No organization found', { status: 404 });
     }
 
+    // Ensure permissions is always stored as an array
+    const permissionsArray = Array.isArray(permissions) ? permissions : [];
+
+    // Check for duplicate role name within same org
+    const existing = await prisma.customRole.findFirst({
+      where: { organizationId: organization.id, name },
+    });
+    if (existing) {
+      return new NextResponse(`A custom role named "${name}" already exists`, { status: 400 });
+    }
+
     const role = await prisma.customRole.create({
       data: {
         name,
-        description,
-        permissions: permissions || {},
+        description: description || null,
+        permissions: permissionsArray,
         organizationId: organization.id
       }
     });
 
     return NextResponse.json(role);
-  } catch (error) {
+  } catch (error: any) {
     console.error('[ROLES_POST]', error);
+    if (error?.code === 'P2002') {
+      return new NextResponse('A custom role with this name already exists', { status: 400 });
+    }
     return new NextResponse('Internal error', { status: 500 });
   }
 }

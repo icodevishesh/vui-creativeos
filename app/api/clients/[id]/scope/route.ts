@@ -29,7 +29,7 @@ export async function POST(
     const body = await req.json();
     const { service, description, budget, details } = body;
 
-    if (!service || !description) {
+    if (!service) {
       return new NextResponse('Missing required fields', { status: 400 });
     }
 
@@ -39,7 +39,7 @@ export async function POST(
         data: {
           clientId: id,
           service: service as ServiceType,
-          description,
+          description: description || '',
           budget: budget ? parseFloat(budget) : null,
           details: details || {},
         },

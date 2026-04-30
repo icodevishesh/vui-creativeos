@@ -15,17 +15,17 @@ add validation in email, email is case sensitive ✅
 client onboarding:
 
 - Add validation in email and phone number accepts 10 digites with +91 and indian flag icon.✅
-- missing services in dropdown (whatsapp marketing, seo) and update schema
-- services added while onboarding not display on client page, scope of work tab, and social media service is always showing by default even if the admin not chosen it while onboarding
+- missing services in dropdown (whatsapp marketing, seo) and update schema✅
+- services added while onboarding not display on client page, scope of work tab, and social media service is always showing by default even if the admin not chosen it while onboarding ✅
 
 clients:
 
 - scope of work tab:
-  - give dropdown in monthly budget estimate field to select currency type ($, ₹)
-  - Adding a new service gets removed/not showing after refresh.
-  - make the description field as optional
+  - give dropdown in monthly budget estimate field to select currency type ($, ₹)✅
+  - Adding a new service gets removed/not showing after refresh.✅
+  - make the description field as optional✅
 
-Team Members:
+Team Members page:
 
 - admin can assign a member roles > 1 && <= 2 (dual roles)
   -> need to update the schema and the authorization logic for dual role user.
@@ -36,8 +36,8 @@ Projects:
 - make the projects view in row wise instead of grid/box wise
 - Give edit button in project card.
 - fix the delete button
-- Give option to change the status of the project, default is planning if the project is completed then admin can change the status to completed the status bar should be a dropdown to change status dynamically.
-- Also add created by (user's name) when a user creates a project.
+- Give option to change the status of the project, default is planning if the project is completed then admin can change the status to completed the status bar should be a dropdown to change status dynamically, also update schema for this logic.
+- Add created by <user's name> who have created the project in project card.
 
 Gantt chart:
 
@@ -53,7 +53,8 @@ Content calendar:
 Task board:
 
 - team members (assigned for the task) can update task status: open, in progress, hold + reason of holding, completed.
-- remove "+ new task button" from team member's interface
+- team members can only click on there task and update only the status of there task, nothin other then that they can edit. As in the uploaded screen shot a user john test is able to edit the task of Sandeep Sahu but it should be restricted for team members, only admin/team leads can do this action.
+- remove "+ new task button" from team member's interface It should only appear to admin/team_lead/account_manager
 
 Approvals:
 

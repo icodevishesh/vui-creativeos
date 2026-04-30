@@ -4,11 +4,13 @@ import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IApi } from '@svar-ui/react-gantt';
 import '@svar-ui/react-gantt/all.css';
-import { Plus, ChevronDown, Building2 } from 'lucide-react';
+import { Plus, ChevronDown, Building2, Copy } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 import GanttChart from '@/components/GanttChart';
 import { ProjectSelector } from '@/components/gantt/ProjectSelector';
 import { CreateProjectModal } from '@/components/gantt/CreateProjectModal';
+import { DuplicateGanttModal } from '@/components/gantt/DuplicateGanttModal';
 import { ganttKeys, useGanttProjects, useGanttClients } from '@/lib/gantt/hooks';
 import { useAuth } from '@/context/AuthContext';
 
@@ -21,10 +23,11 @@ export default function GanttPage() {
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [ganttApi, setGanttApi] = useState<IApi | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
 
   const canEdit =
     user?.userType === 'ADMIN_OWNER' ||
-    EDIT_ROLES.has(user?.role ?? '');
+    (user?.roles ?? []).some((r: string) => EDIT_ROLES.has(r));
 
   // Client filter list — only needed for internal users
   const { data: clients } = useGanttClients();
@@ -48,8 +51,15 @@ export default function GanttPage() {
     setProjectId(newId);
   }, [queryClient]);
 
+  const handleDuplicateSuccess = useCallback((targetProjectId: string) => {
+    queryClient.invalidateQueries({ queryKey: ganttKeys.tasks(targetProjectId) });
+    queryClient.invalidateQueries({ queryKey: ganttKeys.links(targetProjectId) });
+    toast.success('Gantt chart duplicated successfully!');
+    setProjectId(targetProjectId);
+  }, [queryClient]);
+
   return (
-    <div className="flex flex-col h-full gap-4 max-w-[1600px] mx-auto w-full">
+    <div className="flex flex-col h-full gap-4 max-w-1600px mx-auto w-full">
       {/* ── Header ────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 shrink-0">
         <div className="flex items-start justify-between">
@@ -59,17 +69,33 @@ export default function GanttPage() {
           </div>
 
           {canEdit && (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="
-                h-10 px-4 text-sm font-semibold text-white bg-gray-900 rounded-lg
-                hover:bg-gray-800 transition-all flex items-center gap-2
-                shadow-md hover:shadow-lg active:scale-95
-              "
-            >
-              <Plus className="w-4 h-4" />
-              New Project
-            </button>
+            <div className="flex items-center gap-2">
+              {projectId && (
+                <button
+                  onClick={() => setIsDuplicateModalOpen(true)}
+                  className="
+                    h-10 px-4 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg
+                    hover:bg-gray-50 transition-all flex items-center gap-2
+                    shadow-sm hover:shadow active:scale-95
+                  "
+                  title="Duplicate this Gantt chart to another project"
+                >
+                  <Copy className="w-4 h-4" />
+                  Duplicate
+                </button>
+              )}
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="
+                  h-10 px-4 text-sm font-semibold text-white bg-gray-900 rounded-lg
+                  hover:bg-gray-800 transition-all flex items-center gap-2
+                  shadow-md hover:shadow-lg active:scale-95
+                "
+              >
+                <Plus className="w-4 h-4" />
+                New Project
+              </button>
+            </div>
           )}
         </div>
 
@@ -87,7 +113,7 @@ export default function GanttPage() {
                     appearance-none h-9 pl-8 pr-8 rounded-lg border border-gray-300 bg-white
                     text-sm font-medium text-gray-700 leading-none
                     focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent
-                    hover:border-gray-400 transition-colors cursor-pointer min-w-[160px]
+                    hover:border-gray-400 transition-colors cursor-pointer min-w-160px
                   "
                   aria-label="Filter by client"
                 >
@@ -136,11 +162,21 @@ export default function GanttPage() {
       </div>
 
       {canEdit && (
-        <CreateProjectModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSuccess={handleProjectCreated}
-        />
+        <>
+          <CreateProjectModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onSuccess={handleProjectCreated}
+          />
+          {isDuplicateModalOpen && projectId && (
+            <DuplicateGanttModal
+              sourceProjectId={projectId}
+              sourceProjectName={selectedProject?.name ?? 'this project'}
+              onClose={() => setIsDuplicateModalOpen(false)}
+              onSuccess={handleDuplicateSuccess}
+            />
+          )}
+        </>
       )}
     </div>
   );

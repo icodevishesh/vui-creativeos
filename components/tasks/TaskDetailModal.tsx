@@ -26,11 +26,13 @@ interface TaskDetailModalProps {
   onCreateSubTask: (taskId: string, data: any) => void;
   isUpdating?: boolean;
   isDeleting?: boolean;
+  readOnly?: boolean;
 }
 
 const STATUS_OPTIONS: { value: TaskStatus; label: string; color: string }[] = [
   { value: "OPEN", label: "Open", color: "text-gray-500 bg-gray-100" },
   { value: "IN_PROGRESS", label: "In Progress", color: "text-blue-600 bg-blue-50" },
+  { value: "ON_HOLD", label: "On Hold", color: "text-orange-600 bg-orange-50" },
   { value: "INTERNAL_REVIEW", label: "Internal Review", color: "text-violet-600 bg-violet-50" },
   { value: "CLIENT_REVIEW", label: "Client Review", color: "text-amber-600 bg-amber-50" },
   { value: "APPROVED", label: "Approved", color: "text-emerald-600 bg-emerald-50" },
@@ -45,7 +47,8 @@ export function TaskDetailModal({
   onDelete,
   onCreateSubTask,
   isUpdating,
-  isDeleting
+  isDeleting,
+  readOnly = false,
 }: TaskDetailModalProps) {
   const [newFeedback, setNewFeedback] = useState("");
   const [showSubTaskForm, setShowSubTaskForm] = useState(false);
@@ -88,14 +91,16 @@ export function TaskDetailModal({
             <span className="text-xs font-medium text-gray-400">{task.project?.name}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                if (window.confirm("Delete this task?")) onDelete(task.id);
-              }}
-              className="p-2.5 hover:bg-red-50 text-gray-300 hover:text-red-500 rounded-xl transition-all"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {!readOnly && (
+              <button
+                onClick={() => {
+                  if (window.confirm("Delete this task?")) onDelete(task.id);
+                }}
+                className="p-2.5 hover:bg-red-50 text-gray-300 hover:text-red-500 rounded-xl transition-all"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
             <button onClick={onClose} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all">
               <X className="w-4 h-4 text-gray-400" />
             </button>
@@ -132,9 +137,11 @@ export function TaskDetailModal({
                   onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
                   className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10 appearance-none bg-gray-50/50"
                 >
-                  {STATUS_OPTIONS.map(s => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
+                  {STATUS_OPTIONS
+                    .filter(s => !readOnly || ['OPEN', 'IN_PROGRESS', 'ON_HOLD'].includes(s.value))
+                    .map(s => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               </div>
@@ -148,16 +155,18 @@ export function TaskDetailModal({
                 <Layout className="w-5 h-5 text-indigo-500" />
                 <h3 className="font-bold text-sm text-gray-900">Subtasks ({task.subTasks?.length || 0})</h3>
               </div>
-              <button
-                onClick={() => setShowSubTaskForm(true)}
-                className="text-indigo-600 hover:text-indigo-700 text-sm font-bold flex items-center gap-1"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="text-sm">New Subtask</span>
-              </button>
+              {!readOnly && (
+                <button
+                  onClick={() => setShowSubTaskForm(true)}
+                  className="text-indigo-600 hover:text-indigo-700 text-sm font-bold flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="text-sm">New Subtask</span>
+                </button>
+              )}
             </div>
 
-            {showSubTaskForm && (
+            {!readOnly && showSubTaskForm && (
               <form onSubmit={handleCreateSubTask} className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex gap-2 animate-in fade-in slide-in-from-top-2">
                 <input
                   autoFocus
@@ -204,25 +213,30 @@ export function TaskDetailModal({
                   <p className="text-sm text-amber-900 leading-relaxed font-medium">{f}</p>
                 </div>
               ))}
+              {(!task.feedbacks || task.feedbacks.length === 0) && (
+                <p className="text-xs text-gray-400 italic">No feedback yet.</p>
+              )}
             </div>
 
-            <form onSubmit={handleAddFeedback} className="flex flex-col gap-3">
-              <textarea
-                placeholder="Add feedback or notes..."
-                rows={3}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 text-sm resize-none font-medium"
-                value={newFeedback}
-                onChange={(e) => setNewFeedback(e.target.value)}
-              />
-              <button
-                type="submit"
-                disabled={!newFeedback.trim() || isUpdating}
-                className="self-end bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-black disabled:opacity-50 transition-all flex items-center gap-2"
-              >
-                {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
-                <span className="text-sm">Post Feedback</span>
-              </button>
-            </form>
+            {!readOnly && (
+              <form onSubmit={handleAddFeedback} className="flex flex-col gap-3">
+                <textarea
+                  placeholder="Add feedback or notes..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 text-sm resize-none font-medium"
+                  value={newFeedback}
+                  onChange={(e) => setNewFeedback(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  disabled={!newFeedback.trim() || isUpdating}
+                  className="self-end bg-gray-900 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-black disabled:opacity-50 transition-all flex items-center gap-2"
+                >
+                  {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+                  <span className="text-sm">Post Feedback</span>
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

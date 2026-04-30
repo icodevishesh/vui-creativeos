@@ -153,7 +153,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
                     const newUserId = e.target.value;
                     const selectedMember = orgMembers?.find((m: any) => m.userId === newUserId);
                     // Keep the raw enum value (e.g. GRAPHIC_DESIGNER) so task-assignment lookups match
-                    const autoRole = selectedMember?.role ?? formData.role;
+                    const autoRole = selectedMember?.roles?.[0] ?? formData.role;
                     setFormData(p => ({ ...p, userId: newUserId, role: autoRole }));
                   }}
                 >

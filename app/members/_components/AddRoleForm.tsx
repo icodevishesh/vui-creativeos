@@ -11,8 +11,6 @@ const PERMISSION_OPTIONS = [
   { id: 'EDIT_PROJECTS', name: 'Edit Projects', desc: 'Can modify project details' },
   { id: 'MANAGE_TASKS', name: 'Manage Tasks', desc: 'Can assign and update tasks' },
   { id: 'VIEW_CLIENTS', name: 'View Clients', desc: 'Can access client database' },
-  { id: 'EDIT_CLIENTS', name: 'Edit Clients', desc: 'Can modify client information' },
-  { id: 'MANAGE_FINANCE', name: 'Manage Finance', desc: 'Can see budgets and billing' },
 ];
 
 export function AddRoleForm() {

@@ -25,7 +25,7 @@ import '@svar-ui/react-gantt/all.css';
 
 import { useGanttData } from '@/lib/gantt/hooks';
 import { GanttSkeleton } from './gantt/GanttSkeleton';
-import { Plus, Maximize2, Minimize2 } from 'lucide-react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 // ---- Props -----------------------------------------------------------
 
@@ -38,10 +38,12 @@ export interface GanttChartProps {
 
 // ---- Scales ----------------------------------------------------------
 
+const isWeekend = (d: Date) => { const day = d.getDay(); return day === 0 || day === 6; };
+
 const SCALES = [
     { unit: 'month' as const, step: 1, format: '%F %Y' },
     { unit: 'week' as const, step: 1, format: 'Week %W' },
-    { unit: 'day' as const, step: 1, format: '%j' },
+    { unit: 'day' as const, step: 1, format: '%j', css: (d: Date) => isWeekend(d) ? 'wx-holiday' : '' },
 ];
 
 // ---- Component -------------------------------------------------------
@@ -81,10 +83,22 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady, re
     //
     const { tasks: tasksQuery, links: linksQuery, isLoading, isError } = useGanttData(projectId);
 
-    const rawTasks = useMemo<ITask[]>(
-        () => (tasksQuery.data ?? []) as unknown as ITask[],
-        [tasksQuery.data]
-    );
+    // Normalize tasks: ensure end > start so single-day tasks render as 1 column
+    const rawTasks = useMemo<ITask[]>(() => {
+        const tasks = (tasksQuery.data ?? []) as unknown as ITask[];
+        return tasks.map((t) => {
+            if (t.start && t.end) {
+                const s = t.start instanceof Date ? t.start : new Date(t.start as unknown as string);
+                const e = t.end instanceof Date ? t.end : new Date(t.end as unknown as string);
+                if (s.getTime() >= e.getTime()) {
+                    const nextDay = new Date(s);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    return { ...t, start: s, end: nextDay, duration: Math.max(1, t.duration ?? 1) };
+                }
+            }
+            return t;
+        });
+    }, [tasksQuery.data]);
     const rawLinks = useMemo<ILink[]>(
         () => (linksQuery.data ?? []) as unknown as ILink[],
         [linksQuery.data]
@@ -166,13 +180,20 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady, re
             if (!readOnly) ganttApi.setNext(server);
 
             // Normalize start/end to Date objects on every task mutation.
-            // When RestDataProvider writes a task, SVAR may receive the new/updated
-            // task with ISO string dates from the JSON response. The Editor then
-            // calls start.getFullYear() and crashes. Intercepting here ensures dates
-            // are always proper Date objects before they enter the internal store.
+            // Fixes: b.getFullYear is not a function — SVAR Editor calls date methods
+            // on values that may arrive as ISO strings from the REST response.
+            // Also enforce end > start so same-day selections render as 1 day.
             const normalizeDates = (ev: Record<string, unknown>) => {
                 if (ev.start && !(ev.start instanceof Date)) ev.start = new Date(ev.start as string);
                 if (ev.end && !(ev.end instanceof Date)) ev.end = new Date(ev.end as string);
+                // bug5: if end <= start, bump end to start + 1 day
+                if (ev.start instanceof Date && ev.end instanceof Date) {
+                    if ((ev.end as Date).getTime() <= (ev.start as Date).getTime()) {
+                        const bumped = new Date(ev.start as Date);
+                        bumped.setDate(bumped.getDate() + 1);
+                        ev.end = bumped;
+                    }
+                }
             };
             ganttApi.intercept('add-task', (ev: Record<string, unknown>) => { normalizeDates(ev); });
             ganttApi.intercept('update-task', (ev: Record<string, unknown>) => { normalizeDates(ev); });
@@ -215,6 +236,20 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady, re
 
             {!isError && !showSkeleton && (
                 <Willow>
+                    <style>{`
+                        .wx-holiday { background: #fffff !important; }
+                        .wx-gantt .wx-scale .wx-holiday { background: #ede9fb !important; color: #7c6fcd !important; }
+                        .wx-gantt-editor {
+                            position: fixed !important;
+                            top: 0 !important;
+                            right: 0 !important;
+                            height: 100dvh !important;
+                            z-index: 50 !important;
+                            overflow-y: auto !important;
+                            background: #ffffff !important;
+                            box-shadow: -4px 0 24px rgba(0,0,0,0.12) !important;
+                        }
+                    `}</style>
                     {/* Toolbar + fullscreen button — hidden in read-only mode */}
                     {!readOnly && <div ref={toolbarCallbackRef} style={{ position: 'relative' }}>
                         <Toolbar api={api} />
@@ -250,29 +285,6 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady, re
                             width: '100%', position: 'relative', overflow: 'hidden',
                         }}
                     >
-                        {ganttTasks.length === 0 && (
-                            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gray-50/80 backdrop-blur-[2px]">
-                                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-100 flex flex-col items-center gap-2 max-w-xs text-center">
-                                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                                        <Plus className="w-5 h-5 text-gray-400" />
-                                    </div>
-                                    <h3 className="font-medium text-gray-900">No tasks yet</h3>
-                                    <p className="text-xs text-gray-500">
-                                        {readOnly
-                                            ? 'This project has no tasks yet.'
-                                            : 'Your timeline is empty. Click the button below to add your first milestone or task.'}
-                                    </p>
-                                    {!readOnly && (
-                                        <button
-                                            onClick={() => onApiReady && api && onApiReady(api)}
-                                            className="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700 underline"
-                                        >
-                                            Add first task
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        )}
                         <div style={{ height: '100%', width: '100%' }}>
                             <Gantt
                                 key={projectId}
@@ -289,7 +301,7 @@ export default function GanttChart({ projectId, projectCreatedAt, onApiReady, re
                         </div>
                     </div>
 
-                    {api && !readOnly && <Editor api={api} />}
+                    {api && !readOnly && <Editor key={projectId} api={api} />}
                 </Willow>
             )}
         </div>

@@ -43,7 +43,7 @@ model User {
   userType      UserType
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  role          MemberRole?
+  roles         MemberRole[]
 
   // Relations
   ownedOrganizations  Organization[]     @relation("OrganizationOwner")
@@ -51,6 +51,7 @@ model User {
   clientProfiles      ClientProfile[]
   assignedProjects    ProjectTeamMember[]
   createdTasks        Task[]             @relation("TaskCreator")
+  createdProjects     Project[]          @relation("ProjectCreator")
   assignedTasks       Task[]             @relation("TaskAssignee")
   writerTasks         Task[]             @relation("TaskWriter")
   editorTasks         Task[]             @relation("TaskEditor")
@@ -88,7 +89,7 @@ model Organization {
 
 model OrganizationMember {
   id        String     @id @default(cuid()) @map("_id")
-  role      MemberRole
+  roles     MemberRole[]
   isActive  Boolean    @default(true)
   joinedAt  DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -328,6 +329,8 @@ model Project {
   clientId       String
   organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
+  createdBy      User?         @relation("ProjectCreator", fields: [createdById], references: [id])
+  createdById    String?
 
   teamMembers ProjectTeamMember[]
   tasks       Task[]
@@ -361,6 +364,7 @@ enum TaskStatus {
   OPEN
   OPENED
   IN_PROGRESS
+  ON_HOLD
   INTERNAL_REVIEW
   CLIENT_REVIEW
   APPROVED

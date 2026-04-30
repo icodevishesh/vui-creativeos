@@ -80,7 +80,7 @@ export const Stats: React.FC<StatsProps> = ({ tasks, isLoading }) => {
         isLoading={isLoading}
       />
       <StatCard
-        label="In Draft"
+        label="In Progress"
         value={stats.inDraft}
         icon={Clock}
         colorClass="text-amber-600"

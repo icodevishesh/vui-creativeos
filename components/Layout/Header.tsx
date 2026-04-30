@@ -16,7 +16,7 @@ export function Header({ onOpenMobile }: HeaderProps) {
     ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : '?';
 
-  const roleLabel = user ? formatRole(user.role, user.userType) : '';
+  const roleLabel = user ? formatRole(user.roles, user.userType) : '';
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-200">

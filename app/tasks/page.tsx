@@ -15,6 +15,7 @@ import { TaskDetailModal } from "@/components/tasks/TaskDetailModal";
 import { TaskTable } from "@/components/tasks/TaskTable";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { toast } from "react-hot-toast";
+import { useAuth } from "@/context/AuthContext";
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -92,6 +93,7 @@ const STATUS_MAP: Record<TaskStatus, { label: string; color: string; icon: any }
   OPEN: { label: "Open", color: "text-green-600 bg-green-100", icon: Clock },
   OPENED: { label: "Opened", color: "text-teal-600 bg-teal-50", icon: Clock },
   IN_PROGRESS: { label: "In Progress", color: "text-blue-600 bg-blue-50", icon: Clock },
+  ON_HOLD: { label: "On Hold", color: "text-orange-600 bg-orange-50", icon: AlertCircle },
   INTERNAL_REVIEW: { label: "Internal Review", color: "text-violet-600 bg-violet-50", icon: AlertCircle },
   CLIENT_REVIEW: { label: "Client Review", color: "text-amber-600 bg-amber-50", icon: AlertCircle },
   APPROVED: { label: "Approved", color: "text-emerald-600 bg-emerald-50", icon: CheckCircle2 },
@@ -100,8 +102,16 @@ const STATUS_MAP: Record<TaskStatus, { label: string; color: string; icon: any }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+const PRIVILEGED_ROLES = new Set(['ADMIN', 'TEAM_LEAD', 'ACCOUNT_MANAGER']);
+
 export default function TasksPage() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  const canEdit =
+    user?.userType === 'ADMIN_OWNER' ||
+    (user?.roles ?? []).some((r: string) => PRIVILEGED_ROLES.has(r));
+
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [isNewModalOpen, setIsNewModalOpen] = useState(false);
@@ -192,6 +202,8 @@ export default function TasksPage() {
   });
 
   const handleOpenDetail = (task: Task) => {
+    // Team members can only open tasks assigned to them
+    if (!canEdit && task.assignedTo?.id !== user?.id) return;
     // Fetch full detail including subtasks
     fetch(`/api/tasks/${task.id}`).then(res => res.json()).then(data => {
       setSelectedTask(data);
@@ -223,13 +235,15 @@ export default function TasksPage() {
           <p className="text-gray-500 text-sm">Manage all tasks in a list view.</p>
         </div>
 
-        <button
-          onClick={() => setIsNewModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-black text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-black/90 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          New Task
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => setIsNewModalOpen(true)}
+            className="inline-flex items-center gap-2 bg-black text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-black/90 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            New Task
+          </button>
+        )}
       </div>
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm flex flex-wrap gap-4 items-center">
@@ -288,6 +302,7 @@ export default function TasksPage() {
           onCreateSubTask={(id, data) => subTaskMutation.mutate({ id, data })}
           isUpdating={updateMutation.isPending}
           isDeleting={deleteMutation.isPending}
+          readOnly={!canEdit}
         />
       )}
     </div>

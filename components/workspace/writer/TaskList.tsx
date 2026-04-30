@@ -68,13 +68,15 @@ const getTaskIcon = (title: string) => {
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'OPEN':
-      return { label: 'Open Task', classes: 'bg-gray-100 text-gray-600' };
+      return { label: 'Open', classes: 'bg-gray-100 text-gray-600' };
     case 'IN_PROGRESS':
-      return { label: 'Draft', classes: 'bg-blue-100 text-blue-600' };
+      return { label: 'In Progress', classes: 'bg-blue-100 text-blue-600' };
+    case 'ON_HOLD':
+      return { label: 'On Hold', classes: 'bg-orange-100 text-orange-600' };
     case 'INTERNAL_REVIEW':
       return { label: 'Internal Review', classes: 'bg-amber-100 text-amber-600' };
     case 'CLIENT_REVIEW':
-      return { label: 'Internal Review', classes: 'bg-amber-100 text-amber-600' }; // Matching mockup label
+      return { label: 'Client Review', classes: 'bg-amber-100 text-amber-600' };
     case 'APPROVED':
       return { label: 'Approved', classes: 'bg-emerald-100 text-emerald-600' };
     case 'REJECTED':

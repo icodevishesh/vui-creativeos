@@ -9,19 +9,15 @@ import {
   X,
   ListTodo,
   DollarSign,
-  Layout,
-  ChevronRight,
   RefreshCw,
   CheckCircle2,
-  AlertCircle,
   Camera,
   Globe,
   Video,
   MessageCircle,
   Pin,
-  Settings,
   Monitor,
-  Check
+  ChevronDown
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ServiceType } from '@prisma/client';
@@ -51,6 +47,18 @@ const PLATFORMS = {
 
 const CONTENT_TYPES = ['Static', 'Video', 'Carousel'];
 
+const SERVICE_OPTIONS = [
+  'SOCIAL_MEDIA',
+  'PAID_MEDIA',
+  'INFLUENCER_MARKETING',
+  'EMAIL_MARKETING',
+  'WHATSAPP_MARKETING',
+  'SEO',
+  'CONTENT_CREATION',
+  'BRANDING',
+  'WEB_DEVELOPMENT'
+];
+
 export function ScopeTab({ clientId }: ScopeTabProps) {
   const queryClient = useQueryClient();
   const [isConfirming, setIsConfirming] = useState(false);
@@ -75,13 +83,14 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
       platforms: [],
       deliverables: {},
       contentSplit: [],
+      currency: 'USD'
     }
   });
 
   // Set default service once client data is loaded
   React.useEffect(() => {
-    if (client?.defaultService && !formData.service) {
-      setFormData((prev: any) => ({ ...prev, service: client.defaultService }));
+    if (client?.services?.length > 0 && !formData.service) {
+      setFormData((prev: any) => ({ ...prev, service: client.services[0].service }));
     }
   }, [client]);
 
@@ -166,7 +175,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                 service: '',
                 description: '',
                 budget: '',
-                details: { platforms: [], deliverables: {}, contentSplit: [] }
+                details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
               });
               setIsAdding(true);
             }}
@@ -197,30 +206,38 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                 {item.budget && (
                   <div className="text-right">
                     <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
-                    <p className="text-xl font-bold text-indigo-600">${item.budget.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-indigo-600">
+                      {item.details?.currency === 'INR' ? '₹' : '$'}{item.budget.toLocaleString()}
+                    </p>
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-50">
                 <div className="flex flex-col space-y-4">
-                  <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                    <Monitor className="w-4 h-4 text-gray-400" />
-                    Selected Platforms
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {item.details?.platforms?.map((p: string) => (
-                      <span key={p} className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-lg border border-gray-100">
-                        {p.replace(/_/g, ' ')}
-                      </span>
-                    ))}
-                  </div>
-                  <div className='mt-4'>
-                    <h4 className="text-sm font-semibold text-gray-900">Detailed Description</h4>
-                    <p className="text-gray-600 text-sm leading-relaxed font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
-                      "{item.description}"
-                    </p>
-                  </div>
+                  {item.details?.platforms && item.details.platforms.length > 0 && (
+                    <>
+                      <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                        <Monitor className="w-4 h-4 text-gray-400" />
+                        Selected Platforms
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {item.details.platforms.map((p: string) => (
+                          <span key={p} className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-lg border border-gray-100">
+                            {p.replace(/_/g, ' ')}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {item.description && item.description.trim() !== '' && (
+                    <div className='mt-4'>
+                      <h4 className="text-sm font-semibold text-gray-900">Detailed Description</h4>
+                      <p className="text-gray-600 text-sm leading-relaxed font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
+                        "{item.description}"
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {item.details?.deliverables && Object.keys(item.details.deliverables).length > 0 && (
@@ -271,7 +288,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                 service: '',
                 description: '',
                 budget: '',
-                details: { platforms: [], deliverables: {}, contentSplit: [] }
+                details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
               });
               setIsAdding(true);
             }
@@ -286,37 +303,61 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
         </button>
       </div>
 
+      {/* Show Services Requested during Onboarding */}
+      {!isFinalized && client?.services?.length > 0 && (
+        <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-indigo-600" />
+            Services Requested during Onboarding
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {client.services.map((s: any) => (
+              <span key={s.id} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-lg border border-indigo-100">
+                {s.service.replace(/_/g, ' ')}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm space-y-6">
-        {/* Service Selector (Prefilled) */}
+        {/* Service Selector */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-700">Service Category</label>
-            {isAdding || !client?.defaultService ? (
+            <div className="relative">
               <select
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-indigo-600 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all cursor-pointer appearance-none"
                 value={formData.service}
-                onChange={(e) => setFormData((p: any) => ({ ...p, service: e.target.value as ServiceType }))}
+                onChange={(e) => setFormData((p: any) => ({ ...p, service: e.target.value }))}
               >
                 <option value="" disabled>Select a service...</option>
-                {Object.values(ServiceType).map((type) => (
+                {SERVICE_OPTIONS.map((type) => (
                   <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
                 ))}
               </select>
-            ) : (
-              <div className="px-3.5 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-indigo-600 font-bold flex items-center gap-3 text-sm">
-                <Briefcase className="w-5 h-5" />
-                {formData.service.replace(/_/g, ' ')}
-              </div>
-            )}
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-600 pointer-events-none" />
+            </div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-700">Monthly Budget Estimate ($)</label>
-            <div className="relative">
-              <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <label className="text-xs font-bold text-gray-700">Monthly Budget Estimate</label>
+            <div className="flex bg-gray-50 border border-gray-100 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/10 focus-within:border-indigo-500 transition-all overflow-hidden relative">
+              <select
+                className="pl-4 pr-8 py-3 bg-gray-100 border-r border-gray-200 text-gray-700 text-sm font-bold focus:outline-none appearance-none cursor-pointer"
+                value={formData.details?.currency || 'USD'}
+                onChange={(e) => setFormData((p: any) => ({
+                  ...p,
+                  details: { ...p.details, currency: e.target.value }
+                }))}
+              >
+                <option value="USD">$ USD</option>
+                <option value="INR">₹ INR</option>
+              </select>
+              <ChevronDown className="absolute left-[5.2rem] top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               <input
                 type="number"
                 placeholder="5000"
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold"
+                className="w-full px-4 py-3 bg-transparent text-sm focus:outline-none font-bold"
                 value={formData.budget}
                 onChange={(e) => setFormData((p: any) => ({ ...p, budget: e.target.value }))}
               />
@@ -418,7 +459,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
         )}
 
         <div className="space-y-4 pt-8 border-t border-gray-50">
-          <label className="text-xs font-bold text-gray-900">Brief Scope Description</label>
+          <label className="text-xs font-bold text-gray-900">Brief Scope Description <span className="text-gray-400 font-normal">(Optional)</span></label>
           <textarea
             placeholder="Outline specific objectives, goals, and any additional notes for this service..."
             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-xs min-h-[120px] focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium leading-relaxed"
@@ -440,7 +481,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
       {/* Confirmation Modal */}
       <AnimatePresence>
         {isConfirming && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -454,7 +495,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="relative bg-white w-full max-w-lg rounded-lg p-8 shadow-2xl overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
+              <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-indigo-500 via-purple-500 to-indigo-500" />
 
               <div className="flex flex-col items-center text-center space-y-6">
                 <div className="w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">

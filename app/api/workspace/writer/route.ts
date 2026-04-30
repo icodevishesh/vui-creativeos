@@ -18,8 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const isAdmin = user.userType === 'ADMIN_OWNER' || user.membership?.role === 'ADMIN';
-    if (!isAdmin && (!user.membership || !isWriter(user.membership.role))) {
+    const isAdmin = user.userType === 'ADMIN_OWNER' || (user.membership?.roles?.includes('ADMIN') ?? false);
+    if (!isAdmin && (!user.membership || !isWriter(user.membership.roles))) {
       return NextResponse.json(
         { error: 'Forbidden: writer or copywriter role required' },
         { status: 403 }
@@ -32,7 +32,16 @@ export async function GET() {
       },
       include: {
         project: { select: { id: true, name: true } },
-        client: { select: { id: true, companyName: true } },
+        client: {
+          select: {
+            id: true,
+            companyName: true,
+            scopeOfWork: {
+              where: { service: 'SOCIAL_MEDIA' },
+              select: { details: true },
+            },
+          },
+        },
         assignedTo: { select: { id: true, name: true } },
         writerContent: { select: { content: true } },
         subTasks: {

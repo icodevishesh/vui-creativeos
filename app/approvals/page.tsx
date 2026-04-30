@@ -481,7 +481,7 @@ function FeedbackModal({
               </div>
               <p className="text-xs font-bold text-gray-900">{currentUser?.name || "Loading..."}</p>
               <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-1.5 py-0.5 rounded">
-                {currentUser?.role || currentUser?.userType || "User"}
+                {currentUser?.roles?.[0]?.replace(/_/g, ' ') || currentUser?.userType || "User"}
               </span>
             </div>
           </div>
@@ -915,8 +915,8 @@ export default function ApprovalsPage() {
     if (!modalState.task || !profile) return;
     let reviewerType: ReviewerType = "ADMIN";
     if (profile.userType === "CLIENT") reviewerType = "CLIENT";
-    else if (profile.role === "TEAM_LEAD") reviewerType = "TEAM_LEAD";
-    else if (profile.role === "ACCOUNT_MANAGER") reviewerType = "ACCOUNT_MANAGER";
+    else if (profile.roles?.includes("TEAM_LEAD")) reviewerType = "TEAM_LEAD";
+    else if (profile.roles?.includes("ACCOUNT_MANAGER")) reviewerType = "ACCOUNT_MANAGER";
     actionMutation.mutate({
       taskId: modalState.task.id,
       action: modalState.actionType,

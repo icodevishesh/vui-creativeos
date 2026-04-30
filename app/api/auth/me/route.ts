@@ -28,7 +28,7 @@ export async function GET() {
       include: {
         memberships: {
           take: 1,
-          select: { role: true },
+          select: { roles: true },
         },
       },
     });
@@ -42,7 +42,7 @@ export async function GET() {
       name: user.name,
       email: user.email,
       userType: user.userType,
-      role: user.memberships[0]?.role || null,
+      roles: user.memberships[0]?.roles || [],
     });
   } catch (error) {
     console.error('[AUTH_ME_GET]', error);

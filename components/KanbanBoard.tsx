@@ -62,6 +62,11 @@ const STATUS_CONFIG = {
     color: 'border-blue-200 bg-blue-50',
     headerColor: 'bg-blue-100 text-blue-700',
   },
+  [TaskStatus.ON_HOLD]: {
+    label: 'On Hold',
+    color: 'border-orange-200 bg-orange-50',
+    headerColor: 'bg-orange-100 text-orange-700',
+  },
   [TaskStatus.INTERNAL_REVIEW]: {
     label: 'Internal Review',
     color: 'border-purple-200 bg-purple-50',

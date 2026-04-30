@@ -16,7 +16,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActi
   if (calendarName) {
     tabs.push({ id: 'calendar', label: `Calendar: ${calendarName}` });
   } else {
-    tabs.push({ id: 'calendar', label: 'Create Calendar' });
+    tabs.push({ id: 'calendar', label: 'Calendar' });
   }
 
   return (

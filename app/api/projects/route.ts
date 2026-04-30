@@ -13,6 +13,9 @@ export async function GET() {
                         companyName: true,
                     },
                 },
+                createdBy: {
+                    select: { name: true },
+                },
             },
         });
 

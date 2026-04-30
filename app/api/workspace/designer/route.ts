@@ -18,8 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const isAdmin = user.userType === 'ADMIN_OWNER' || user.membership?.role === 'ADMIN';
-    if (!isAdmin && (!user.membership || !isDesigner(user.membership.role))) {
+    const isAdmin = user.userType === 'ADMIN_OWNER' || (user.membership?.roles?.includes('ADMIN') ?? false);
+    if (!isAdmin && (!user.membership || !isDesigner(user.membership.roles))) {
       return NextResponse.json(
         { error: 'Forbidden: designer role required' },
         { status: 403 }

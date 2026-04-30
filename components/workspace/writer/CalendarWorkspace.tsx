@@ -9,6 +9,7 @@ interface CalendarWorkspaceProps {
     initialCalendarId?: string;
     taskId?: string;
     taskTitle?: string;
+    clientPlatforms?: string[];
     onBack?: () => void;
 }
 
@@ -17,6 +18,7 @@ export const CalendarWorkspace: React.FC<CalendarWorkspaceProps> = ({
     initialCalendarId,
     taskId,
     taskTitle,
+    clientPlatforms = [],
     onBack
 }) => {
     const [calendar, setCalendar] = useState<any>(null);
@@ -78,6 +80,7 @@ export const CalendarWorkspace: React.FC<CalendarWorkspaceProps> = ({
                 initialClientId={initialClientId}
                 taskId={taskId}
                 taskTitle={taskTitle}
+                clientPlatforms={clientPlatforms}
             />
         </div>
     );

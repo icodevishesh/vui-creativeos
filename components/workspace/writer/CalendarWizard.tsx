@@ -12,6 +12,7 @@ interface CalendarWizardProps {
     initialClientId?: string;
     taskId?: string;
     taskTitle?: string;
+    clientPlatforms?: string[];
 }
 
 export const CalendarWizard: React.FC<CalendarWizardProps> = ({
@@ -22,6 +23,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     initialClientId,
     taskId,
     taskTitle,
+    clientPlatforms = [],
 }) => {
     const [step, setStep] = useState(1);
     const [calendarName, setCalendarName] = useState('');
@@ -277,6 +279,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                     onRefresh={onRefresh}
                     taskId={taskId}
                     calendarObjective={calendar.objective}
+                    clientPlatforms={clientPlatforms}
                 />
             </div>
         );

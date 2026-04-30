@@ -10,6 +10,10 @@ export async function GET(
         const projects = await prisma.project.findMany({
             where: { clientId: id },
             orderBy: { createdAt: "desc" },
+            include: {
+                client: { select: { companyName: true } },
+                createdBy: { select: { name: true } },
+            },
         });
         return NextResponse.json(projects);
     } catch (err) {
@@ -30,7 +34,7 @@ export enum ProjectStatus {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { name, clientId, startDate, endDate, description, organizationId: bodyOrgId } =
+        const { name, clientId, startDate, endDate, description, organizationId: bodyOrgId, createdById } =
             body;
 
         if (!name || !clientId) {
@@ -68,6 +72,11 @@ export async function POST(req: NextRequest) {
                 status: ProjectStatus.PLANNING,
                 clientId,
                 organizationId: finalOrgId,
+                ...(createdById && { createdById }),
+            },
+            include: {
+                client: { select: { companyName: true } },
+                createdBy: { select: { name: true } },
             },
         });
 

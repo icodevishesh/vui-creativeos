@@ -27,11 +27,17 @@ export default function WriterWorkspacePage() {
     queryFn: fetchWriterTasks,
   });
 
+  const [clientPlatforms, setClientPlatforms] = useState<string[]>([]);
+
   const handleCreateCalendar = useCallback((task: any) => {
     setSelectedTask(task);
     setInitialClientId(task.client?.id);
     setInitialCalendarId(task.calendar?.id);
     setActiveTaskId(task.id);
+    // Extract platforms from the client's SOCIAL_MEDIA scope of work
+    const scopePlatforms: string[] =
+      task.client?.scopeOfWork?.[0]?.details?.platforms ?? [];
+    setClientPlatforms(scopePlatforms);
     setActiveTab('calendar');
   }, []);
 
@@ -58,6 +64,7 @@ export default function WriterWorkspacePage() {
             initialCalendarId={initialCalendarId}
             taskId={activeTaskId}
             taskTitle={selectedTask?.title}
+            clientPlatforms={clientPlatforms}
             onBack={() => {
               setActiveTab('tasks');
               handleRefresh();
@@ -67,7 +74,7 @@ export default function WriterWorkspacePage() {
       default:
         return null;
     }
-  }, [activeTab, tasks, isLoading, handleCreateCalendar, initialClientId, initialCalendarId, activeTaskId, handleRefresh]);
+  }, [activeTab, tasks, isLoading, handleCreateCalendar, initialClientId, initialCalendarId, activeTaskId, clientPlatforms, handleRefresh]);
 
   return (
     <main className="min-h-screen">

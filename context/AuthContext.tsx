@@ -8,7 +8,9 @@ export type AuthUser = {
   name: string;
   email?: string;
   userType: string;
-  role: string | null; // MemberRole enum value
+  roles: string[]; // MemberRole enum values (1-2 roles)
+  /** @deprecated use roles[] instead */
+  role?: string | null;
 };
 
 type AuthContextValue = {
@@ -72,15 +74,17 @@ export function useAuth(): AuthContextValue {
   return ctx;
 }
 
-/** Returns a human-readable label for a MemberRole enum value */
-export function formatRole(role: string | null, userType: string): string {
-  if (!role) {
+/** Returns a human-readable label for MemberRole enum value(s) */
+export function formatRole(role: string | string[] | null, userType: string): string {
+  const roles = Array.isArray(role) ? role : (role ? [role] : []);
+  if (roles.length === 0) {
     if (userType === 'ADMIN_OWNER') return 'Admin Owner';
     if (userType === 'CLIENT') return 'Client';
     return 'Member';
   }
-  return role
-    .split('_')
-    .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
-    .join(' ');
+  return roles
+    .map((r) =>
+      r.split('_').map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')
+    )
+    .join(' / ');
 }

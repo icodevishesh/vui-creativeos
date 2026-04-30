@@ -9,7 +9,7 @@ import { MemberRole, UserType } from '@prisma/client';
  */
 async function validateAdminAccess() {
   const adminMember = await prisma.organizationMember.findFirst({
-    where: { role: 'ADMIN' },
+    where: { roles: { has: 'ADMIN' } },
   });
 
   const adminOwner = await prisma.user.findFirst({
@@ -67,10 +67,27 @@ export async function POST(req: Request) {
     await validateAdminAccess();
 
     const body = await req.json();
-    const { name, email, role, customRoleId } = body;
+    const { name, email, roles, customRoleId } = body;
 
-    if (!name || !email || !role) {
+    // Support both legacy single 'role' and new 'roles' array
+    const rolesArray: string[] = roles
+      ? (Array.isArray(roles) ? roles : [roles])
+      : (body.role ? [body.role] : []);
+
+    if (!name || !email || rolesArray.length === 0) {
       return new NextResponse('Missing required fields', { status: 400 });
+    }
+
+    if (rolesArray.length > 2) {
+      return new NextResponse('A member can have at most 2 roles', { status: 400 });
+    }
+
+    // Validate each role is a valid MemberRole enum value
+    const validRoles = Object.values(MemberRole);
+    for (const r of rolesArray) {
+      if (!validRoles.includes(r as MemberRole)) {
+        return new NextResponse(`Invalid role: ${r}`, { status: 400 });
+      }
     }
 
     // Check if user already exists
@@ -98,10 +115,11 @@ export async function POST(req: Request) {
         email,
         password: generatedPassword, // In real app, BCRYPT this!
         userType: UserType.ORGANIZATION_MEMBER,
+        roles: rolesArray as MemberRole[],
         memberships: {
           create: {
             organizationId: organization.id,
-            role: role as MemberRole,
+            roles: rolesArray as MemberRole[],
             customRoleId: customRoleId || null,
           },
         },
