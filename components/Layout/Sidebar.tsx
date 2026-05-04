@@ -43,23 +43,29 @@ type NavSection = {
   items: NavItem[];
 };
 
+// Roles that share admin-level access (minus Clients/Onboarding for ACCOUNT_MANAGER,
+// minus Clients/Onboarding for TEAM_LEAD)
+const ADMIN_LIKE = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'];
+const CLIENTS_ROLES = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'CLIENT', 'CLIENT_OWNER'];
+
 const SIDEBAR_SECTIONS: NavSection[] = [
   {
     title: 'OVERVIEW',
     items: [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      { name: 'Clients', href: '/clients', icon: Users, roles: ['ADMIN', 'ADMIN_OWNER', 'CLIENT', 'CLIENT_OWNER'] },
-      { name: 'Team Members', href: '/members', icon: UserPlus, roles: ['ADMIN', 'ADMIN_OWNER'] },
+      // ACCOUNT_MANAGER intentionally excluded from Clients page
+      { name: 'Clients', href: '/clients', icon: Users, roles: CLIENTS_ROLES },
+      { name: 'Team Members', href: '/members', icon: UserPlus, roles: ADMIN_LIKE },
     ],
   },
   {
     title: 'PROJECTS',
     items: [
-      { name: 'Projects', href: '/projects', icon: Folder, roles: ['ADMIN', 'ADMIN_OWNER'] },
-      { name: 'Gantt Chart', href: '/gantt-chart', icon: ListTodo, roles: ['ADMIN', 'ADMIN_OWNER', 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'CLIENT', 'CLIENT_OWNER', 'CREATIVE_LEAD', 'TEAM_LEAD', 'SALESPERSON', 'ACCOUNT_MANAGER', 'SOCIAL_MEDIA_MANAGER', 'SEO_SPECIALIST'] },
+      { name: 'Projects', href: '/projects', icon: Folder, roles: ADMIN_LIKE },
+      { name: 'Gantt Chart', href: '/gantt-chart', icon: ListTodo, roles: [...ADMIN_LIKE, 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'CREATIVE_LEAD', 'VIDEO_EDITOR', 'CLIENT', 'CLIENT_OWNER', 'SOCIAL_MEDIA_MANAGER', 'SEO_SPECIALIST'] },
       { name: 'Content Calendar', href: '/calendar', icon: Calendar },
       { name: 'Task Board', href: '/tasks', icon: Layout },
-      { name: 'Approvals', href: '/approvals', icon: CheckCircle2, roles: ['ADMIN', 'ADMIN_OWNER', 'CLIENT', 'CLIENT_OWNER'] },
+      { name: 'Approvals', href: '/approvals', icon: CheckCircle2, roles: [...ADMIN_LIKE, 'CLIENT', 'CLIENT_OWNER'] },
       { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud },
     ],
   },
@@ -70,13 +76,13 @@ const SIDEBAR_SECTIONS: NavSection[] = [
         name: "Writer's Workspace",
         href: '/workspace/writer',
         icon: PenTool,
-        roles: ['COPYWRITER', 'CONTENT_WRITER', 'ADMIN', 'ADMIN_OWNER'],
+        roles: ['COPYWRITER', 'CONTENT_WRITER', 'ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'],
       },
       {
         name: "Designer's Workspace",
         href: '/workspace/designer',
         icon: Palette,
-        roles: ['GRAPHIC_DESIGNER', 'ADMIN', 'ADMIN_OWNER'],
+        roles: ['GRAPHIC_DESIGNER', 'VIDEO_EDITOR', 'CREATIVE_LEAD', 'ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'],
       },
     ],
   },

@@ -16,9 +16,6 @@ Writer
 visheshpurkait@gmail.com
 eth4otzz6a
 
-Admin
-vipinpal7060@gmail.com
-123456
 
 pwc:
 pEB5D8mDr$
@@ -26,8 +23,21 @@ pEB5D8mDr$
 Akash.Manchanda@vuilive.com
 akash@12345
 
-john@xyz.com
-6NZfQ@69qA
+Admin
+vipinpal7060@gmail.com
+123456
 
+client
+john@xyz.com
+#k74METvt9
+
+writer
 johntest2@gmail.com
-5m8fzh4btp
+5m8fzh4btpt
+
+brok@test.com
+u9dmfjqklo
+
+designer
+junes@test.com
+lw563138wi

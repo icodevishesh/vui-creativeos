@@ -21,6 +21,7 @@ export async function GET(
         copies: {
           include: {
             bucket: { select: { id: true, name: true } },
+            frames: { orderBy: { frameNumber: 'asc' } },
           },
           orderBy: { publishDate: 'asc' },
         },
@@ -33,7 +34,7 @@ export async function GET(
             project: { select: { id: true, name: true } },
             subTasks: {
               orderBy: { createdAt: 'asc' },
-              select: { id: true, title: true, description: true, status: true, createdAt: true },
+              select: { id: true, title: true, description: true, status: true, createdAt: true, reviewerName: true, reviewerType: true },
             },
             _count: { select: { subTasks: true } },
           },

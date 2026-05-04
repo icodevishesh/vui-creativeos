@@ -27,12 +27,39 @@ export async function GET(req: NextRequest) {
                 client: { select: { companyName: true } },
                 assignedTo: { select: { id: true, name: true } },
                 _count: { select: { subTasks: true } },
-                calendar: { select: { id: true, name: true } }
+                calendar: {
+                    select: {
+                        id: true,
+                        name: true,
+                        copies: { select: { status: true } },
+                    }
+                }
             },
             orderBy: { createdAt: "desc" },
         });
 
-        return NextResponse.json(tasks);
+        // Strict aggregate status: task is only APPROVED when ALL copies are APPROVED/PUBLISHED
+        const result = tasks.map((task) => {
+            const calCopies = task.calendar?.copies ?? [];
+            let effectiveStatus: string = task.status;
+            if (calCopies.length > 0) {
+                const allDone = calCopies.every(
+                    (c) => c.status === 'APPROVED' || c.status === 'PUBLISHED'
+                );
+                if (!allDone && task.status === TaskStatus.APPROVED) {
+                    effectiveStatus = 'INTERNAL_REVIEW';
+                }
+            }
+            return {
+                ...task,
+                status: effectiveStatus,
+                calendar: task.calendar
+                    ? { id: task.calendar.id, name: task.calendar.name }
+                    : null,
+            };
+        });
+
+        return NextResponse.json(result);
     } catch (err) {
         console.error("[GET /api/tasks]", err);
         return NextResponse.json(

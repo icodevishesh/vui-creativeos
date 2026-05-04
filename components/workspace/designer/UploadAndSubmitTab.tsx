@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FileText, Upload, Send, File, X, Image as ImageIcon, Clock, Plus, Globe } from 'lucide-react';
+import { FileText, Upload, Send, File, X, Image as ImageIcon, Clock, Plus, Globe, Link, Layers } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 interface Task {
@@ -20,6 +20,17 @@ interface Task {
     mediaType?: string;
     publishDate?: string;
     publishTime?: string;
+    referenceUrl?: string;
+    isCarousel?: boolean;
+    frameCount?: number;
+    frames?: Array<{
+      id: string;
+      frameNumber: number;
+      caption?: string;
+      hashtags?: string;
+      creativeUrl?: string;
+      creativeStatus: string;
+    }>;
     bucket?: { name: string } | null;
   } | null;
 }
@@ -197,6 +208,9 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
   const [isSubmitting, setIsSubmitting] = useState(false);
   // Each file carries its own type: { file, type }
   const [filesByPlatform, setFilesByPlatform] = useState<Record<string, FileItem[]>>({});
+  // Per-frame files for carousel tasks: keyed by frameId
+  const [filesByFrame, setFilesByFrame] = useState<Record<string, File | null>>({});
+  const [uploadingFrameId, setUploadingFrameId] = useState<string | null>(null);
 
   if (!task) {
     return (
@@ -210,6 +224,42 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
 
   // Resolve platforms from the linked copy (support both legacy and new field)
   const copy = task.calendarCopy;
+
+  // Carousel helpers (derived from copy — must come after copy is declared)
+  const isCarouselTask = !!(copy?.isCarousel && Array.isArray(copy.frames) && copy.frames.length > 0);
+  const carouselFrames = isCarouselTask ? (copy!.frames ?? []) : [];
+  const allFramesHaveFiles = carouselFrames.length > 0
+    ? carouselFrames.every(f => !!filesByFrame[f.id])
+    : true;
+
+  const uploadFrameFile = async (frameId: string, file: File) => {
+    setUploadingFrameId(frameId);
+    try {
+      const copyId = (copy as any)?.id ?? '';
+      const calendarIdVal = (copy as any)?.calendarId ?? '';
+      const uploadRes = await fetch(`/api/tasks/${task.id}/designer-content`, {
+        method: 'PATCH',
+        body: (() => { const fd = new FormData(); fd.append('file_carousel_frame', file); fd.append('fileMetadata', JSON.stringify({ carousel_frame: [frameId] })); return fd; })()
+      });
+      if (!uploadRes.ok) throw new Error('Upload failed');
+      const uploadData = await uploadRes.json();
+      const fileUrl = uploadData?.attachments?.find((a: any) => a.fileName === file.name)?.fileUrl ?? '';
+      if (fileUrl && copyId && calendarIdVal) {
+        await fetch(`/api/calendars/${calendarIdVal}/copies/${copyId}/frames/${frameId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ creativeUrl: fileUrl }),
+        });
+      }
+      setFilesByFrame(prev => ({ ...prev, [frameId]: file }));
+      toast.success(`Frame ${carouselFrames.find(f => f.id === frameId)?.frameNumber ?? ''} uploaded`);
+    } catch {
+      toast.error('Frame upload failed');
+    } finally {
+      setUploadingFrameId(null);
+    }
+  };
+
   const platforms: string[] = copy
     ? (Array.isArray(copy.platforms) && copy.platforms.length > 0
         ? copy.platforms
@@ -246,7 +296,11 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
   const totalFiles = Object.values(filesByPlatform).reduce((sum, arr) => sum + arr.length, 0);
 
   const handleSubmit = async () => {
-    if (totalFiles === 0 && !notes.trim()) {
+    if (isCarouselTask && !allFramesHaveFiles) {
+      toast.error(`Upload all ${carouselFrames.length} frames before submitting`);
+      return;
+    }
+    if (!isCarouselTask && totalFiles === 0 && !notes.trim()) {
       toast.error('Upload at least one file or add design notes');
       return;
     }
@@ -352,6 +406,16 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
             {copy.caption && (
               <p className="text-[11px] text-indigo-600 italic">{copy.caption}</p>
             )}
+            {copy.referenceUrl && (
+              <a
+                href={copy.referenceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 hover:underline break-all"
+              >
+                <Link size={11} className="shrink-0" /> {copy.referenceUrl}
+              </a>
+            )}
           </div>
         )}
 
@@ -405,8 +469,60 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
             </p>
           </div>
 
-          {/* Per-platform zones (or generic if no platforms) */}
-          {platforms.length > 0 ? (
+          {/* ── Carousel: per-frame upload slots ── */}
+          {isCarouselTask ? (
+            <div className="space-y-3">
+              {carouselFrames.map(frame => {
+                const hasFile = !!filesByFrame[frame.id];
+                const isUploading = uploadingFrameId === frame.id;
+                return (
+                  <div key={frame.id} className={`rounded-lg border p-4 space-y-2 transition-all ${
+                    hasFile ? 'border-emerald-200 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Frame {frame.frameNumber}</span>
+                        {hasFile && <span className="text-[10px] font-bold text-emerald-500">✓ Uploaded</span>}
+                        {frame.creativeStatus === 'UPLOADED' && !hasFile && (
+                          <span className="text-[10px] font-bold text-emerald-400">Previously uploaded</span>
+                        )}
+                      </div>
+                      <span className="text-[10px] text-gray-400">{frame.frameNumber} / {carouselFrames.length}</span>
+                    </div>
+                    {frame.caption && <p className="text-xs text-gray-600 line-clamp-2">{frame.caption}</p>}
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*,video/*"
+                        onChange={e => { const f = e.target.files?.[0]; if (f) uploadFrameFile(frame.id, f); e.target.value = ''; }}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        disabled={isUploading}
+                      />
+                      <div className={`flex items-center justify-center gap-2 py-2 rounded-lg border-2 border-dashed text-xs font-bold transition-all ${
+                        hasFile
+                          ? 'border-emerald-300 text-emerald-600 bg-white'
+                          : 'border-gray-200 text-gray-400 bg-white hover:border-indigo-300 hover:text-indigo-500'
+                      }`}>
+                        {isUploading ? (
+                          <><div className="w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-500 rounded-full animate-spin" /> Uploading...</>
+                        ) : hasFile ? (
+                          <><ImageIcon size={14} /> {filesByFrame[frame.id]!.name}</>  
+                        ) : (
+                          <><Upload size={14} /> Click to upload Frame {frame.frameNumber}</>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {!allFramesHaveFiles && (
+                <p className="text-[11px] text-amber-600 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+                  Upload all {carouselFrames.length} frames to submit
+                </p>
+              )}
+            </div>
+          ) : platforms.length > 0 ? (
             <div className="space-y-5">
               {platforms.map(platform => (
                 <PlatformUploadZone

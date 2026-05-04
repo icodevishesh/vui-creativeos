@@ -103,11 +103,17 @@ export function TeamTab({ clientId }: TeamTabProps) {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900">{member.userName}</h4>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest bg-gray-100 text-gray-500 px-2.5 py-1 rounded-lg">
-                    <Shield className="w-3 h-3" />
-                    {member.userRole}
-                  </span>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
+                  {(() => {
+                    const globalRoles = orgMembers?.find((m: any) => m.userId === member.userId)?.roles as string[] | undefined;
+                    const rolesToShow = (globalRoles && globalRoles.length > 0 ? globalRoles : [member.userRole]);
+                    return rolesToShow.map((r: string) => (
+                      <span key={r} className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-widest bg-gray-100 text-gray-500 px-2.5 py-1 rounded-lg">
+                        <Shield className="w-3 h-3" />
+                        {r.replace(/_/g, ' ')}
+                      </span>
+                    ));
+                  })()}
                 </div>
               </div>
             </div>

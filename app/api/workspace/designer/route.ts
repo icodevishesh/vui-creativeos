@@ -18,7 +18,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const isAdmin = user.userType === 'ADMIN_OWNER' || (user.membership?.roles?.includes('ADMIN') ?? false);
+    const isAdmin = user.userType === 'ADMIN_OWNER' ||
+      (user.membership?.roles ?? []).some((r: string) => ['ADMIN', 'TEAM_LEAD', 'ACCOUNT_MANAGER'].includes(r));
     if (!isAdmin && (!user.membership || !isDesigner(user.membership.roles))) {
       return NextResponse.json(
         { error: 'Forbidden: designer role required' },
@@ -26,24 +27,29 @@ export async function GET() {
       );
     }
 
-    // Find all clients where this user is a team member —
-    // used as a fallback to surface tasks where assignedToId wasn't set correctly.
-    const teamMemberships = await prisma.clientTeamMember.findMany({
-      where: { userId: user.id },
-      select: { clientId: true },
-    });
-    const designerClientIds = teamMemberships.map((m) => m.clientId);
+    const VIDEO_MEDIA_TYPES = ['VIDEO', 'REEL', 'VIDEO_AD'];
+    const normalize = (r: string) => r.toUpperCase().replace(/[\s-]+/g, '_');
+    const userRoles: string[] = user.membership?.roles ?? [];
+    const isVideoEditor = userRoles.some(r => normalize(r) === 'VIDEO_EDITOR');
+    const isTeamLeadOrAM = userRoles.some(
+      r => normalize(r) === 'TEAM_LEAD' || normalize(r) === 'ACCOUNT_MANAGER'
+    );
+
+    // Role-based media type filter:
+    //   VIDEO_EDITOR              → only VIDEO / REEL / VIDEO_AD copies
+    //   GRAPHIC_DESIGNER / CREATIVE_LEAD → everything else (IMAGE, CAROUSEL, STATIC, etc.)
+    //   ADMIN / TEAM_LEAD / ACCOUNT_MANAGER → see all designer tasks (no filter)
+    const mediaTypeFilter = (isAdmin || isTeamLeadOrAM)
+      ? {}
+      : isVideoEditor
+        ? { calendarCopy: { is: { mediaType: { in: VIDEO_MEDIA_TYPES } } } }
+        : { calendarCopy: { is: { mediaType: { notIn: VIDEO_MEDIA_TYPES } } } };
 
     const tasks = await prisma.task.findMany({
       where: {
-        OR: [
-          // Tasks explicitly assigned to this user
-          { assignedToId: user.id },
-          // Designer tasks for clients this user belongs to (handles null-assignee edge case)
-          ...(designerClientIds.length > 0
-            ? [{ clientId: { in: designerClientIds }, calendarCopyId: { not: null } }]
-            : []),
-        ],
+        assignedToId: user.id,
+        calendarCopyId: { not: null },
+        ...mediaTypeFilter,
       },
       include: {
         project: { select: { id: true, name: true } },
@@ -61,6 +67,10 @@ export async function GET() {
             mediaType: true,
             publishDate: true,
             publishTime: true,
+            referenceUrl: true,
+            isCarousel: true,
+            frameCount: true,
+            frames: { orderBy: { frameNumber: 'asc' } },
             status: true,
             bucket: { select: { id: true, name: true } },
           },

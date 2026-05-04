@@ -32,16 +32,13 @@ export async function POST(
       return new NextResponse('Missing required fields', { status: 400 });
     }
 
-    // Validation: check if role already exists for this client
-    const existingRole = await prisma.clientTeamMember.findFirst({
-      where: {
-        clientId: id,
-        userRole: userRole,
-      },
+    // Validation: one entry per user per client
+    const existingMember = await prisma.clientTeamMember.findFirst({
+      where: { clientId: id, userId },
     });
 
-    if (existingRole) {
-      return new NextResponse(`Role "${userRole}" is already assigned to ${existingRole.userName}`, { status: 400 });
+    if (existingMember) {
+      return new NextResponse(`${existingMember.userName} is already on this client's team`, { status: 400 });
     }
 
     const member = await prisma.clientTeamMember.create({

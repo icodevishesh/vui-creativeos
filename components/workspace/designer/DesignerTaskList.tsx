@@ -11,7 +11,8 @@ import {
   Clock,
   ChevronDown,
   Upload,
-  File
+  File,
+  Link
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -33,6 +34,7 @@ interface Task {
     mediaType?: string;
     publishDate?: string;
     publishTime?: string;
+    referenceUrl?: string;
     status: string;
     bucket?: { id: string; name: string } | null;
   } | null;
@@ -197,6 +199,17 @@ export const DesignerTaskList: React.FC<DesignerTaskListProps> = ({
                       <p className="text-xs text-indigo-800 leading-relaxed line-clamp-3">{task.calendarCopy.content}</p>
                       {task.calendarCopy.caption && (
                         <p className="text-[11px] text-indigo-600 italic line-clamp-2">{task.calendarCopy.caption}</p>
+                      )}
+                      <span className="text-[11px] font-semibold text-indigo-600 mr-1">Reference URL:</span>
+                      {task.calendarCopy.referenceUrl && (
+                        <a
+                          href={task.calendarCopy.referenceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 hover:underline break-all"
+                        >
+                          <Link size={11} className="shrink-0" /> {task.calendarCopy.referenceUrl}
+                        </a>
                       )}
                     </div>
                   )}

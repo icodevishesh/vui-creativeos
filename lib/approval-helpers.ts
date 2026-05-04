@@ -42,13 +42,31 @@ export async function createDesignerTasksForCalendar(task: CalendarTaskRef) {
   const newCopies = copies.filter(c => !alreadyHasDesignerTask.has(c.id));
   if (newCopies.length === 0) return;
 
+  // Fetch team members then look up their global User.roles separately,
+  // since ClientTeamMember.userRole is a single-role snapshot that may be stale.
   const teamMembers = await prisma.clientTeamMember.findMany({
     where: { clientId: task.clientId },
   });
 
+  // Build userId → roles[] map from global User records
+  const userIds = teamMembers.map(m => m.userId);
+  const users = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, roles: true },
+  });
+  const userRolesMap = new Map(users.map(u => [u.id, u.roles as string[]]));
+
   const normalizeRole = (r: string) => r.toUpperCase().replace(/[\s-]+/g, '_');
-  const designerEntry = teamMembers.find(m => normalizeRole(m.userRole) === 'GRAPHIC_DESIGNER');
-  const videoEditorEntry = teamMembers.find(m => normalizeRole(m.userRole) === 'VIDEO_EDITOR');
+  const hasRole = (m: typeof teamMembers[number], role: string) =>
+    (userRolesMap.get(m.userId) ?? []).some(r => normalizeRole(r) === role);
+
+  // CREATIVE_LEAD takes priority over GRAPHIC_DESIGNER for non-video copies.
+  // If no CREATIVE_LEAD on team, falls through to GRAPHIC_DESIGNER.
+  const creativeLeadEntry = teamMembers.find(m => hasRole(m, 'CREATIVE_LEAD'));
+  const designerEntry = creativeLeadEntry ?? teamMembers.find(m => hasRole(m, 'GRAPHIC_DESIGNER'));
+  const videoEditorEntry = teamMembers.find(m => hasRole(m, 'VIDEO_EDITOR'));
+
+  const VIDEO_MEDIA_TYPES = new Set(['VIDEO', 'REEL', 'VIDEO_AD']);
 
   for (const copy of newCopies) {
     await prisma.calendarCopy.update({
@@ -56,7 +74,12 @@ export async function createDesignerTasksForCalendar(task: CalendarTaskRef) {
       data: { status: 'APPROVED' },
     });
 
-    const assigneeId = designerEntry?.userId ?? videoEditorEntry?.userId ?? null;
+    // Route to VIDEO_EDITOR for video/reel copies; GRAPHIC_DESIGNER for everything else.
+    // No cross-role fallback — if the required role isn't on the team, leave unassigned.
+    const isVideo = copy.mediaType && VIDEO_MEDIA_TYPES.has(copy.mediaType.toUpperCase());
+    const assigneeId = isVideo
+      ? (videoEditorEntry?.userId ?? null)
+      : (designerEntry?.userId ?? null);
     let deadline: Date | null = null;
     if (copy.publishDate) {
       deadline = subDays(new Date(copy.publishDate), 1);
@@ -91,6 +114,7 @@ export async function createDesignerTasksForCalendar(task: CalendarTaskRef) {
         calendarId: task.calendarId,
         calendarCopyId: copy.id,
         contentBucketId: copy.bucketId ?? null,
+        startDate: new Date(),
         endDate: deadline,
       },
     });

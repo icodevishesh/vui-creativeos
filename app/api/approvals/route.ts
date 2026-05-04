@@ -38,7 +38,10 @@ export async function GET(req: NextRequest) {
                             select: {
                                 id: true, content: true, caption: true, hashtags: true,
                                 platforms: true, mediaType: true, publishDate: true, publishTime: true,
-                                status: true, bucket: { select: { id: true, name: true } },
+                                referenceUrl: true, status: true,
+                                isCarousel: true, frameCount: true,
+                                frames: { orderBy: { frameNumber: 'asc' } },
+                                bucket: { select: { id: true, name: true } },
                             },
                             orderBy: { publishDate: 'asc' },
                         },
@@ -51,7 +54,11 @@ export async function GET(req: NextRequest) {
                 _count: { select: { subTasks: true } },
                 subTasks: {
                     orderBy: { createdAt: "asc" },
-                    include: { assignedTo: { select: { id: true, name: true } } },
+                    select: {
+                        id: true, title: true, description: true, status: true, createdAt: true,
+                        reviewerName: true, reviewerType: true,
+                        assignedTo: { select: { id: true, name: true } },
+                    },
                 },
             },
             orderBy: { updatedAt: "desc" },
@@ -68,7 +75,9 @@ export async function GET(req: NextRequest) {
                   select: {
                       id: true, content: true, caption: true, hashtags: true,
                       platforms: true, mediaType: true, publishDate: true, publishTime: true,
-                      bucketId: true,
+                      referenceUrl: true, bucketId: true,
+                      isCarousel: true, frameCount: true,
+                      frames: { orderBy: { frameNumber: 'asc' } },
                   },
               })
             : [];
@@ -134,6 +143,33 @@ export async function POST(req: NextRequest) {
         if (action === "approve") {
             // INTERNAL_REVIEW → CLIENT_REVIEW (first stage)
             if (task.status === TaskStatus.INTERNAL_REVIEW) {
+                // Advance all copies that are still in INTERNAL_REVIEW to CLIENT_REVIEW
+                if (task.calendarId) {
+                    await prisma.calendarCopy.updateMany({
+                        where: { calendarId: task.calendarId, status: 'INTERNAL_REVIEW' },
+                        data: { status: 'CLIENT_REVIEW' },
+                    });
+                }
+
+                // Only advance the task if no submitted copies are still pending review.
+                // DRAFT copies were never submitted this round — they don't block advancement.
+                const blockingCopies = task.calendarId
+                    ? await prisma.calendarCopy.count({
+                          where: {
+                              calendarId: task.calendarId,
+                              status: 'INTERNAL_REVIEW',
+                          },
+                      })
+                    : 0;
+
+                if (blockingCopies > 0) {
+                    return NextResponse.json({
+                        success: true,
+                        partial: true,
+                        message: `${blockingCopies} cop${blockingCopies === 1 ? 'y' : 'ies'} still pending — task stays in Internal Review`,
+                    });
+                }
+
                 const updated = await prisma.task.update({
                     where: { id: taskId },
                     data: { status: TaskStatus.CLIENT_REVIEW },
@@ -143,25 +179,69 @@ export async function POST(req: NextRequest) {
                     },
                 });
 
-                // Advance all calendar copies that are in INTERNAL_REVIEW to CLIENT_REVIEW
-                if (task.calendarId) {
-                    await prisma.calendarCopy.updateMany({
-                        where: { calendarId: task.calendarId, status: 'INTERNAL_REVIEW' },
-                        data: { status: 'CLIENT_REVIEW' },
-                    });
-                }
+                // Record approval in history
+                await prisma.subTask.create({
+                    data: {
+                        title: `Approved → Client Review`,
+                        description: `Approved — Advanced to client review`,
+                        status: TaskStatus.APPROVED,
+                        mainTaskId: taskId,
+                        projectId: task.projectId,
+                        clientId: task.clientId,
+                        assignedToId: task.assignedToId || null,
+                        feedbacks: [],
+                        reviewerId: reviewerId || null,
+                        reviewerType: reviewerType || null,
+                        reviewerName: reviewerName || null,
+                    },
+                });
 
                 return NextResponse.json({ success: true, task: updated });
             }
 
             // CLIENT_REVIEW → APPROVED (final stage)
             if (task.status === TaskStatus.CLIENT_REVIEW) {
+                // Only block if submitted copies are still pending (INTERNAL_REVIEW or CLIENT_REVIEW).
+                // DRAFT copies were not submitted and don't prevent final approval.
+                const blockingCopies = task.calendarId
+                    ? await prisma.calendarCopy.count({
+                          where: {
+                              calendarId: task.calendarId,
+                              status: { in: ['INTERNAL_REVIEW', 'CLIENT_REVIEW'] },
+                          },
+                      })
+                    : 0;
+
+                if (blockingCopies > 0) {
+                    return NextResponse.json({
+                        success: false,
+                        error: `${blockingCopies} cop${blockingCopies === 1 ? 'y' : 'ies'} still in review — approve all submitted copies first`,
+                    }, { status: 400 });
+                }
+
                 const updated = await prisma.task.update({
                     where: { id: taskId },
                     data: { status: TaskStatus.APPROVED },
                     include: {
                         project: { select: { name: true } },
                         client: { select: { companyName: true } },
+                    },
+                });
+
+                // Record final approval in history
+                await prisma.subTask.create({
+                    data: {
+                        title: `Approved & Published`,
+                        description: `Approved — Final approval`,
+                        status: TaskStatus.APPROVED,
+                        mainTaskId: taskId,
+                        projectId: task.projectId,
+                        clientId: task.clientId,
+                        assignedToId: task.assignedToId || null,
+                        feedbacks: [],
+                        reviewerId: reviewerId || null,
+                        reviewerType: reviewerType || null,
+                        reviewerName: reviewerName || null,
                     },
                 });
 
