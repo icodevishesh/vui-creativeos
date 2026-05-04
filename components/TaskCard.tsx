@@ -69,6 +69,12 @@ const STATUS_CONFIG = {
     textColor: 'text-red-700',
     borderColor: 'border-red-200',
     label: 'Rejected'
+  },
+  [TaskStatus.ON_HOLD]: {
+    bgColor: 'bg-yellow-50',
+    textColor: 'text-yellow-700',
+    borderColor: 'border-yellow-200',
+    label: 'On Hold'
   }
 };
 

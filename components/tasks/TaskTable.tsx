@@ -33,6 +33,7 @@ const STATUS_MAP: Record<TaskStatus, { label: string; color: string; icon: any }
   OPEN: { label: "Open", color: "text-green-600 bg-green-100", icon: Clock },
   OPENED: { label: "Opened", color: "text-teal-600 bg-teal-50", icon: Clock },
   IN_PROGRESS: { label: "In Progress", color: "text-blue-600 bg-blue-50", icon: Clock },
+  ON_HOLD: { label: "On Hold", color: "text-yellow-600 bg-yellow-50", icon: Clock },
   INTERNAL_REVIEW: { label: "Internal Review", color: "text-violet-600 bg-violet-50", icon: AlertCircle },
   CLIENT_REVIEW: { label: "Client Review", color: "text-amber-600 bg-amber-50", icon: AlertCircle },
   APPROVED: { label: "Approved", color: "text-emerald-600 bg-emerald-50", icon: CheckCircle2 },

@@ -35,47 +35,48 @@ enum MemberRole {
 }
 
 model User {
-  id            String   @id @default(cuid()) @map("_id")
-  email         String   @unique
-  password      String
-  name          String
-  phone         String?
-  userType      UserType
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  roles         MemberRole[]
+  id        String       @id @default(cuid()) @map("_id")
+  email     String       @unique
+  password  String
+  name      String
+  phone     String?
+  userType  UserType
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  roles     MemberRole[]
 
   // Relations
-  ownedOrganizations  Organization[]     @relation("OrganizationOwner")
-  memberships         OrganizationMember[]
-  clientProfiles      ClientProfile[]
-  assignedProjects    ProjectTeamMember[]
-  createdTasks        Task[]             @relation("TaskCreator")
-  createdProjects     Project[]          @relation("ProjectCreator")
-  assignedTasks       Task[]             @relation("TaskAssignee")
-  writerTasks         Task[]             @relation("TaskWriter")
-  editorTasks         Task[]             @relation("TaskEditor")
-  designerTasks       Task[]             @relation("TaskDesigner")
-  videoEditorTasks    Task[]             @relation("TaskVideoEditor")
-  assignedSubTasks    SubTask[]
-  meetingLogs         MeetingLog[]
-  comments            Comment[]
-  notifications       Notification[]
-  uploadedAssets      Asset[]        @relation("UploadedAssets")
-  calendars           Calendar[]     @relation("WriterCalendars")
+  ownedOrganizations Organization[]       @relation("OrganizationOwner")
+  memberships        OrganizationMember[]
+  clientProfiles     ClientProfile[]
+  assignedProjects   ProjectTeamMember[]
+  createdTasks       Task[]               @relation("TaskCreator")
+  createdProjects    Project[]            @relation("ProjectCreator")
+  assignedTasks      Task[]               @relation("TaskAssignee")
+  writerTasks        Task[]               @relation("TaskWriter")
+  editorTasks        Task[]               @relation("TaskEditor")
+  designerTasks      Task[]               @relation("TaskDesigner")
+  videoEditorTasks   Task[]               @relation("TaskVideoEditor")
+  assignedSubTasks   SubTask[]
+  meetingLogs        MeetingLog[]
+  comments           Comment[]
+  notifications               Notification[]
+  notificationPreferences     NotificationPreference[]
+  uploadedAssets              Asset[]              @relation("UploadedAssets")
+  calendars          Calendar[]           @relation("WriterCalendars")
 
   @@index([userType])
 }
 
 model Organization {
-  id          String   @id @default(cuid()) @map("_id")
-  name        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid()) @map("_id")
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  owner       User     @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String
+  owner   User   @relation("OrganizationOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
 
   members     OrganizationMember[]
   clients     ClientProfile[]
@@ -83,16 +84,15 @@ model Organization {
   customRoles CustomRole[]
   tasks       Task[]
 
-
   @@index([ownerId])
 }
 
 model OrganizationMember {
-  id        String     @id @default(cuid()) @map("_id")
+  id        String       @id @default(cuid()) @map("_id")
   roles     MemberRole[]
-  isActive  Boolean    @default(true)
-  joinedAt  DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  isActive  Boolean      @default(true)
+  joinedAt  DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
   // Relations
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -110,14 +110,14 @@ model OrganizationMember {
 
 // For dynamic/custom roles beyond predefined ones
 model CustomRole {
-  id             String   @id @default(cuid()) @map("_id")
-  name           String
-  description    String?
-  permissions    Json     // Store permissions as JSON
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id          String   @id @default(cuid()) @map("_id")
+  name        String
+  description String?
+  permissions Json // Store permissions as JSON
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
 
   members OrganizationMember[]
@@ -175,24 +175,24 @@ model ClientProfile {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
 
-  managedBy      String? // User ID of account manager of allocated team
-  defaultService ServiceType @default(SOCIAL_MEDIA)
-  isScopeFinalized Boolean @default(false)
-  services       ClientService[]
-  teamMembers    ClientTeamMember[]
-  scopeOfWork    ScopeOfWork[]
-  documents      ClientDocument[]
-  meetingLogs    MeetingLog[]
-  projects       Project[]
-  tasks          Task[]
-  subTasks       SubTask[]
-  ganttTasks     GanttTask[]
+  managedBy         String? // User ID of account manager of allocated team
+  defaultService    ServiceType        @default(SOCIAL_MEDIA)
+  isScopeFinalized  Boolean            @default(false)
+  services          ClientService[]
+  teamMembers       ClientTeamMember[]
+  scopeOfWork       ScopeOfWork[]
+  documents         ClientDocument[]
+  meetingLogs       MeetingLog[]
+  projects          Project[]
+  tasks             Task[]
+  subTasks          SubTask[]
+  ganttTasks        GanttTask[]
   calendarObjective String?
 
-  ganttLinks     GanttLink[]
-  assets         Asset[]
-  folder         Folder?
-  calendars      Calendar[]
+  ganttLinks GanttLink[]
+  assets     Asset[]
+  folder     Folder?
+  calendars  Calendar[]
 
   @@index([organizationId])
   @@index([userId])
@@ -295,7 +295,7 @@ model MeetingLog {
   createdBy   User          @relation(fields: [createdById], references: [id])
   createdById String
 
-  attendees  Json? // Store attendee IDs/names as JSON
+  attendees Json? // Store attendee IDs/names as JSON
 
   @@index([clientId])
   @@index([meetingDate])
@@ -337,8 +337,8 @@ model Project {
   subTasks    SubTask[]
   approvals   Approval[]
 
-  ganttTasks  GanttTask[]
-  ganttLinks  GanttLink[]
+  ganttTasks GanttTask[]
+  ganttLinks GanttLink[]
 
   @@index([clientId])
   @@index([organizationId])
@@ -346,9 +346,9 @@ model Project {
 }
 
 model ProjectTeamMember {
-  id        String   @id @default(cuid()) @map("_id")
-  role      String
-  joinedAt  DateTime @default(now())
+  id       String   @id @default(cuid()) @map("_id")
+  role     String
+  joinedAt DateTime @default(now())
 
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
@@ -379,25 +379,25 @@ enum TaskPriority {
 }
 
 model Task {
-  id          String       @id @default(cuid()) @map("_id")
-  title       String
-  description String?
-  status      TaskStatus   @default(OPEN)
-  priority    TaskPriority @default(MEDIUM)
-  mediaUrls   String[]
-  feedbacks   String[]
-  countSubTask Int         @default(0)
-  
-  startDate   DateTime?
-  endDate     DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id           String       @id @default(cuid()) @map("_id")
+  title        String
+  description  String?
+  status       TaskStatus   @default(OPEN)
+  priority     TaskPriority @default(MEDIUM)
+  mediaUrls    String[]
+  feedbacks    String[]
+  countSubTask Int          @default(0)
 
-  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   String
-  client      ClientProfile @relation(fields: [clientId], references: [id])
-  clientId    String
-  organization Organization @relation(fields: [organizationId], references: [id])
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId      String
+  client         ClientProfile @relation(fields: [clientId], references: [id])
+  clientId       String
+  organization   Organization  @relation(fields: [organizationId], references: [id])
   organizationId String
 
   createdBy   User?   @relation("TaskCreator", fields: [createdById], references: [id])
@@ -407,14 +407,14 @@ model Task {
   assignedToId String?
 
   // Role-specific assignees
-  writer          User?      @relation("TaskWriter", fields: [writerId], references: [id])
-  writerId        String?
-  editor          User?      @relation("TaskEditor", fields: [editorId], references: [id])
-  editorId        String?
-  designer        User?      @relation("TaskDesigner", fields: [designerId], references: [id])
-  designerId      String?
-  videoEditor     User?      @relation("TaskVideoEditor", fields: [videoEditorId], references: [id])
-  videoEditorId   String?
+  writer        User?   @relation("TaskWriter", fields: [writerId], references: [id])
+  writerId      String?
+  editor        User?   @relation("TaskEditor", fields: [editorId], references: [id])
+  editorId      String?
+  designer      User?   @relation("TaskDesigner", fields: [designerId], references: [id])
+  designerId    String?
+  videoEditor   User?   @relation("TaskVideoEditor", fields: [videoEditorId], references: [id])
+  videoEditorId String?
 
   // Per-role statuses
   writerStatus      TaskStatus @default(OPEN)
@@ -427,13 +427,13 @@ model Task {
   contentBucketId String?
 
   // Links a designer/video-editor task to its specific copy
-  calendarCopy    CalendarCopy? @relation("DesignerTask", fields: [calendarCopyId], references: [id])
-  calendarCopyId  String?
+  calendarCopy   CalendarCopy? @relation("DesignerTask", fields: [calendarCopyId], references: [id])
+  calendarCopyId String?
 
-  subTasks    SubTask[]
-  comments    Comment[]
-  attachments TaskAttachment[]
-  assets      Asset[]          @relation("TaskAssets")
+  subTasks        SubTask[]
+  comments        Comment[]
+  attachments     TaskAttachment[]
+  assets          Asset[]          @relation("TaskAssets")
   writerContent   WriterContent?
   designerContent DesignerContent?
 
@@ -461,8 +461,8 @@ model WriterContent {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  taskId    String   @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String @unique
 }
 
 model DesignerContent {
@@ -471,31 +471,31 @@ model DesignerContent {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  taskId    String   @unique
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String @unique
 }
 
 model SubTask {
-  id          String       @id @default(cuid()) @map("_id")
+  id          String     @id @default(cuid()) @map("_id")
   title       String
   description String?
-  status      TaskStatus   @default(OPEN)
-  
-  mediaUrls   String[]     // ["url1", "url2", "url3"]
-  feedbacks   String[]     // ["feedback1", "feedback2", "feedback3"]
-  
-  startDate   DateTime?    // in progress date
-  endDate     DateTime?    // completed date
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  status      TaskStatus @default(OPEN)
 
-  mainTask    Task @relation(fields: [mainTaskId], references: [id], onDelete: Cascade)
-  mainTaskId  String
+  mediaUrls String[] // ["url1", "url2", "url3"]
+  feedbacks String[] // ["feedback1", "feedback2", "feedback3"]
 
-  project     Project      @relation(fields: [projectId], references: [id])
-  projectId   String
-  client      ClientProfile @relation(fields: [clientId], references: [id])
-  clientId    String
+  startDate DateTime? // in progress date
+  endDate   DateTime? // completed date
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  mainTask   Task   @relation(fields: [mainTaskId], references: [id], onDelete: Cascade)
+  mainTaskId String
+
+  project   Project       @relation(fields: [projectId], references: [id])
+  projectId String
+  client    ClientProfile @relation(fields: [clientId], references: [id])
+  clientId  String
 
   assignedTo   User?   @relation(fields: [assignedToId], references: [id])
   assignedToId String?
@@ -505,9 +505,9 @@ model SubTask {
   contentBucketId String?
 
   // Reviewer info — who gave feedback / rejected
-  reviewerId    String?       // User ID of the reviewer
-  reviewerType  ReviewerType? // client, admin, team_lead, account_manager
-  reviewerName  String?       // name of the reviewer
+  reviewerId   String? // User ID of the reviewer
+  reviewerType ReviewerType? // client, admin, team_lead, account_manager
+  reviewerName String? // name of the reviewer
 
   @@index([mainTaskId])
   @@index([projectId])
@@ -560,7 +560,7 @@ model GanttTask {
   duration  Int       @default(1)
   progress  Int       @default(0)
   type      String    @default("task") // task | summary | milestone
-  parent    String?   // ID of parent GanttTask for nesting
+  parent    String? // ID of parent GanttTask for nesting
   orderId   Int       @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -568,8 +568,8 @@ model GanttTask {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
 
-  client    ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId  String
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
 
   @@index([projectId])
   @@index([clientId])
@@ -584,8 +584,8 @@ model GanttLink {
   projectId String
   clientId  String
 
-  project   Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  client    ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  client  ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([clientId])
@@ -616,8 +616,8 @@ model Approval {
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
 
-  submittedBy   String // User ID
-  reviewedBy    String? // User ID
+  submittedBy String // User ID
+  reviewedBy  String? // User ID
 
   attachments Json? // Store file URLs as JSON
 
@@ -632,28 +632,55 @@ model Approval {
 enum NotificationType {
   TASK_ASSIGNED
   TASK_COMPLETED
-  APPROVAL_REQUESTED
-  APPROVAL_REVIEWED
-  MEETING_SCHEDULED
-  DOCUMENT_UPLOADED
-  COMMENT_ADDED
-  PROJECT_STATUS_CHANGED
+  TASK_INTERNAL_REVIEW
+  TASK_CLIENT_REVIEW
+  TASK_APPROVED
+  TASK_FEEDBACK
+  TASK_REJECT
+  CLIENT_ONBOARDED
+  CLIENT_PROJECT
+  CLIENT_SCOPE_OF_WORK
+  CLIENT_DOCUMENT_UPLOADED
+  CLIENT_MEETING_LOGS
+  CLIENT_GANTCHART_CREATION
+  CLIENT_GANTCHART_UPDATE
+}
+
+enum PreferenceType {
+  IN_APP
+  EMAIL
 }
 
 model Notification {
   id        String           @id @default(cuid()) @map("_id")
-  type      NotificationType
+  userId    String // Recipient
   title     String
   message   String
+  type      PreferenceType   // IN_APP | EMAIL
+  category  NotificationType // e.g. TASK_ASSIGNED | CLIENT_ONBOARDED
   isRead    Boolean          @default(false)
-  link      String? // Link to relevant resource
+  link      String?          // Deep link to the task/client
   createdAt DateTime         @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, isRead])
+  @@index([userId])
+  @@index([isRead])
+  @@index([category])
   @@index([createdAt])
+}
+
+model NotificationPreference {
+  id       String           @id @default(cuid()) @map("_id")
+  userId   String
+  category NotificationType // strongly-typed category
+  inApp    Boolean          @default(true)
+  email    Boolean          @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@index([userId])
 }
 
 // ============================================
@@ -662,7 +689,7 @@ model Notification {
 
 model Folder {
   id        String   @id @default(cuid()) @map("_id")
-  name      String   // sanitized disk folder name
+  name      String // sanitized disk folder name
   createdAt DateTime @default(now())
 
   client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -670,15 +697,15 @@ model Folder {
 }
 
 model Asset {
-  id           String   @id @default(cuid()) @map("_id")
-  assetName    String
-  fileUrl      String
-  fileType     String   // MIME type
-  fileSize     Int?
-  uploadedAt   DateTime @default(now())
+  id         String   @id @default(cuid()) @map("_id")
+  assetName  String
+  fileUrl    String
+  fileType   String // MIME type
+  fileSize   Int?
+  uploadedAt DateTime @default(now())
 
-  client       ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId     String
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
 
   uploadedBy   User   @relation("UploadedAssets", fields: [uploadedById], references: [id])
   uploadedById String
@@ -698,21 +725,20 @@ model Asset {
   @@index([taskId])
 }
 
-
 // ============================================
 // ANALYTICS & REPORTING (Optional)
 // ============================================
 
 model ActivityLog {
-  id          String   @id @default(cuid()) @map("_id")
-  userId      String
-  action      String
-  entityType  String // e.g., "Project", "Task", "Client"
-  entityId    String
-  metadata    Json?
-  ipAddress   String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid()) @map("_id")
+  userId     String
+  action     String
+  entityType String // e.g., "Project", "Task", "Client"
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
 
   @@index([userId])
   @@index([entityType, entityId])
@@ -724,24 +750,24 @@ model ActivityLog {
 // ============================================
 
 model Calendar {
-  id               String           @id @default(cuid()) @map("_id")
-  name             String
-  objective        String?
-  status           String?          @default("DRAFT") // DRAFT, ACTIVE, COMPLETED
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id        String   @id @default(cuid()) @map("_id")
+  name      String
+  objective String?
+  status    String?  @default("DRAFT") // DRAFT, ACTIVE, COMPLETED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  client           ClientProfile    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId         String
-  
-  writer           User             @relation("WriterCalendars", fields: [writerId], references: [id])
-  writerId         String
+  client   ClientProfile @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId String
 
-  buckets          CalendarBucket[]
-  copies           CalendarCopy[]
+  writer   User   @relation("WriterCalendars", fields: [writerId], references: [id])
+  writerId String
 
-  tasks            Task[]
-  taskId           String?
+  buckets CalendarBucket[]
+  copies  CalendarCopy[]
+
+  tasks  Task[]
+  taskId String?
 
   @@index([clientId])
   @@index([writerId])
@@ -754,37 +780,37 @@ model CalendarBucket {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  calendar    Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
-  calendarId  String
+  calendar   Calendar @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  calendarId String
 
-  copies        CalendarCopy[]
-  tasks         Task[]    @relation("TaskBucket")
-  subTasks      SubTask[] @relation("SubTaskBucket")
-  assets        Asset[]   @relation("AssetBucket")
+  copies   CalendarCopy[]
+  tasks    Task[]         @relation("TaskBucket")
+  subTasks SubTask[]      @relation("SubTaskBucket")
+  assets   Asset[]        @relation("AssetBucket")
 
   @@index([calendarId])
 }
 
 model CalendarCopy {
-  id             String         @id @default(cuid()) @map("_id")
-  content        String
-  caption        String?
-  hashtags       String?
-  publishDate    DateTime?
-  publishTime    String?        // Store as string like "HH:mm"
-  platforms      String[]
-  mediaType      String?
-  status         String         @default("DRAFT") // DRAFT, UNDER_REVIEW, APPROVED
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  id          String    @id @default(cuid()) @map("_id")
+  content     String
+  caption     String?
+  hashtags    String?
+  publishDate DateTime?
+  publishTime String? // Store as string like "HH:mm"
+  platforms   String[]
+  mediaType   String?
+  status      String    @default("DRAFT") // DRAFT, UNDER_REVIEW, APPROVED
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  calendar       Calendar       @relation(fields: [calendarId], references: [id], onDelete: Cascade)
-  calendarId     String
-  bucket         CalendarBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
-  bucketId       String
+  calendar   Calendar       @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  calendarId String
+  bucket     CalendarBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  bucketId   String
 
   // Designer/video-editor tasks created from this copy after client approval
-  designerTasks  Task[] @relation("DesignerTask")
+  designerTasks Task[] @relation("DesignerTask")
 
   @@index([calendarId])
   @@index([bucketId])

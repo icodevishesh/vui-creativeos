@@ -4,6 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Menu, Bell, Shield, User } from 'lucide-react';
 import { useAuth, formatRole } from '@/context/AuthContext';
+import { useNotificationCount } from '@/context/NotificationContext';
 
 interface HeaderProps {
   onOpenMobile: () => void;
@@ -11,6 +12,7 @@ interface HeaderProps {
 
 export function Header({ onOpenMobile }: HeaderProps) {
   const { user, isLoading } = useAuth();
+  const { unreadCount } = useNotificationCount();
 
   const initials = user?.name
     ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
@@ -35,13 +37,26 @@ export function Header({ onOpenMobile }: HeaderProps) {
 
         {/* Right side */}
         <div className="flex items-center gap-3">
+          {/* ── Notification bell with live badge ─────────────────── */}
           <Link
             href="/notifications"
             className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-            aria-label="Notifications"
+            aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            {unreadCount > 0 && (
+              <span
+                className={`
+                  absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1
+                  bg-red-500 text-white text-[10px] font-bold leading-none
+                  rounded-full border-2 border-white
+                  flex items-center justify-center
+                `}
+                aria-hidden="true"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Link>
 
           <div className="h-8 w-px bg-gray-200 hidden sm:block" />
