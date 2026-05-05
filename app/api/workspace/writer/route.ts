@@ -18,7 +18,9 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const isAdmin = user.userType === 'ADMIN_OWNER' || (user.membership?.roles?.includes('ADMIN') ?? false);
+    const memberRoles = user.membership?.roles ?? [];
+    const isAdmin = user.userType === 'ADMIN_OWNER' ||
+      memberRoles.some((r: string) => ['ADMIN', 'TEAM_LEAD', 'ACCOUNT_MANAGER'].includes(r));
     if (!isAdmin && (!user.membership || !isWriter(user.membership.roles))) {
       return NextResponse.json(
         { error: 'Forbidden: writer or copywriter role required' },
@@ -62,6 +64,9 @@ export async function GET() {
           include: {
             _count: {
               select: { copies: true }
+            },
+            copies: {
+              select: { status: true }
             }
           }
         },
@@ -79,13 +84,27 @@ export async function GET() {
         : [];
 
       // Transform calendar count for frontend convenience
+      const calCopies = task.calendar?.copies ?? [];
       const transformedCalendar = task.calendar ? {
         ...task.calendar,
-        copyCount: task.calendar._count.copies
+        copyCount: task.calendar._count.copies,
+        copies: undefined, // strip raw array — not needed by frontend
       } : null;
+
+      // Strict aggregate status: task is only APPROVED when ALL copies are APPROVED/PUBLISHED
+      let effectiveStatus = rest.status;
+      if (calCopies.length > 0) {
+        const allDone = calCopies.every(
+          (c) => c.status === 'APPROVED' || c.status === 'PUBLISHED'
+        );
+        if (!allDone && rest.status === 'APPROVED') {
+          effectiveStatus = 'INTERNAL_REVIEW';
+        }
+      }
 
       return {
         ...rest,
+        status: effectiveStatus,
         calendar: transformedCalendar,
         versionHistory: buildVersionHistory(subTasks),
         revisionSubTasks,

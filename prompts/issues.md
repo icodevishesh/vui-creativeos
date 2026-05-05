@@ -71,10 +71,10 @@ Writer workspace:
 
 Client interface:
 
-- show the task preview in approvals page same as admin UI
+- show the task preview in approvals page same as admin UI' approval page
 - clients can also add task and admin can accept or reject the task if accept then admin will assign it to a team member if not auto assgined and it will be appear on task board and to the respected team member.
 
 Designer workspace:
 
-- editor -> if copy has video the it will assign to editor of the team (editor is for video editing not graphic deisgner)
-- desginer -> if copy contains only image and text/graphics the it will assign to designer
+- editor -> if copy contains video then it will be assigned to video_editor of the team (editor is for video editing not graphic deisgner)
+- desginer -> if copy contains only image and text/graphics then it will be assigned to graphic_designer

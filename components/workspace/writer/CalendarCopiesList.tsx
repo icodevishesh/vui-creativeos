@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { FilePlus, Calendar, Clock, Image, Hash, Globe, Trash2, Send, Plus, Loader2, AlertTriangle, X, Eye, Film } from 'lucide-react';
+import { FilePlus, Calendar, Clock, Image, Hash, Globe, Trash2, Send, Plus, Loader2, AlertTriangle, X, Eye, Film, Link, Edit2, Check, Layers } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import dayjs from 'dayjs';
 
@@ -252,18 +252,91 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
         bucketId: '',
         platforms: [] as string[],
         mediaType: '',
+        referenceUrl: '',
     });
 
-    const resetForm = () => setForm({
-        content: '',
-        caption: '',
-        hashtags: '',
-        publishDate: '',
-        publishTime: '',
-        bucketId: '',
-        platforms: [],
-        mediaType: '',
-    });
+    // Carousel state
+    const [frameCount, setFrameCount] = useState(3);
+    const [frames, setFrames] = useState<{ caption: string; hashtags: string }[]>(
+        Array.from({ length: 3 }, () => ({ caption: '', hashtags: '' }))
+    );
+    const [activeFrame, setActiveFrame] = useState(0);
+
+    const isCarouselMode = form.mediaType === 'CAROUSEL';
+
+    const handleFrameCountChange = (count: number) => {
+        setFrameCount(count);
+        setFrames(prev => {
+            const next = Array.from({ length: count }, (_, i) => prev[i] ?? { caption: '', hashtags: '' });
+            return next;
+        });
+        setActiveFrame(0);
+    };
+
+    const updateFrame = (idx: number, field: 'caption' | 'hashtags', value: string) => {
+        setFrames(prev => prev.map((f, i) => i === idx ? { ...f, [field]: value } : f));
+    };
+
+    const resetForm = () => {
+        setForm({
+            content: '',
+            caption: '',
+            hashtags: '',
+            publishDate: '',
+            publishTime: '',
+            bucketId: '',
+            platforms: [],
+            mediaType: '',
+            referenceUrl: '',
+        });
+        setFrameCount(3);
+        setFrames(Array.from({ length: 3 }, () => ({ caption: '', hashtags: '' })));
+        setActiveFrame(0);
+    };
+
+    // Per-copy edit state for draft copies
+    const [editingCopyId, setEditingCopyId] = useState<string | null>(null);
+    const [editForm, setEditForm] = useState<Record<string, any>>({});
+    const [savingCopyId, setSavingCopyId] = useState<string | null>(null);
+
+    const startEdit = (copy: any) => {
+        setEditingCopyId(copy.id);
+        setEditForm({
+            content: copy.content || '',
+            caption: copy.caption || '',
+            hashtags: copy.hashtags || '',
+            publishDate: copy.publishDate ? dayjs(copy.publishDate).format('YYYY-MM-DD') : '',
+            publishTime: copy.publishTime || '',
+            bucketId: copy.bucketId || '',
+            platforms: copy.platforms || [],
+            mediaType: copy.mediaType || '',
+            referenceUrl: copy.referenceUrl || '',
+        });
+    };
+
+    const saveEdit = async (copyId: string) => {
+        setSavingCopyId(copyId);
+        try {
+            const payload = { ...editForm };
+            if (payload.publishDate) payload.publishDate = new Date(payload.publishDate).toISOString();
+            const res = await fetch(`/api/calendars/${calendarId}/copies/${copyId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (res.ok) {
+                toast.success('Copy updated');
+                setEditingCopyId(null);
+                onRefresh();
+            } else {
+                toast.error('Failed to update copy');
+            }
+        } catch {
+            toast.error('Failed to update copy');
+        } finally {
+            setSavingCopyId(null);
+        }
+    };
 
     const hasDuplicateDate = !!form.publishDate && copies.some(copy => {
         if (!copy.publishDate) return false;
@@ -276,15 +349,26 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
             toast.error('Please fill in required fields');
             return;
         }
+        if (isCarouselMode) {
+            const emptyFrame = frames.findIndex(f => !f.caption.trim());
+            if (emptyFrame !== -1) {
+                toast.error(`Frame ${emptyFrame + 1} caption is required`);
+                setActiveFrame(emptyFrame);
+                return;
+            }
+        }
         setIsLoading(true);
         try {
+            const payload = isCarouselMode
+                ? { ...form, isCarousel: true, frameCount, frames }
+                : { ...form, isCarousel: false };
             const res = await fetch(`/api/calendars/${calendarId}/copies`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
+                body: JSON.stringify(payload),
             });
             if (res.ok) {
-                toast.success('Copy added to calendar');
+                toast.success(isCarouselMode ? `Carousel (${frameCount} frames) added` : 'Copy added to calendar');
                 resetForm();
                 onRefresh();
             } else {
@@ -402,6 +486,20 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                         />
                     </div>
 
+                    <div>
+                        <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Reference URL</label>
+                        <div className="relative">
+                            <Link size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                            <input
+                                type="url"
+                                value={form.referenceUrl}
+                                onChange={(e) => setForm({ ...form, referenceUrl: e.target.value })}
+                                placeholder="https://example.com/reference"
+                                className="w-full p-2 pl-12 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700"
+                            />
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Publish Date *</label>
@@ -459,13 +557,105 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                 className="w-full p-2 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 appearance-none"
                             >
                                 <option value="">Select type</option>
-                                <option value="Image">Image</option>
-                                <option value="Video">Video</option>
-                                <option value="Carousel">Carousel</option>
+                                <option value="SINGLE">Image (Single)</option>
+                                <option value="VIDEO">Video</option>
+                                <option value="REEL">Reel</option>
+                                <option value="CAROUSEL">Carousel</option>
                                 <option value="Text">Text</option>
                             </select>
                         </div>
                     </div>
+
+                    {/* ── Carousel frame builder ─────────────────────────── */}
+                    {isCarouselMode && (
+                        <div className="border border-indigo-100 rounded-xl bg-indigo-50/40 p-4 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Layers className="w-4 h-4 text-indigo-500" />
+                                    <span className="text-xs font-bold text-indigo-700 uppercase tracking-widest">Carousel Frames</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 font-medium">Frames:</span>
+                                    <div className="flex gap-1">
+                                        {[2,3,4,5,6,7,8,9,10].map(n => (
+                                            <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() => handleFrameCountChange(n)}
+                                                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                                                    frameCount === n
+                                                        ? 'bg-indigo-600 text-white'
+                                                        : 'bg-white border border-gray-200 text-gray-500 hover:border-indigo-300'
+                                                }`}
+                                            >{n}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Frame tabs */}
+                            <div className="flex gap-1 flex-wrap">
+                                {frames.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => setActiveFrame(i)}
+                                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                                            activeFrame === i
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-white border border-gray-200 text-gray-500 hover:border-indigo-300'
+                                        }`}
+                                    >
+                                        Frame {i + 1}
+                                        {frames[i].caption.trim() && <span className="ml-1 text-emerald-400">✓</span>}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Active frame inputs */}
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block mb-1">
+                                        Frame {activeFrame + 1} Caption *
+                                    </label>
+                                    <textarea
+                                        value={frames[activeFrame]?.caption ?? ''}
+                                        onChange={e => updateFrame(activeFrame, 'caption', e.target.value)}
+                                        rows={3}
+                                        placeholder={`Copy text for Frame ${activeFrame + 1}...`}
+                                        className="w-full p-3 bg-white border border-indigo-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-indigo-100"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block mb-1">
+                                        Frame {activeFrame + 1} Hashtags
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={frames[activeFrame]?.hashtags ?? ''}
+                                        onChange={e => updateFrame(activeFrame, 'hashtags', e.target.value)}
+                                        placeholder="#frame1hashtags"
+                                        className="w-full p-2 bg-white border border-indigo-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                    />
+                                </div>
+                                <div className="flex justify-between">
+                                    <button
+                                        type="button"
+                                        disabled={activeFrame === 0}
+                                        onClick={() => setActiveFrame(p => p - 1)}
+                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-indigo-300 disabled:opacity-30 transition-all"
+                                    >← Prev</button>
+                                    <span className="text-xs text-gray-400 font-medium self-center">{activeFrame + 1} / {frameCount}</span>
+                                    <button
+                                        type="button"
+                                        disabled={activeFrame === frameCount - 1}
+                                        onClick={() => setActiveFrame(p => p + 1)}
+                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-indigo-300 disabled:opacity-30 transition-all"
+                                    >Next →</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Platform multi-select */}
                     <div>
@@ -509,59 +699,187 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                     <div className="space-y-2">
                         {draftCopies.map((copy) => {
                             const platforms = getCopyPlatforms(copy);
+                            const isEditing = editingCopyId === copy.id;
                             return (
                                 <div key={copy.id} className="p-4 border border-gray-100 rounded-lg bg-gray-50/30 hover:bg-white hover:shadow-xl hover:shadow-gray-100 transition-all group">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 mb-1">{copy.content.substring(0, 100)}{copy.content.length > 100 && '...'}</h3>
-                                            <p className="text-sm text-gray-500">{copy.caption?.substring(0, 150)}{copy.caption?.length > 150 && '...'}</p>
+                                    {isEditing ? (
+                                        /* ── Inline Edit Form ── */
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Editing Copy</span>
+                                                <button type="button" onClick={() => setEditingCopyId(null)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
+                                            </div>
+                                            <textarea
+                                                value={editForm.content}
+                                                onChange={e => setEditForm({ ...editForm, content: e.target.value })}
+                                                rows={3}
+                                                placeholder="Creative copy..."
+                                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-indigo-100"
+                                            />
+                                            <textarea
+                                                value={editForm.caption}
+                                                onChange={e => setEditForm({ ...editForm, caption: e.target.value })}
+                                                rows={2}
+                                                placeholder="Caption..."
+                                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-indigo-100"
+                                            />
+                                            <input
+                                                type="text"
+                                                value={editForm.hashtags}
+                                                onChange={e => setEditForm({ ...editForm, hashtags: e.target.value })}
+                                                placeholder="#hashtags"
+                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                            />
+                                            <div className="relative">
+                                                <Link size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                                                <input
+                                                    type="url"
+                                                    value={editForm.referenceUrl}
+                                                    onChange={e => setEditForm({ ...editForm, referenceUrl: e.target.value })}
+                                                    placeholder="https://reference-url.com"
+                                                    className="w-full p-2 pl-9 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Publish Date</label>
+                                                    <input type="date" value={editForm.publishDate} onChange={e => setEditForm({ ...editForm, publishDate: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100" />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Publish Time</label>
+                                                    <input type="time" value={editForm.publishTime} onChange={e => setEditForm({ ...editForm, publishTime: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100" />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Bucket</label>
+                                                    <select value={editForm.bucketId} onChange={e => setEditForm({ ...editForm, bucketId: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100 appearance-none">
+                                                        <option value="">Select bucket</option>
+                                                        {buckets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Media Type</label>
+                                                    <select value={editForm.mediaType} onChange={e => setEditForm({ ...editForm, mediaType: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100 appearance-none">
+                                                        <option value="">Select type</option>
+                                                        <option value="Image">Image</option>
+                                                        <option value="Video">Video</option>
+                                                        <option value="Carousel">Carousel</option>
+                                                        <option value="Text">Text</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Platforms</label>
+                                                <PlatformMultiSelect
+                                                    selected={editForm.platforms}
+                                                    onChange={p => setEditForm({ ...editForm, platforms: p })}
+                                                    availablePlatforms={availablePlatforms}
+                                                />
+                                            </div>
+                                            <div className="flex justify-end gap-2 pt-1">
+                                                <button type="button" onClick={() => setEditingCopyId(null)} className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-100 transition-all">Cancel</button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => saveEdit(copy.id)}
+                                                    disabled={savingCopyId === copy.id}
+                                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all"
+                                                >
+                                                    {savingCopyId === copy.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                                    Save
+                                                </button>
+                                            </div>
                                         </div>
-                                        <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase shrink-0">Draft</span>
-                                    </div>
+                                    ) : (
+                                        /* ── View Mode ── */
+                                        <>
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <h3 className="font-bold text-gray-900 mb-1">{copy.content.substring(0, 100)}{copy.content.length > 100 && '...'}</h3>
+                                                    <p className="text-sm text-gray-500">{copy.caption?.substring(0, 150)}{copy.caption?.length > 150 && '...'}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    {copy.isCarousel && (
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-full border border-indigo-100">
+                                                            <Layers className="w-2.5 h-2.5" /> {copy.frameCount}F
+                                                        </span>
+                                                    )}
+                                                    <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase">Draft</span>
+                                                </div>
+                                            </div>
 
-                                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-400 font-medium">
-                                        <div className="flex items-center gap-1.5">
-                                            <Calendar size={14} />
-                                            {copy.publishDate ? new Date(copy.publishDate).toLocaleDateString() : '—'}
-                                            {copy.publishTime && ` at ${copy.publishTime}`}
-                                        </div>
-                                        <div className="flex items-center gap-1.5 flex-wrap">
-                                            <Globe size={14} />
-                                            {platforms.length > 0
-                                                ? platforms.map(p => (
-                                                    <span
-                                                        key={p}
-                                                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${PLATFORM_STYLES[p as Platform]
-                                                            ? `${PLATFORM_STYLES[p as Platform].bg} ${PLATFORM_STYLES[p as Platform].text} ${PLATFORM_STYLES[p as Platform].border}`
-                                                            : 'bg-gray-50 text-gray-500 border-gray-200'
-                                                            }`}
-                                                    >{p}</span>
-                                                ))
-                                                : '—'
-                                            }
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <Image size={14} /> {copy.mediaType || '—'}
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <Hash size={14} /> {buckets.find(b => b.id === copy.bucketId)?.name || 'Bucket'}
-                                        </div>
-                                    </div>
+                                            {/* Carousel frames preview */}
+                                            {copy.isCarousel && Array.isArray(copy.frames) && copy.frames.length > 0 && (
+                                                <div className="mb-3 space-y-1">
+                                                    {copy.frames.map((f: any) => (
+                                                        <div key={f.id} className="flex items-start gap-2 px-3 py-2 bg-indigo-50/60 rounded-lg">
+                                                            <span className="text-[10px] font-bold text-indigo-400 w-12 shrink-0 pt-0.5">F{f.frameNumber}</span>
+                                                            <p className="text-xs text-indigo-800 leading-relaxed line-clamp-2">{f.caption || <span className="italic text-indigo-300">No caption</span>}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
 
-                                    {copy.hashtags && (
-                                        <div className="mt-3 text-blue-500 text-[11px] font-bold">{copy.hashtags}</div>
+                                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-400 font-medium">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Calendar size={14} />
+                                                    {copy.publishDate ? new Date(copy.publishDate).toLocaleDateString() : '—'}
+                                                    {copy.publishTime && ` at ${copy.publishTime}`}
+                                                </div>
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <Globe size={14} />
+                                                    {platforms.length > 0
+                                                        ? platforms.map(p => (
+                                                            <span
+                                                                key={p}
+                                                                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full border ${PLATFORM_STYLES[p as Platform]
+                                                                    ? `${PLATFORM_STYLES[p as Platform].bg} ${PLATFORM_STYLES[p as Platform].text} ${PLATFORM_STYLES[p as Platform].border}`
+                                                                    : 'bg-gray-50 text-gray-500 border-gray-200'
+                                                                    }`}
+                                                            >{p}</span>
+                                                        ))
+                                                        : '—'
+                                                    }
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Image size={14} /> {copy.mediaType || '—'}
+                                                </div>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Hash size={14} /> {buckets.find(b => b.id === copy.bucketId)?.name || 'Bucket'}
+                                                </div>
+                                            </div>
+
+                                            {copy.hashtags && (
+                                                <div className="mt-3 text-blue-500 text-[11px] font-bold">{copy.hashtags}</div>
+                                            )}
+
+                                            {copy.referenceUrl && (
+                                                <div className="mt-2">
+                                                    <a href={copy.referenceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 hover:underline truncate max-w-full">
+                                                        <Link size={11} /> {copy.referenceUrl}
+                                                    </a>
+                                                </div>
+                                            )}
+
+                                            <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => startEdit(copy)}
+                                                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-600 px-3 py-1.5 text-xs font-bold transition-all"
+                                                >
+                                                    <Edit2 size={13} /> Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRemove(copy.id)}
+                                                    disabled={removingId === copy.id}
+                                                    className="flex items-center gap-2 text-red-400 hover:text-red-600 px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-50"
+                                                >
+                                                    {removingId === copy.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={13} />}
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </>
                                     )}
-
-                                    <div className="mt-3 pt-3 border-t border-gray-100 flex justify-end">
-                                        <button
-                                            onClick={() => handleRemove(copy.id)}
-                                            disabled={removingId === copy.id}
-                                            className="flex items-center gap-2 text-red-400 hover:text-red-600 px-3 py-1.5 text-xs font-bold transition-all disabled:opacity-50"
-                                        >
-                                            {removingId === copy.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={13} />}
-                                            Remove
-                                        </button>
-                                    </div>
                                 </div>
                             );
                         })}

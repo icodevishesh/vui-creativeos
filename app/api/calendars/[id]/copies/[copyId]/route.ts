@@ -17,10 +17,45 @@ export async function PATCH(
     if (data.publishDate) {
       data.publishDate = new Date(data.publishDate);
     }
+
+    // ── Per-frame updates (frames array passed) ─────────────────────────────
+    if (Array.isArray(data.frames)) {
+      const { frames, ...copyFields } = data;
+      const copy = await prisma.$transaction(async (tx) => {
+        const updated = await tx.calendarCopy.update({
+          where: { id: copyId },
+          data: copyFields,
+        });
+        for (const frame of frames as Array<{ id: string; caption?: string; hashtags?: string; creativeUrl?: string; creativeStatus?: string }>) {
+          if (!frame.id) continue;
+          await tx.carouselFrame.update({
+            where: { id: frame.id },
+            data: {
+              ...(frame.caption !== undefined && { caption: frame.caption }),
+              ...(frame.hashtags !== undefined && { hashtags: frame.hashtags }),
+              ...(frame.creativeUrl !== undefined && { creativeUrl: frame.creativeUrl }),
+              ...(frame.creativeStatus !== undefined && { creativeStatus: frame.creativeStatus }),
+            },
+          });
+        }
+        return tx.calendarCopy.findUnique({
+          where: { id: updated.id },
+          include: {
+            bucket: { select: { id: true, name: true } },
+            frames: { orderBy: { frameNumber: 'asc' } },
+          },
+        });
+      });
+      return NextResponse.json(copy);
+    }
+
     const copy = await prisma.calendarCopy.update({
       where: { id: copyId },
       data,
-      include: { bucket: { select: { id: true, name: true } } },
+      include: {
+        bucket: { select: { id: true, name: true } },
+        frames: { orderBy: { frameNumber: 'asc' } },
+      },
     });
     return NextResponse.json(copy);
   } catch (error) {

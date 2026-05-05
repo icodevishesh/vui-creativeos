@@ -792,26 +792,50 @@ model CalendarBucket {
 }
 
 model CalendarCopy {
-  id          String    @id @default(cuid()) @map("_id")
-  content     String
-  caption     String?
-  hashtags    String?
-  publishDate DateTime?
-  publishTime String? // Store as string like "HH:mm"
-  platforms   String[]
-  mediaType   String?
-  status      String    @default("DRAFT") // DRAFT, UNDER_REVIEW, APPROVED
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id             String         @id @default(cuid()) @map("_id")
+  content        String
+  caption        String?
+  hashtags       String?
+  publishDate    DateTime?
+  publishTime    String?        // Store as string like "HH:mm"
+  platforms      String[]
+  mediaType      String?        // "SINGLE" | "CAROUSEL" | "VIDEO" | "REEL"
+  referenceUrl   String?
+  status         String         @default("DRAFT") // DRAFT, INTERNAL_REVIEW, CLIENT_REVIEW, APPROVED, REJECTED
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
-  calendar   Calendar       @relation(fields: [calendarId], references: [id], onDelete: Cascade)
-  calendarId String
-  bucket     CalendarBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
-  bucketId   String
+  // ── Carousel ─────────────────────────────────────
+  isCarousel     Boolean        @default(false)
+  frameCount     Int?           // 2–10, only set when isCarousel = true
+  frames         CarouselFrame[]
+  // ─────────────────────────────────────────────────
+
+  calendar       Calendar       @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  calendarId     String
+  bucket         CalendarBucket @relation(fields: [bucketId], references: [id], onDelete: Cascade)
+  bucketId       String
 
   // Designer/video-editor tasks created from this copy after client approval
   designerTasks Task[] @relation("DesignerTask")
 
   @@index([calendarId])
   @@index([bucketId])
+}
+
+model CarouselFrame {
+  id             String   @id @default(cuid()) @map("_id")
+  frameNumber    Int      // 1, 2, 3 … ordered
+  caption        String?  // per-frame copy text
+  hashtags       String?  // per-frame hashtags (optional)
+  creativeUrl    String?  // designer uploads here
+  creativeStatus String   @default("PENDING") // PENDING | UPLOADED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  copy           CalendarCopy @relation(fields: [copyId], references: [id], onDelete: Cascade)
+  copyId         String
+
+  @@index([copyId])
+  @@index([frameNumber])
 }

@@ -79,7 +79,7 @@ interface ApprovalTask {
   id: string;
   title: string;
   description?: string;
-  status: "INTERNAL_REVIEW" | "CLIENT_REVIEW";
+  status: string;
   priority: string;
   mediaUrls: string[];
   feedbacks: string[];
@@ -104,6 +104,8 @@ interface ApprovalTask {
     description: string;
     status: string;
     createdAt: string;
+    reviewerName?: string | null;
+    reviewerType?: string | null;
   }>;
 }
 
@@ -647,21 +649,35 @@ function DesignApprovalCard({
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Iteration History</p>
             <div className="space-y-3">
               {task.subTasks.map((sub, index) => {
+                const isApproved = sub.status === "APPROVED" || sub.description?.toLowerCase().startsWith("approved");
                 const isRejectedStatus = sub.description?.toLowerCase().includes("rejected");
-                const cleanDescription = sub.description?.replace(/^(Rejected — |Feedback — )/, "");
+                const cleanDescription = sub.description?.replace(/^(Approved — |Rejected — |Feedback — )/, "");
+                const roleLabel = sub.reviewerType
+                  ? sub.reviewerType.split('_').map((w: string) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ')
+                  : null;
                 return (
-                  <div key={sub.id} className="flex items-center justify-between group">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <span className="text-sm font-medium text-gray-400 w-8 shrink-0">v{index + 1}</span>
-                      <span
-                        className={`shrink-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full shadow-sm ${isRejectedStatus ? "bg-[#FFE4E6] text-[#E11D48]" : "bg-[#FFF8E6] text-[#B45309]"
-                          }`}
-                      >
-                        {isRejectedStatus ? "Rejected" : "Feedback"}
-                      </span>
-                      <p className="text-xs font-medium text-gray-500 line-clamp-1 min-w-0">{cleanDescription}</p>
+                  <div key={sub.id} className="flex items-start justify-between group">
+                    <div className="flex items-start gap-4 flex-1 min-w-0">
+                      <span className="text-sm font-medium text-gray-400 w-8 shrink-0 mt-0.5">v{index + 1}</span>
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`shrink-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full shadow-sm ${
+                            isApproved ? "bg-[#ECFDF5] text-[#059669]" :
+                            isRejectedStatus ? "bg-[#FFE4E6] text-[#E11D48]" :
+                            "bg-[#FFF8E6] text-[#B45309]"
+                          }`}>
+                            {isApproved ? "Approved" : isRejectedStatus ? "Rejected" : "Feedback"}
+                          </span>
+                          {sub.reviewerName && (
+                            <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                              {sub.reviewerName}{roleLabel ? ` · ${roleLabel}` : ""}
+                            </span>
+                          )}
+                        </div>
+                        {!isApproved && <p className="text-xs font-medium text-gray-500 line-clamp-1">{cleanDescription}</p>}
+                      </div>
                     </div>
-                    <span className="text-xs font-semibold text-gray-400 ml-4 tabular-nums shrink-0">
+                    <span className="text-xs font-semibold text-gray-400 ml-4 tabular-nums shrink-0 mt-0.5">
                       {new Date(sub.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </span>
                   </div>
@@ -767,7 +783,16 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
   const router = useRouter();
   const calendar = task.calendar!;
   const copyCount = calendar.copies?.length ?? 0;
-  const badge = TASK_STATUS_BADGE[task.status] ?? { label: task.status, className: "bg-gray-100 text-gray-500" };
+
+  // Derive effective status from copies: task is only APPROVED when ALL copies are APPROVED/PUBLISHED
+  const copies = calendar.copies ?? [];
+  const effectiveStatus = copies.length > 0 && copies.every(c => c.status === 'APPROVED' || c.status === 'PUBLISHED')
+    ? 'APPROVED'
+    : task.status === 'APPROVED'
+      ? 'INTERNAL_REVIEW'   // task was prematurely approved — show In Review
+      : task.status;
+
+  const badge = TASK_STATUS_BADGE[effectiveStatus] ?? { label: effectiveStatus, className: "bg-gray-100 text-gray-500" };
 
   const platforms = Array.from(
     new Set(calendar.copies?.map((c) => c.platform).filter(Boolean))

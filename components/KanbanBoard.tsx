@@ -1,6 +1,6 @@
 import React from 'react';
 import { TaskStatus, TaskPriority } from '@prisma/client';
-import { Clock, AlertCircle, CheckCircle2, Building2 } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle2, Building2, User } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -92,12 +92,6 @@ const STATUS_CONFIG = {
 const KanbanTaskCard: React.FC<{ task: Task; onClick?: () => void }> = ({ task, onClick }) => {
   const priorityConfig = PRIORITY_CONFIG[task.priority];
 
-  // Get initials from assigned user name
-  const getInitials = (name?: string) => {
-    if (!name) return 'NA';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
   return (
     <div
       className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer mb-2"
@@ -114,19 +108,20 @@ const KanbanTaskCard: React.FC<{ task: Task; onClick?: () => void }> = ({ task, 
         {task.client.companyName}
       </div>
 
-      {/* Bottom Row: Priority and Assignee */}
-      <div className="flex items-center justify-between">
-        {/* Priority Badge */}
+      {/* Bottom Row: Priority Badge */}
+      <div className="flex items-center justify-between mb-2">
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${priorityConfig.color}`}>
           {priorityConfig.label}
         </span>
+      </div>
 
-        {/* Assignee Initials */}
-        <div className="flex items-center">
-          <div className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-xs font-medium">
-            {getInitials(task.assignedTo?.name)}
-          </div>
-        </div>
+      {/* Assignee */}
+      <div className="flex items-center gap-1 text-xs text-gray-500">
+        <User className="w-3 h-3 shrink-0 text-gray-400" />
+        <span className="font-medium text-gray-400">Assigned to:</span>
+        <span className="font-semibold text-gray-700 truncate">
+          {task.assignedTo?.name ?? 'Unassigned'}
+        </span>
       </div>
     </div>
   );

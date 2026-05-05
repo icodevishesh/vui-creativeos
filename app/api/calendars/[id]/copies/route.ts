@@ -33,18 +33,48 @@ export async function POST(
 
   try {
     const data = await req.json();
-    
-    // Ensure publishDate is a Date object if provided
+
     if (data.publishDate) {
-        data.publishDate = new Date(data.publishDate);
+      data.publishDate = new Date(data.publishDate);
     }
 
+    // ── Carousel: create parent copy + N frames atomically ──────────────────
+    if (data.isCarousel && Array.isArray(data.frames) && data.frames.length >= 2) {
+      const { frames, ...copyFields } = data;
+
+      const copy = await prisma.$transaction(async (tx) => {
+        const parent = await tx.calendarCopy.create({
+          data: {
+            ...copyFields,
+            calendarId: id,
+            status: 'DRAFT',
+            isCarousel: true,
+            frameCount: frames.length,
+          },
+        });
+
+        await tx.carouselFrame.createMany({
+          data: frames.map((f: { caption?: string; hashtags?: string }, idx: number) => ({
+            copyId: parent.id,
+            frameNumber: idx + 1,
+            caption: f.caption ?? null,
+            hashtags: f.hashtags ?? null,
+            creativeStatus: 'PENDING',
+          })),
+        });
+
+        return tx.calendarCopy.findUnique({
+          where: { id: parent.id },
+          include: { frames: { orderBy: { frameNumber: 'asc' } } },
+        });
+      });
+
+      return NextResponse.json(copy);
+    }
+
+    // ── Non-carousel copy ───────────────────────────────────────────────────
     const copy = await prisma.calendarCopy.create({
-      data: {
-        ...data,
-        calendarId: id,
-        status: 'DRAFT'
-      }
+      data: { ...data, calendarId: id, status: 'DRAFT', isCarousel: false },
     });
 
     return NextResponse.json(copy);
