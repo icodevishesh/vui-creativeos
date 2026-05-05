@@ -3,6 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 type Params = { params: Promise<{ projectId: string; id: string }> };
 
+
+/**
+ * TODO: Add to queue for notification for subtasks
+ */
+
 // PUT /api/gantt/[projectId]/tasks/[id]
 export async function PUT(req: Request, { params }: Params) {
   try {
