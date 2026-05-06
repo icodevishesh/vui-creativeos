@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
 import { OverviewTab } from './_components/OverviewTab';
 import { TeamTab } from './_components/TeamTab';
@@ -85,6 +86,17 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [credModal, setCredModal] = useState<{ email: string; password: string } | null>(null);
+
+  const { user } = useAuth();
+  // ADMIN_OWNER or members with ACCOUNT_MANAGER / ADMIN role → full edit
+  const canEdit =
+    user?.userType === 'ADMIN_OWNER' ||
+    (user?.roles ?? []).includes('ACCOUNT_MANAGER') ||
+    (user?.roles ?? []).includes('ADMIN');
+  // CLIENT userType → can edit Overview + Documents only
+  const isClient = user?.userType === 'CLIENT';
+  const canEditOverview = canEdit || isClient;
+  const canEditDocs    = canEdit || isClient;
 
   const generateCredentials = useMutation({
     mutationFn: async () => {
@@ -202,24 +214,28 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => generateCredentials.mutate()}
-            disabled={generateCredentials.isPending}
-            className="inline-flex items-center gap-2 px-3.5 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-bold hover:bg-primary/20 transition-all shadow-sm disabled:opacity-50"
-          >
-            <KeyRound className="w-3.5 h-3.5" />
-            {generateCredentials.isPending ? 'Fetching...' : 'Portal Credentials'}
-          </button>
-          <select
-            value={client.status}
-            onChange={(e) => updateStatus.mutate(e.target.value)}
-            disabled={updateStatus.isPending}
-            className="px-3.5 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-xs font-bold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary transition-all shadow-sm cursor-pointer disabled:opacity-50"
-          >
-            <option value="ACTIVE">Active</option>
-            <option value="PENDING">Pending</option>
-            <option value="INACTIVE">Inactive</option>
-          </select>
+          {canEdit && (
+            <button
+              onClick={() => generateCredentials.mutate()}
+              disabled={generateCredentials.isPending}
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-bold hover:bg-primary/20 transition-all shadow-sm disabled:opacity-50"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              {generateCredentials.isPending ? 'Fetching...' : 'Portal Credentials'}
+            </button>
+          )}
+          {canEdit ? (
+            <select
+              value={client.status}
+              onChange={(e) => updateStatus.mutate(e.target.value)}
+              disabled={updateStatus.isPending}
+              className="px-3.5 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-xs font-bold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            >
+              <option value="ACTIVE">Active</option>
+              <option value="PENDING">Pending</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          ) : null}
         </div>
       </div>
 
@@ -262,11 +278,11 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {activeTab === 'overview' && <OverviewTab client={client} />}
-            {activeTab === 'team' && <TeamTab clientId={id} />}
-            {activeTab === 'scope' && <ScopeTab clientId={id} />}
-            {activeTab === 'documents' && <DocumentsTab clientId={id} companyName={client.companyName} />}
-            {activeTab === 'meetings' && <MeetingsTab clientId={id} />}
+            {activeTab === 'overview' && <OverviewTab client={client} canEdit={canEditOverview} />}
+            {activeTab === 'team' && <TeamTab clientId={id} canEdit={canEdit} />}
+            {activeTab === 'scope' && <ScopeTab clientId={id} canEdit={canEdit} />}
+            {activeTab === 'documents' && <DocumentsTab clientId={id} companyName={client.companyName} canEdit={canEditDocs} />}
+            {activeTab === 'meetings' && <MeetingsTab clientId={id} canEdit={canEdit} />}
           </motion.div>
         </AnimatePresence>
       </div>

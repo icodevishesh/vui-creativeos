@@ -20,6 +20,12 @@ import { ensureClientFolder, sanitizeFolderName } from '@/lib/storage/file-route
  */
 export async function POST(req: NextRequest) {
   try {
+    // Authenticate first — Asset.uploadedById is non-nullable so we need the user
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
@@ -69,19 +75,16 @@ export async function POST(req: NextRequest) {
 
     // Write Asset record when clientId is provided
     if (clientId) {
-      const user = await getCurrentUser();
-      if (user) {
-        await prisma.asset.create({
-          data: {
-            assetName: file.name,
-            fileUrl,
-            fileType: file.type || 'application/octet-stream',
-            fileSize: file.size,
-            clientId,
-            uploadedById: user.id,
-          },
-        });
-      }
+      await prisma.asset.create({
+        data: {
+          assetName: file.name,
+          fileUrl,
+          fileType: file.type || 'application/octet-stream',
+          fileSize: file.size,
+          clientId,
+          uploadedById: user.id,
+        },
+      });
     }
 
     return NextResponse.json({

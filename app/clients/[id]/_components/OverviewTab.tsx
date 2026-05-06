@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -24,9 +24,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface OverviewTabProps {
   client: any;
+  canEdit: boolean;
 }
 
-export function OverviewTab({ client }: OverviewTabProps) {
+export function OverviewTab({ client, canEdit }: OverviewTabProps) {
   const queryClient = useQueryClient();
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -148,12 +149,14 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 tracking-tight">{card.title}</h3>
               </div>
-              <button
-                onClick={() => handleEdit(card.id, card.content)}
-                className="p-2.5 text-gray-400 hover:text-primary hover:bg-primary/50 rounded-xl transition-all"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
+              {canEdit && (
+                <button
+                  onClick={() => handleEdit(card.id, card.content)}
+                  className="p-2.5 text-gray-400 hover:text-primary hover:bg-primary/50 rounded-xl transition-all"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             <div className="text-gray-600 text-sm font-medium leading-relaxed bg-gray-50/50 p-2 rounded-xl border border-gray-50 italic">
@@ -194,32 +197,36 @@ export function OverviewTab({ client }: OverviewTabProps) {
                     className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-700 text-sm font-semibold rounded-2xl border border-gray-100 group/item hover:border-emerald-200 hover:bg-emerald-50/30 transition-all"
                   >
                     {c}
-                    <button
-                      onClick={() => handleRemoveCompetitor(c)}
-                      className="text-gray-400 hover:text-rose-500 transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={() => handleRemoveCompetitor(c)}
+                        className="text-gray-400 hover:text-rose-500 transition-colors"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </motion.div>
                 ))}
               </AnimatePresence>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Add competitor..."
-                  className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all w-48"
-                  value={newCompetitor}
-                  onChange={(e) => setNewCompetitor(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddCompetitor()}
-                />
-                <button
-                  onClick={handleAddCompetitor}
-                  className="p-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
-                >
-                  <Plus className="w-4 h-4" />
-                </button>
-              </div>
+              {canEdit && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add competitor..."
+                    className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-emerald-500/5 focus:border-emerald-500 transition-all w-48"
+                    value={newCompetitor}
+                    onChange={(e) => setNewCompetitor(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddCompetitor()}
+                  />
+                  <button
+                    onClick={handleAddCompetitor}
+                    className="p-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {(!client.competitors || client.competitors.length === 0) && (
@@ -240,14 +247,16 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <p className="text-xs text-gray-500 font-medium">Digital footprints and social properties.</p>
               </div>
             </div>
-            <button
-              onClick={handleSaveSocialLinks}
-              disabled={mutation.isPending}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              {mutation.isPending ? 'Syncing...' : 'Save Presence'}
-            </button>
+            {canEdit && (
+              <button
+                onClick={handleSaveSocialLinks}
+                disabled={mutation.isPending}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {mutation.isPending ? 'Syncing...' : 'Save Presence'}
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -258,9 +267,10 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="instagram.com/handle"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
+                  readOnly={!canEdit}
+                  className={`w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all ${!canEdit ? 'cursor-default select-text' : ''}`}
                   value={socialLinks.instagram}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+                  onChange={(e) => canEdit && setSocialLinks({ ...socialLinks, instagram: e.target.value })}
                 />
               </div>
             </div>
@@ -271,9 +281,10 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="facebook.com/page"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
+                  readOnly={!canEdit}
+                  className={`w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all ${!canEdit ? 'cursor-default select-text' : ''}`}
                   value={socialLinks.facebook}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+                  onChange={(e) => canEdit && setSocialLinks({ ...socialLinks, facebook: e.target.value })}
                 />
               </div>
             </div>
@@ -284,9 +295,10 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="youtube.com/@channel"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
+                  readOnly={!canEdit}
+                  className={`w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all ${!canEdit ? 'cursor-default select-text' : ''}`}
                   value={socialLinks.youtube}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, youtube: e.target.value })}
+                  onChange={(e) => canEdit && setSocialLinks({ ...socialLinks, youtube: e.target.value })}
                 />
               </div>
             </div>
@@ -297,9 +309,10 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="linkedin.com/company/handle"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
+                  readOnly={!canEdit}
+                  className={`w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all ${!canEdit ? 'cursor-default select-text' : ''}`}
                   value={socialLinks.linkedin}
-                  onChange={(e) => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
+                  onChange={(e) => canEdit && setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
                 />
               </div>
             </div>
@@ -318,32 +331,38 @@ export function OverviewTab({ client }: OverviewTabProps) {
                   <input
                     type="text"
                     placeholder="Platform (e.g. TikTok)"
-                    className="w-32 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary"
+                    readOnly={!canEdit}
+                    className={`w-32 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary ${!canEdit ? 'cursor-default' : ''}`}
                     value={item.label}
-                    onChange={(e) => updateOtherSocial(idx, 'label', e.target.value)}
+                    onChange={(e) => canEdit && updateOtherSocial(idx, 'label', e.target.value)}
                   />
                   <input
                     type="text"
                     placeholder="URL"
-                    className="flex-1 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary"
+                    readOnly={!canEdit}
+                    className={`flex-1 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary ${!canEdit ? 'cursor-default' : ''}`}
                     value={item.url}
-                    onChange={(e) => updateOtherSocial(idx, 'url', e.target.value)}
+                    onChange={(e) => canEdit && updateOtherSocial(idx, 'url', e.target.value)}
                   />
-                  <button
-                    onClick={() => removeOtherSocial(idx)}
-                    className="p-2.5 text-gray-300 hover:text-rose-500 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={() => removeOtherSocial(idx)}
+                      className="p-2.5 text-gray-300 hover:text-rose-500 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </motion.div>
               ))}
-              <button
-                onClick={handleAddOtherSocial}
-                className="group flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 hover:border-primary/30 hover:text-primary transition-all"
-              >
-                <Plus className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Add Custom Property</span>
-              </button>
+              {canEdit && (
+                <button
+                  onClick={handleAddOtherSocial}
+                  className="group flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 hover:border-primary/30 hover:text-primary transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Add Custom Property</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

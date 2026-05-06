@@ -8,6 +8,7 @@ import { prisma } from '../../../lib/prisma';
 import { EngagementType, ServiceType } from '@prisma/client';
 import { ensureClientFolder } from '@/lib/storage/file-router';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { getCurrentUser } from '@/lib/auth';
 
 function generatePassword(): string {
   const upper = 'ABCDEFGHJKMNPQRSTUVWXYZ';
@@ -24,7 +25,29 @@ function generatePassword(): string {
 
 export async function GET() {
   try {
+    const me = await getCurrentUser();
+    if (!me) return new NextResponse('Unauthorized', { status: 401 });
+
+    const ADMIN_ROLES = ['ADMIN', 'ADMIN_OWNER', 'ACCOUNT_MANAGER', 'TEAM_LEAD'];
+    const isAdmin =
+      me.userType === 'ADMIN_OWNER' ||
+      (me.membership?.roles ?? []).some((r) => ADMIN_ROLES.includes(r));
+
+    let where: any = {};
+
+    if (isAdmin) {
+      // Full access — no filter
+      where = {};
+    } else if (me.userType === 'CLIENT') {
+      // CLIENT users: only see the ClientProfile whose userId matches their own
+      where = { userId: me.id };
+    } else {
+      // Regular org members: only clients where they appear in ClientTeamMember
+      where = { teamMembers: { some: { userId: me.id } } };
+    }
+
     const clients = await prisma.clientProfile.findMany({
+      where,
       include: {
         services: true,
         teamMembers: true,

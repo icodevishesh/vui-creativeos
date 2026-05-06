@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -46,15 +46,14 @@ type NavSection = {
 // Roles that share admin-level access (minus Clients/Onboarding for ACCOUNT_MANAGER,
 // minus Clients/Onboarding for TEAM_LEAD)
 const ADMIN_LIKE = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'];
-const CLIENTS_ROLES = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'CLIENT', 'CLIENT_OWNER'];
+const CLIENTS_ROLES = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER', 'CLIENT', 'CLIENT_OWNER'];
 
 const SIDEBAR_SECTIONS: NavSection[] = [
   {
     title: 'OVERVIEW',
     items: [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-      // ACCOUNT_MANAGER intentionally excluded from Clients page
-      { name: 'Clients', href: '/clients', icon: Users, roles: CLIENTS_ROLES },
+      { name: 'Clients', href: '/clients', icon: Users },
       { name: 'Team Members', href: '/members', icon: UserPlus, roles: ADMIN_LIKE },
     ],
   },

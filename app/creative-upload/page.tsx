@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   UploadCloud,
@@ -11,6 +11,8 @@ import {
   ArrowUpRight,
   ChevronDown,
   Loader2,
+  CheckCircle2,
+  X,
 } from "lucide-react";
 import { FileUploader } from "react-drag-drop-files";
 import { toast } from "react-hot-toast";
@@ -31,16 +33,21 @@ interface Asset {
   url: string;
 }
 
+interface UploadState {
+  fileName: string;
+  progress: number;   // 0–100
+  speed: number;      // bytes/s
+  eta: number | null; // seconds remaining
+  done: boolean;
+  error: string | null;
+}
+
 const getFileIcon = (type: string) => {
   switch (type) {
-    case "image":
-      return <FileImage className="w-5 h-5 text-gray-400" />;
-    case "video":
-      return <FileVideo className="w-5 h-5 text-gray-400" />;
-    case "doc":
-      return <FileText className="w-5 h-5 text-gray-400" />;
-    default:
-      return <FileIcon className="w-5 h-5 text-gray-400" />;
+    case "image": return <FileImage className="w-5 h-5 text-gray-400" />;
+    case "video": return <FileVideo className="w-5 h-5 text-gray-400" />;
+    case "doc": return <FileText className="w-5 h-5 text-gray-400" />;
+    default: return <FileIcon className="w-5 h-5 text-gray-400" />;
   }
 };
 
@@ -51,32 +58,42 @@ const determineFileType = (mime: string): Asset["type"] => {
   return "other";
 };
 
+function formatBytes(bytes: number) {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+function formatEta(seconds: number) {
+  if (!isFinite(seconds) || isNaN(seconds)) return "--";
+  if (seconds < 60) return `${Math.round(seconds)}s`;
+  return `${Math.floor(seconds / 60)}m ${Math.round(seconds % 60)}s`;
+}
+
 export default function CreativeUploadPage() {
   const queryClient = useQueryClient();
   const [selectedClientId, setSelectedClientId] = useState<string>("");
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const [uploadState, setUploadState] = useState<UploadState | null>(null);
+  const xhrRef = useRef<XMLHttpRequest | null>(null);
 
-  // Fetch Clients
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
     queryKey: ["clients"],
     queryFn: () => fetch("/api/clients").then((res) => res.json()),
   });
 
-  // Fetch Recent Assets from Repository API
-  const { data: repositoryData, isLoading: assetsLoading } = useQuery({
+  const { data: repositoryData } = useQuery({
     queryKey: ["repository"],
     queryFn: () => fetch("/api/repository").then((res) => res.json()),
   });
 
-  // Map repository files to our Asset interface
   const assets: Asset[] = useMemo(() => {
     if (!repositoryData?.recentFiles) return [];
-
     return repositoryData.recentFiles.map((file: any) => ({
       id: file.id,
       name: file.name,
-      mappedTo: "Unmapped", // Could be enhanced if mapping exists in DB
+      mappedTo: "Unmapped",
       type: determineFileType(file.mimeType || ""),
       date: new Date(file.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
       url: file.url,
@@ -88,77 +105,74 @@ export default function CreativeUploadPage() {
     [clients, selectedClientId]
   );
 
-
   const handleUpload = (file: File | File[]) => {
     const singleFile = Array.isArray(file) ? file[0] : file;
-
     if (!singleFile) return;
+    if (!selectedClientId) { toast.error("Please select a client first"); return; }
 
-    if (!selectedClientId) {
-      toast.error("Please select a client first");
-      return;
-    }
-
-    setUploading(true);
-    setProgress(0);
+    xhrRef.current?.abort();
+    setUploadState({ fileName: singleFile.name, progress: 0, speed: 0, eta: null, done: false, error: null });
 
     const formData = new FormData();
     formData.append("file", singleFile);
-    formData.append("clientId", selectedClientId); // Crucial: Send clientId to write DB record
+    formData.append("clientId", selectedClientId);
     formData.append("folderName", selectedClient?.companyName || "general");
 
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/file/upload");
+    xhrRef.current = xhr;
+    const startTime = Date.now();
 
     xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percent = (event.loaded / event.total) * 100;
-        setProgress(percent);
-      }
+      if (!event.lengthComputable) return;
+      const pct = (event.loaded / event.total) * 100;
+      const elapsed = (Date.now() - startTime) / 1000;
+      const speed = elapsed > 0 ? event.loaded / elapsed : 0;
+      const eta = speed > 0 ? (event.total - event.loaded) / speed : null;
+      setUploadState((s) => s && { ...s, progress: pct, speed, eta });
     };
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
+        setUploadState((s) => s && { ...s, progress: 100, done: true, eta: null });
         toast.success("File uploaded successfully");
-        // Invalidate repository query to refresh the list
         queryClient.invalidateQueries({ queryKey: ["repository"] });
       } else {
-        toast.error("Upload failed");
+        const msg = xhr.status === 401 ? "Session expired — please refresh" : "Upload failed";
+        setUploadState((s) => s && { ...s, error: msg });
+        toast.error(msg);
       }
-      setUploading(false);
-      setProgress(0);
     };
 
     xhr.onerror = () => {
+      setUploadState((s) => s && { ...s, error: "Network error occurred" });
       toast.error("Network error occurred");
-      setUploading(false);
     };
 
+    xhr.open("POST", "/api/file/upload");
     xhr.send(formData);
   };
+
+  const uploading = !!uploadState && !uploadState.done && !uploadState.error;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-20">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-2xl font-semibold text-gray-900 mb-1">
-            Creative Upload
-          </h1>
-          <p className="text-gray-400 text-sm">
-            Upload and manage creative assets
-          </p>
+          <h1 className="text-2xl font-semibold text-gray-900 mb-1">Creative Upload</h1>
+          <p className="text-gray-400 text-sm">Upload and manage creative assets</p>
         </div>
 
-        {/* Compact Client Selector */}
         <div className="flex items-center gap-4">
           {selectedClient && (
             <div className="text-right hidden sm:block">
               <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest leading-none mb-1">Target Folder</p>
-              <p className="text-[11px] font-medium text-primary leading-none">/uploads/{selectedClient.companyName.toLowerCase().replace(/ /g, "_")}</p>
+              <p className="text-[11px] font-medium text-primary leading-none">
+                /uploads/{selectedClient.companyName.toLowerCase().replace(/ /g, "_")}
+              </p>
             </div>
           )}
-          <div className="relative group w-48">
+          <div className="relative w-48">
             <select
               value={selectedClientId}
               onChange={(e) => setSelectedClientId(e.target.value)}
@@ -167,83 +181,118 @@ export default function CreativeUploadPage() {
             >
               <option value="">Select Client</option>
               {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.companyName}
-                </option>
+                <option key={client.id} value={client.id}>{client.companyName}</option>
               ))}
             </select>
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400">
-              {clientsLoading ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <ChevronDown className="w-3 h-3" />
-              )}
+              {clientsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ChevronDown className="w-3 h-3" />}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="space-y-8">
+      <div className="space-y-4">
         {/* Dropzone */}
-        <div className="relative">
-          <FileUploader
-            handleChange={handleUpload}
-            name="file"
-            types={FILE_TYPES}
-            disabled={!selectedClientId || uploading}
-          >
-            <div className={`relative group transition-all ${(!selectedClientId || uploading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-              <div className="absolute inset-0 bg-primary/20 rounded-lg -m-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative border-2 border-dashed border-gray-100 rounded-lg bg-white p-12 text-center transition-all hover:border-primary/30">
-                <div className="w-12 h-12 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
-                  {uploading ? (
-                    <div className="relative">
-                      <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                    </div>
-                  ) : (
-                    <UploadCloud className={`w-12 h-12 ${!selectedClientId ? 'text-blue-500' : 'text-blue-600'}`} />
-                  )}
-                </div>
-                <h3 className="text-sm font-medium text-gray-900 mb-1">
-                  {uploading
-                    ? "Uploading your file..."
-                    : !selectedClientId
-                      ? "Select a client to enable upload"
-                      : "Drop files here or click to upload"
-                  }
-                </h3>
-                <p className="text-[11px] font-medium text-gray-400">
-                  {uploading
-                    ? `${Math.round(progress)}% complete`
-                    : !selectedClientId
-                      ? "The file picker is locked"
-                      : "PNG, JPG, MP4, PDF up to 50MB"
-                  }
-                </p>
-
-                {uploading && (
-                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-50 rounded-b-3xl overflow-hidden">
-                    <div
-                      className="h-full bg-primary transition-all duration-300 ease-out"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                )}
+        <FileUploader
+          handleChange={handleUpload}
+          name="file"
+          types={FILE_TYPES}
+          disabled={!selectedClientId || uploading}
+        >
+          <div className={`relative group transition-all ${(!selectedClientId || uploading) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+            <div className="absolute inset-0 bg-primary/20 rounded-lg -m-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative border-2 border-dashed border-gray-100 rounded-lg bg-white p-12 text-center hover:border-primary/30 transition-all">
+              <div className="w-12 h-12 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
+                {uploading
+                  ? <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  : <UploadCloud className={`w-12 h-12 ${!selectedClientId ? "text-blue-500" : "text-blue-600"}`} />
+                }
               </div>
+              <h3 className="text-sm font-medium text-gray-900 mb-1">
+                {uploading
+                  ? "Uploading your file…"
+                  : !selectedClientId
+                    ? "Select a client to enable upload"
+                    : "Drop files here or click to upload"}
+              </h3>
+              <p className="text-[11px] font-medium text-gray-400">
+                {uploading
+                  ? `${Math.round(uploadState!.progress)}% complete`
+                  : !selectedClientId
+                    ? "The file picker is locked"
+                    : "PNG, JPG, MP4, PDF up to 50MB"}
+              </p>
             </div>
-          </FileUploader>
-        </div>
+          </div>
+        </FileUploader>
 
-        {/* Asset List */}
+        {/* Progress Card */}
+        {uploadState && (
+          <div className={`bg-white border rounded-xl p-5 shadow-sm transition-all ${uploadState.done ? "border-emerald-100" : uploadState.error ? "border-red-100" : "border-gray-100"
+            }`}>
+            {/* Top row: icon + name/status + dismiss */}
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${uploadState.done ? "bg-emerald-50" : uploadState.error ? "bg-red-50" : "bg-primary/10"
+                  }`}>
+                  {uploadState.done
+                    ? <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                    : uploadState.error
+                      ? <X className="w-5 h-5 text-red-400" />
+                      : <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                  }
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{uploadState.fileName}</p>
+                  <p className={`text-xs font-medium mt-0.5 ${uploadState.done ? "text-emerald-600" : uploadState.error ? "text-red-500" : "text-gray-400"
+                    }`}>
+                    {uploadState.done
+                      ? "Upload complete — file is now in the repository"
+                      : uploadState.error
+                        ? uploadState.error
+                        : `${Math.round(uploadState.progress)}% · ${formatBytes(uploadState.speed)}/s · ${formatEta(uploadState.eta ?? Infinity)} left`
+                    }
+                  </p>
+                </div>
+              </div>
+              {(uploadState.done || uploadState.error) && (
+                <button
+                  onClick={() => setUploadState(null)}
+                  className="p-1.5 text-gray-300 hover:text-gray-500 rounded-lg transition-colors shrink-0"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-300 ease-out ${uploadState.done ? "bg-emerald-500" : uploadState.error ? "bg-red-400" : "bg-primary"
+                  }`}
+                style={{ width: `${uploadState.progress}%` }}
+              />
+            </div>
+
+            {/* Speed + ETA chips */}
+            {!uploadState.done && !uploadState.error && (
+              <div className="flex items-center gap-3 mt-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">
+                  Speed: {formatBytes(uploadState.speed)}/s
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-50 px-2.5 py-1 rounded-lg">
+                  ETA: {formatEta(uploadState.eta ?? Infinity)}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Recent Assets */}
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-2 border-b border-gray-50">
-            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-              Recent Assets
-            </h2>
-            <span className="text-[10px] font-medium text-gray-400">
-              {assets.length} items
-            </span>
+            <h2 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Recent Assets</h2>
+            <span className="text-[10px] font-medium text-gray-400">{assets.length} items</span>
           </div>
           {assets.slice(0, 5).map((asset) => (
             <div
@@ -255,26 +304,17 @@ export default function CreativeUploadPage() {
                   {getFileIcon(asset.type)}
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors">
-                    {asset.name}
-                  </h4>
+                  <h4 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors">{asset.name}</h4>
                   <div className="flex items-center gap-2 text-[11px] font-medium text-gray-400">
                     <span>Mapped to:</span>
-                    <span className="text-gray-900 leading-none">
-                      {asset.mappedTo}
-                    </span>
+                    <span className="text-gray-900 leading-none">{asset.mappedTo}</span>
                   </div>
                 </div>
               </div>
-
               <div className="flex items-center gap-6">
                 <div className="text-right">
-                  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
-                    Uploaded
-                  </p>
-                  <p className="text-xs font-medium text-gray-900 tabular-nums">
-                    {asset.date}
-                  </p>
+                  <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Uploaded</p>
+                  <p className="text-xs font-medium text-gray-900 tabular-nums">{asset.date}</p>
                 </div>
                 <a
                   href={asset.url}

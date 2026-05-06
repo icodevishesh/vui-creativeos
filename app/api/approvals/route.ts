@@ -237,6 +237,12 @@ export async function POST(req: NextRequest) {
                     }, { status: 400 });
                 }
 
+                // Derive a stable role label for the final approver
+                let approverRoleLabel = "ADMIN";
+                if (reviewerType === "CLIENT") approverRoleLabel = "CLIENT";
+                else if (reviewerType === "TEAM_LEAD") approverRoleLabel = "TEAM_LEAD";
+                else if (reviewerType === "ACCOUNT_MANAGER") approverRoleLabel = "ACCOUNT_MANAGER";
+
                 const updated = await prisma.task.update({
                     where: { id: taskId },
                     data: { status: TaskStatus.APPROVED },
@@ -263,16 +269,29 @@ export async function POST(req: NextRequest) {
                 //     },
                 // });
 
-                // ── Designer task: mark the linked copy as PUBLISHED ──────────────
+                // ── Designer task: mark the linked copy as PUBLISHED + stamp final approver ──
                 if (task.calendarCopyId) {
                     await prisma.calendarCopy.update({
                         where: { id: task.calendarCopyId },
-                        data: { status: "PUBLISHED" },
+                        data: {
+                            status: "PUBLISHED",
+                            approvedBy: reviewerName ?? null,
+                            approvedDate: new Date(),
+                            approverRole: approverRoleLabel,
+                        },
                     });
                 }
 
-                // ── Writer task: create designer tasks for every copy in the calendar ──
+                // ── Writer task: stamp final approver on all calendar copies, then create designer tasks ──
                 if (!task.calendarCopyId && task.calendarId) {
+                    await prisma.calendarCopy.updateMany({
+                        where: { calendarId: task.calendarId },
+                        data: {
+                            approvedBy: reviewerName ?? null,
+                            approvedDate: new Date(),
+                            approverRole: approverRoleLabel,
+                        },
+                    });
                     await createDesignerTasksForCalendar(task);
                 }
 

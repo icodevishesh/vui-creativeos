@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -8,9 +8,10 @@ import { toast } from 'react-hot-toast';
 
 interface TeamTabProps {
   clientId: string;
+  canEdit: boolean;
 }
 
-export function TeamTab({ clientId }: TeamTabProps) {
+export function TeamTab({ clientId, canEdit }: TeamTabProps) {
   const queryClient = useQueryClient();
   const [isAssigning, setIsAssigning] = useState(false);
   const [formData, setFormData] = useState({ userId: '', role: '' });
@@ -82,13 +83,15 @@ export function TeamTab({ clientId }: TeamTabProps) {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Assigned Team Members</h2>
           <p className="text-sm text-gray-500 font-medium">Internal staff currently allocated to this account.</p>
         </div>
-        <button
-          onClick={() => setIsAssigning(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
-        >
-          <UserPlus className="w-4 h-4" />
-          Assign Member
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => setIsAssigning(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
+          >
+            <UserPlus className="w-4 h-4" />
+            Assign Member
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -118,13 +121,15 @@ export function TeamTab({ clientId }: TeamTabProps) {
               </div>
             </div>
 
-            <button
-              onClick={() => removeMutation.mutate(member.id)}
-              disabled={removeMutation.isPending}
-              className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => removeMutation.mutate(member.id)}
+                disabled={removeMutation.isPending}
+                className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
           </div>
         ))}
 

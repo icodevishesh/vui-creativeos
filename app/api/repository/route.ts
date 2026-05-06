@@ -50,13 +50,18 @@ export async function GET(req: NextRequest) {
       fileCount: c._count.assets,
     }));
 
+    // Only fetch assets whose client still exists — avoids crash from orphaned rows
+    const validClientIds = clients.map((c) => c.id);
+
     const recentAssets = await prisma.asset.findMany({
       take: 10,
+      where: { clientId: { in: validClientIds } },
       orderBy: { uploadedAt: 'desc' },
       include: {
         client: { select: { companyName: true } },
       },
     });
+
 
     const recentFiles = recentAssets.map((a) => ({
       id: a.id,

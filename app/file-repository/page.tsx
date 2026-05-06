@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -89,19 +89,17 @@ export default function FileRepositoryPage() {
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'size'>('date');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
-  // Root data (folders + recent files)
-  const { data: rootData, isLoading: rootLoading } = useQuery({
-    queryKey: ['repository'],
+  const { data: rootData, isLoading: rootLoading, error: rootError } = useQuery({
+    queryKey: ['repository-root'],
     queryFn: async () => {
       const res = await fetch('/api/repository');
-      if (!res.ok) throw new Error('Failed to fetch repository data');
+      if (!res.ok) throw new Error(`Repository API failed: ${res.status} ${await res.text()}`);
       return res.json() as Promise<{ folders: RepoFolder[]; recentFiles: RepoFile[] }>;
     },
   });
 
-  // Files for a specific client
   const { data: clientFiles, isLoading: filesLoading } = useQuery({
-    queryKey: ['repository', selectedClient?.id],
+    queryKey: ['repository-client', selectedClient?.id],
     queryFn: async () => {
       const res = await fetch(`/api/repository?clientId=${selectedClient!.id}`);
       if (!res.ok) throw new Error('Failed to fetch client files');
@@ -147,6 +145,16 @@ export default function FileRepositoryPage() {
       <div className="flex flex-col items-center justify-center py-40 gap-4">
         <Loader2 className="w-10 h-10 text-primary animate-spin" />
         <p className="text-sm font-medium text-gray-500">Loading file repository…</p>
+      </div>
+    );
+  }
+
+  if (rootError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-40 gap-3">
+        <FolderOpen className="w-12 h-12 text-red-200" />
+        <p className="text-sm font-semibold text-red-400">Failed to load repository</p>
+        <p className="text-xs text-gray-400 font-mono max-w-md text-center">{(rootError as Error).message}</p>
       </div>
     );
   }

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -11,9 +11,10 @@ import Upload from '../../../../components/Upload';
 interface DocumentsTabProps {
   clientId: string;
   companyName: string;
+  canEdit: boolean;
 }
 
-export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
+export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabProps) {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
@@ -68,13 +69,15 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Client Resources</h2>
           <p className="text-sm text-gray-500 font-medium">All brand assets, strategies, and legal documents.</p>
         </div>
-        <button
-          onClick={() => setIsUploading(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Add Document
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => setIsUploading(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Add Document
+          </button>
+        )}
       </div>
 
       <div className="bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden">

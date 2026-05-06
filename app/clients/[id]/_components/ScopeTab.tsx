@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface ScopeTabProps {
   clientId: string;
+  canEdit: boolean;
 }
 
 const PLATFORMS = {
@@ -59,7 +60,7 @@ const SERVICE_OPTIONS = [
   'WEB_DEVELOPMENT'
 ];
 
-export function ScopeTab({ clientId }: ScopeTabProps) {
+export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
   const queryClient = useQueryClient();
   const [isConfirming, setIsConfirming] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -169,21 +170,23 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
             <h2 className="text-xl font-bold text-gray-900 tracking-tight">Scope of Work</h2>
             <p className="text-xs text-gray-500 font-medium mt-1">Detailed roadmap and confirmed deliverables for this account.</p>
           </div>
-          <button
-            onClick={() => {
-              setFormData({
-                service: '',
-                description: '',
-                budget: '',
-                details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
-              });
-              setIsAdding(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            Add New Service
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => {
+                setFormData({
+                  service: '',
+                  description: '',
+                  budget: '',
+                  details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
+                });
+                setIsAdding(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Add New Service
+            </button>
+          )}
         </div>
         <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-lg flex items-center gap-4">
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
@@ -203,7 +206,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                   <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Service Type</p>
                   <h2 className="text-xl font-semibold text-gray-900">{item.service.replace(/_/g, ' ')}</h2>
                 </div>
-                {item.budget && (
+                {canEdit && item.budget && (
                   <div className="text-right">
                     <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
                     <p className="text-xl font-bold text-primary">
@@ -268,6 +271,19 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
     );
   }
 
+  // Non-editors with no finalized scope see a placeholder
+  if (!canEdit && !isFinalized) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-14 h-14 bg-gray-100 rounded-2xl flex items-center justify-center mb-4">
+          <Briefcase className="w-7 h-7 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-700 mb-1">Scope Not Yet Defined</h3>
+        <p className="text-sm text-gray-400 font-medium">The account manager will finalize the scope of work soon.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
@@ -279,28 +295,31 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
               : 'Detailed roadmap and confirmed deliverables for this account.'}
           </p>
         </div>
-        <button
-          onClick={() => {
-            if (isAdding) {
-              setIsAdding(false);
-            } else {
-              setFormData({
-                service: '',
-                description: '',
-                budget: '',
-                details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
-              });
-              setIsAdding(true);
-            }
-          }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg ${isAdding
-            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-none'
-            : 'bg-primary text-white hover:bg-primary shadow-primary/20'
+        {canEdit && (
+          <button
+            onClick={() => {
+              if (isAdding) {
+                setIsAdding(false);
+              } else {
+                setFormData({
+                  service: '',
+                  description: '',
+                  budget: '',
+                  details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
+                });
+                setIsAdding(true);
+              }
+            }}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg ${
+              isAdding
+                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-none'
+                : 'bg-primary text-white hover:bg-primary shadow-primary/20'
             }`}
-        >
-          {isAdding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-          {isAdding ? 'Cancel' : 'Add New Service'}
-        </button>
+          >
+            {isAdding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            {isAdding ? 'Cancel' : 'Add New Service'}
+          </button>
+        )}
       </div>
 
       {/* Show Services Requested during Onboarding */}
@@ -339,30 +358,32 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-gray-700">Monthly Budget Estimate</label>
-            <div className="flex bg-gray-50 border border-gray-100 rounded-xl focus-within:ring-2 focus-within:ring-primary/10 focus-within:border-primary transition-all overflow-hidden relative">
-              <select
-                className="pl-4 pr-8 py-3 bg-gray-100 border-r border-gray-200 text-gray-700 text-sm font-bold focus:outline-none appearance-none cursor-pointer"
-                value={formData.details?.currency || 'USD'}
-                onChange={(e) => setFormData((p: any) => ({
-                  ...p,
-                  details: { ...p.details, currency: e.target.value }
-                }))}
-              >
-                <option value="USD">$ USD</option>
-                <option value="INR">₹ INR</option>
-              </select>
-              <ChevronDown className="absolute left-[5.2rem] top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              <input
-                type="number"
-                placeholder="5000"
-                className="w-full px-4 py-3 bg-transparent text-sm focus:outline-none font-bold"
-                value={formData.budget}
-                onChange={(e) => setFormData((p: any) => ({ ...p, budget: e.target.value }))}
-              />
+          {canEdit && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-700">Monthly Budget Estimate</label>
+              <div className="flex bg-gray-50 border border-gray-100 rounded-xl focus-within:ring-2 focus-within:ring-primary/10 focus-within:border-primary transition-all overflow-hidden relative">
+                <select
+                  className="pl-4 pr-8 py-3 bg-gray-100 border-r border-gray-200 text-gray-700 text-sm font-bold focus:outline-none appearance-none cursor-pointer"
+                  value={formData.details?.currency || 'USD'}
+                  onChange={(e) => setFormData((p: any) => ({
+                    ...p,
+                    details: { ...p.details, currency: e.target.value }
+                  }))}
+                >
+                  <option value="USD">$ USD</option>
+                  <option value="INR">₹ INR</option>
+                </select>
+                <ChevronDown className="absolute left-[5.2rem] top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <input
+                  type="number"
+                  placeholder="5000"
+                  className="w-full px-4 py-3 bg-transparent text-sm focus:outline-none font-bold"
+                  value={formData.budget}
+                  onChange={(e) => setFormData((p: any) => ({ ...p, budget: e.target.value }))}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Dynamic Form Content */}
@@ -468,14 +489,16 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
           />
         </div>
 
-        <div className="flex items-center justify-end pt-4">
-          <button
-            onClick={() => setIsConfirming(true)}
-            className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-          >
-            Finalize Scope of Work
-          </button>
-        </div>
+        {canEdit && (
+          <div className="flex items-center justify-end pt-4">
+            <button
+              onClick={() => setIsConfirming(true)}
+              className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              Finalize Scope of Work
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Confirmation Modal */}

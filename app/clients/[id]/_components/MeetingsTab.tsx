@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -8,9 +8,10 @@ import { toast } from 'react-hot-toast';
 
 interface MeetingsTabProps {
   clientId: string;
+  canEdit: boolean;
 }
 
-export function MeetingsTab({ clientId }: MeetingsTabProps) {
+export function MeetingsTab({ clientId, canEdit }: MeetingsTabProps) {
   const queryClient = useQueryClient();
   const [isAdding, setIsAdding] = useState(false);
   const [formData, setFormData] = useState({
@@ -56,13 +57,15 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Meeting History</h2>
           <p className="text-sm text-gray-500 font-medium">Chronological record of all syncs and reviews.</p>
         </div>
-        <button
-          onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
-        >
-          <Plus className="w-4 h-4" />
-          Log Meeting
-        </button>
+        {canEdit && (
+          <button
+            onClick={() => setIsAdding(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            Log Meeting
+          </button>
+        )}
       </div>
 
       <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/20 before:via-gray-100 before:to-transparent">
