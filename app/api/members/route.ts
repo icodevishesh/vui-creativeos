@@ -15,7 +15,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
 import { MemberRole, UserType } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 import { Resend } from 'resend';
 import { buildWelcomeEmail } from '@/lib/notifications/email-templates';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
@@ -162,16 +161,15 @@ export async function POST(req: Request) {
       return new NextResponse('No organization found', { status: 404 });
     }
 
-    // ── Password — generate plain, hash for storage ────────────────────────
-    const plainPassword  = generatePassword();
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    // ── Password — generate plain, store as-is ────────────────────────────
+    const plainPassword = generatePassword();
 
     // ── Create User + OrganizationMember (single transaction) ─────────────
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword,          // ✅ bcrypt-hashed, NEVER plain-text
+        password: plainPassword,
         userType: UserType.ORGANIZATION_MEMBER,
         roles: rolesArray as MemberRole[],
         memberships: {

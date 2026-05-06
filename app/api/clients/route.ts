@@ -7,7 +7,6 @@ import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
 import { EngagementType, ServiceType } from '@prisma/client';
 import { ensureClientFolder } from '@/lib/storage/file-router';
-import bcrypt from 'bcryptjs';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 function generatePassword(): string {
@@ -87,7 +86,7 @@ export async function POST(req: Request) {
       adminUser = await prisma.user.create({
         data: {
           email: 'admin@creativeos.com',
-          password: await bcrypt.hash('admin123', 10),
+          password: 'admin123',
           name: 'Admin User',
           userType: 'ADMIN_OWNER'
         }
@@ -99,7 +98,6 @@ export async function POST(req: Request) {
 
     // Generate credentials for the client portal login
     const plainPassword = generatePassword();
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
     // Check if a CLIENT user already exists for this email
     let clientUser = await prisma.user.findUnique({ where: { email } });
@@ -107,7 +105,7 @@ export async function POST(req: Request) {
       clientUser = await prisma.user.create({
         data: {
           email,
-          password: hashedPassword,
+          password: plainPassword,
           name: contactPerson,
           userType: 'CLIENT',
         }

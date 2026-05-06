@@ -49,16 +49,13 @@ function CredentialsModal({ isOpen, email, password, onClose }: {
               <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center"><KeyRound className="w-5 h-5 text-white" /></div>
               <div>
                 <h2 className="text-sm font-bold text-white">Client Portal Credentials</h2>
-                <p className="text-xs text-primary/30">{email}</p>
+                <p className="text-xs text-white/60">{email}</p>
               </div>
             </div>
             <button onClick={onClose} className="text-white/70 hover:text-white"><X className="w-5 h-5" /></button>
           </div>
         </div>
         <div className="p-6 space-y-4">
-          <div className="bg-amber-50 border border-amber-100 rounded-lg px-4 py-3">
-            <p className="text-xs text-amber-700 font-medium">Save these credentials now — the password cannot be recovered after closing this window.</p>
-          </div>
           {([['Email', email, 'email'], ['Password', password, 'password']] as const).map(([label, value, field]) => (
             <div key={field} className="space-y-1.5">
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{label}</label>
@@ -92,13 +89,13 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
   const generateCredentials = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/api/clients/${id}/credentials`, { method: 'POST' });
-      if (!res.ok) throw new Error('Failed to generate credentials');
+      if (!res.ok) throw new Error('No portal account found for this client');
       return res.json();
     },
     onSuccess: (data) => {
       setCredModal({ email: data.email, password: data.generatedPassword });
     },
-    onError: () => toast.error('Failed to generate credentials'),
+    onError: () => toast.error('No portal account found for this client'),
   });
 
   const { data: client, isLoading, error } = useQuery({
@@ -211,7 +208,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
             className="inline-flex items-center gap-2 px-3.5 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-bold hover:bg-primary/20 transition-all shadow-sm disabled:opacity-50"
           >
             <KeyRound className="w-3.5 h-3.5" />
-            {generateCredentials.isPending ? 'Generating...' : 'Portal Credentials'}
+            {generateCredentials.isPending ? 'Fetching...' : 'Portal Credentials'}
           </button>
           <select
             value={client.status}

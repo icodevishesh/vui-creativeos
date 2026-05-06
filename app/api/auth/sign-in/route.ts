@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { serialize } from 'cookie';
@@ -30,14 +29,8 @@ export async function POST(req: Request) {
             );
         }
 
-        // Check password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        // password coming from database and password from form are same then continu
-        // 
-        const isPasswordSame = password === user.password;
-        // console.log(user.password, password, isPasswordValid, isPasswordSame);
-
-        if (!isPasswordValid && !isPasswordSame) {
+        // Check password (plain-text comparison)
+        if (password !== user.password) {
             return NextResponse.json(
                 { error: 'Invalid credentials' },
                 { status: 401 }
