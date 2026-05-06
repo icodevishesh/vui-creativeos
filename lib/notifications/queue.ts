@@ -8,7 +8,6 @@
 
 import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
-import { NotificationType } from '@prisma/client';
 
 // ── Redis connection ─────────────────────────────────────────────────────────
 // Upstash requires maxRetriesPerRequest=null so BullMQ's blocking commands work
@@ -23,7 +22,7 @@ export const redisConnection = new IORedis(process.env.REDIS_URL!, {
 // ── Job payload ──────────────────────────────────────────────────────────────
 export interface NotificationJobData {
   /** The event category — must match NotificationType enum */
-  category: NotificationType;
+  category: string;
   /** IDs of users who should receive this notification */
   recipientIds: string[];
   /** Short heading shown in the notification card / email subject */

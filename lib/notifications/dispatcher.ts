@@ -19,7 +19,6 @@
  *   });
  */
 
-import { NotificationType } from '@prisma/client';
 import { notificationQueue, NotificationJobData } from './queue';
 
 // Re-export so callers don't need two imports
@@ -27,7 +26,7 @@ export type { NotificationJobData };
 
 export interface DispatchPayload {
   /** The event category — must match NotificationType enum */
-  category: NotificationType;
+  category: string;
   /** IDs of the users who should receive this notification */
   recipientIds: string[];
   /** Short heading shown in the notification card / email subject */

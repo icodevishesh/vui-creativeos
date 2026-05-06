@@ -14,7 +14,7 @@
 import { Worker, Job } from 'bullmq';
 import { Resend } from 'resend';
 import { prisma } from '@/lib/prisma';
-import { PreferenceType } from '@prisma/client';
+import { PreferenceType, NotificationType } from '@prisma/client';
 import { redisConnection, NotificationJobData } from './queue';
 import { buildEmailTemplate } from './email-templates';
 
@@ -31,7 +31,7 @@ async function processNotification(job: Job<NotificationJobData>): Promise<void>
 
   // 1. Batch-fetch preferences for all recipients in one DB round-trip
   const existingPrefs = await prisma.notificationPreference.findMany({
-    where: { userId: { in: recipientIds }, category },
+    where: { userId: { in: recipientIds }, category: category as unknown as NotificationType },
     select: { userId: true, inApp: true, email: true },
   });
 
@@ -55,7 +55,7 @@ async function processNotification(job: Job<NotificationJobData>): Promise<void>
         title,
         message,
         type: PreferenceType.IN_APP,
-        category,
+        category: category as unknown as NotificationType,
         isRead: false,
         link: link ?? null,
       })),
@@ -73,7 +73,7 @@ async function processNotification(job: Job<NotificationJobData>): Promise<void>
       select: { id: true, email: true, name: true },
     });
 
-    const { subject, html } = buildEmailTemplate(category, { title, message, link });
+    const { subject, html } = buildEmailTemplate(category as unknown as NotificationType, { title, message, link });
 
     // Fire emails concurrently — Resend supports batching but individual calls
     // give better per-recipient error isolation and retry granularity via BullMQ
