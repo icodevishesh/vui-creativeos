@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { TaskStatus } from "@prisma/client";
+import { TaskStatus, NotificationType } from "@prisma/client";
 import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
 
@@ -108,7 +108,7 @@ export async function PATCH(req: NextRequest) {
             // ── Notify assignee of approval ────────────────────────────
             if (task.assignedToId) {
                 await dispatchNotification({
-                    category: 'TASK_APPROVED',
+                    category: NotificationType.TASK_APPROVED,
                     recipientIds: [task.assignedToId],
                     title: 'Copy approved',
                     message: `A calendar copy for task "${task.title}" has been approved.`,
@@ -162,7 +162,7 @@ export async function PATCH(req: NextRequest) {
             // ── Notify assignee of rejection ────────────────────────────
             if (task.assignedToId) {
                 await dispatchNotification({
-                    category: 'TASK_REJECT',
+                    category: NotificationType.TASK_REJECT,
                     recipientIds: [task.assignedToId],
                     title: 'Copy rejected',
                     message: `A calendar copy for task "${task.title}" was rejected. Reason: ${feedback}`,
