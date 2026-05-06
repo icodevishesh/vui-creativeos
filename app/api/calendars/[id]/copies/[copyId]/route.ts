@@ -22,9 +22,15 @@ export async function PATCH(
     if (Array.isArray(data.frames)) {
       const { frames, ...copyFields } = data;
       const copy = await prisma.$transaction(async (tx) => {
-        const updated = await tx.calendarCopy.update({
+        const updated = await (tx.calendarCopy as any).update({
           where: { id: copyId },
-          data: copyFields,
+          data: {
+            ...copyFields,
+            // Preserve approval tracking fields if they exist
+            approvedBy: copyFields.approvedBy !== undefined ? copyFields.approvedBy : undefined,
+            approvedDate: copyFields.approvedDate !== undefined ? copyFields.approvedDate : undefined,
+            approverRole: copyFields.approverRole !== undefined ? copyFields.approverRole : undefined,
+          },
         });
         for (const frame of frames as Array<{ id: string; caption?: string; hashtags?: string; creativeUrl?: string; creativeStatus?: string }>) {
           if (!frame.id) continue;
@@ -49,9 +55,15 @@ export async function PATCH(
       return NextResponse.json(copy);
     }
 
-    const copy = await prisma.calendarCopy.update({
+    const copy = await (prisma.calendarCopy as any).update({
       where: { id: copyId },
-      data,
+      data: {
+        ...data,
+        // Preserve approval tracking fields if they exist
+        approvedBy: data.approvedBy !== undefined ? data.approvedBy : undefined,
+        approvedDate: data.approvedDate !== undefined ? data.approvedDate : undefined,
+        approverRole: data.approverRole !== undefined ? data.approverRole : undefined,
+      },
       include: {
         bucket: { select: { id: true, name: true } },
         frames: { orderBy: { frameNumber: 'asc' } },

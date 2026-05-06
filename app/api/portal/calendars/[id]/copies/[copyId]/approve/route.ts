@@ -48,7 +48,12 @@ export async function POST(
     // Update the copy status
     const updatedCopy = await prisma.calendarCopy.update({
       where: { id: copyId, calendarId },
-      data: { status: 'APPROVED' },
+      data: { 
+        status: 'APPROVED',
+        approvedBy: clientUser.name,
+        approvedDate: new Date(),
+        approverRole: 'CLIENT'
+      },
     });
 
     // Create a subtask to track the approval

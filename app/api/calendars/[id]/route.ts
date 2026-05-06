@@ -24,7 +24,7 @@ export async function GET(
             frames: { orderBy: { frameNumber: 'asc' } },
           },
           orderBy: { publishDate: 'asc' },
-        },
+        } as any,
         tasks: {
           select: {
             id: true,

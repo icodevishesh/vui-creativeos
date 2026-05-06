@@ -62,6 +62,9 @@ interface CalendarCopy {
   status: string;
   bucketId: string;
   bucket?: CopyBucket | null;
+  approvedBy?: string | null;
+  approvedDate?: string | null;
+  approverRole?: string | null;
 }
 
 interface CalendarBucket {
@@ -815,6 +818,24 @@ function CopyRow({
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Reference URL</p>
                 <a href={copy.referenceUrl} target="_blank" rel="noopener noreferrer"
                   className="text-xs text-primary hover:underline break-all">{copy.referenceUrl}</a>
+              </div>
+            )}
+            {copy.approvedBy && (
+              <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+                <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1">Approved By</p>
+                <div className="flex items-center gap-2">
+                  <User className="w-3 h-3 text-emerald-500" />
+                  <span className="text-xs font-medium text-emerald-700">{copy.approvedBy}</span>
+                  {copy.approverRole && (
+                    <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded-full">{copy.approverRole}</span>
+                  )}
+                </div>
+                {copy.approvedDate && (
+                  <p className="text-[10px] text-emerald-600 mt-1 flex items-center gap-1">
+                    <Clock className="w-2.5 h-2.5" />
+                    {new Date(copy.approvedDate).toLocaleString()}
+                  </p>
+                )}
               </div>
             )}
           </div>

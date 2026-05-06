@@ -67,10 +67,32 @@ export async function PATCH(req: NextRequest) {
                     task.status === TaskStatus.CLIENT_REVIEW ? "APPROVED" :
                         "APPROVED";
 
-            await prisma.calendarCopy.update({
+            // Determine approver role label
+            let approverRoleLabel = "ADMIN";
+            if (reviewerType === "CLIENT") approverRoleLabel = "CLIENT";
+            else if (reviewerType === "TEAM_LEAD") approverRoleLabel = "TEAM_LEAD";
+            else if (reviewerType === "ACCOUNT_MANAGER") approverRoleLabel = "ACCOUNT_MANAGER";
+
+            const updateData: any = {
+                status: newCopyStatus,
+                approvedBy: reviewerName ?? null,
+                approvedDate: new Date(),
+                approverRole: approverRoleLabel,
+            };
+
+            console.log('[Approval API] Updating copy with approval data:', { copyId, updateData, reviewerName, reviewerType });
+
+            await (prisma.calendarCopy as any).update({
                 where: { id: copyId },
-                data: { status: newCopyStatus },
+                data: updateData,
             });
+
+            // Verify the update
+            const updatedCopy = await (prisma.calendarCopy as any).findUnique({
+                where: { id: copyId },
+                select: { id: true, status: true, approvedBy: true, approvedDate: true, approverRole: true },
+            });
+            console.log('[Approval API] Verification - updated copy:', updatedCopy);
 
             // Recalculate task status from all sibling copies
             const allCopies = await prisma.calendarCopy.findMany({

@@ -58,7 +58,12 @@ export async function POST(
         calendarId,
         status: { in: ['CLIENT_REVIEW', 'IN_PROGRESS', 'PENDING'] },
       },
-      data: { status: 'APPROVED' },
+      data: { 
+        status: 'APPROVED',
+        approvedBy: clientUser.name,
+        approvedDate: new Date(),
+        approverRole: 'CLIENT'
+      },
     });
 
     // Find related task

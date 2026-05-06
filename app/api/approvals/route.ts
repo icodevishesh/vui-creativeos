@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
                                 id: true, content: true, caption: true, hashtags: true,
                                 platforms: true, mediaType: true, publishDate: true, publishTime: true,
                                 referenceUrl: true, status: true,
+                                approvedBy: true, approvedDate: true, approverRole: true,
                                 isCarousel: true, frameCount: true,
                                 frames: { orderBy: { frameNumber: 'asc' } },
                                 bucket: { select: { id: true, name: true } },
@@ -147,9 +148,19 @@ export async function POST(req: NextRequest) {
             if (task.status === TaskStatus.INTERNAL_REVIEW) {
                 // Advance all copies that are still in INTERNAL_REVIEW to CLIENT_REVIEW
                 if (task.calendarId) {
+                    let approverRoleLabel = "ADMIN";
+                    if (reviewerType === "CLIENT") approverRoleLabel = "CLIENT";
+                    else if (reviewerType === "TEAM_LEAD") approverRoleLabel = "TEAM_LEAD";
+                    else if (reviewerType === "ACCOUNT_MANAGER") approverRoleLabel = "ACCOUNT_MANAGER";
+
                     await prisma.calendarCopy.updateMany({
                         where: { calendarId: task.calendarId, status: 'INTERNAL_REVIEW' },
-                        data: { status: 'CLIENT_REVIEW' },
+                        data: { 
+                            status: 'CLIENT_REVIEW',
+                            approvedBy: reviewerName ?? null,
+                            approvedDate: new Date(),
+                            approverRole: approverRoleLabel
+                        },
                     });
                 }
 

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useState } from 'react';
-import { FilePlus, Calendar, Clock, Image, Hash, Globe, Trash2, Send, Plus, Loader2, AlertTriangle, X, Eye, Film, Link, Edit2, Check, Layers } from 'lucide-react';
+import { FilePlus, Calendar, Clock, Image, Hash, Globe, Trash2, Send, Plus, Loader2, AlertTriangle, X, Eye, Film, Link, Edit2, Check, Layers, User } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import dayjs from 'dayjs';
 
@@ -943,6 +943,14 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                         {copy.mediaType && <div className="flex items-center gap-1.5"><Image size={13} /> {copy.mediaType}</div>}
                                         <div className="flex items-center gap-1.5"><Hash size={13} /> {buckets.find(b => b.id === copy.bucketId)?.name || 'Bucket'}</div>
                                     </div>
+                                    {copy.approvedBy && (
+                                        <div className="mt-2 flex items-center gap-2 text-[10px] text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-2 py-1">
+                                            <User size={12} />
+                                            <span className="font-medium">{copy.approvedBy}</span>
+                                            {copy.approverRole && <span className="bg-emerald-100 px-1.5 py-0.5 rounded-full font-semibold">{copy.approverRole}</span>}
+                                            {copy.approvedDate && <span className="text-emerald-500">{new Date(copy.approvedDate).toLocaleDateString()}</span>}
+                                        </div>
+                                    )}
                                     {copy.hashtags && <p className="mt-2 text-blue-500 text-[11px] font-bold">{copy.hashtags}</p>}
                                 </div>
                             );

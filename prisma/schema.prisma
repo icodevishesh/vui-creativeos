@@ -802,6 +802,9 @@ model CalendarCopy {
   mediaType      String?        // "IMAGE" | "CAROUSEL" | "VIDEO" | "REEL"
   referenceUrl   String?
   status         String         @default("DRAFT") // DRAFT, INTERNAL_REVIEW, CLIENT_REVIEW, APPROVED, REJECTED
+  approvedBy     String?        // Name of the person who approved the copy
+  approvedDate   DateTime?      // Timestamp of final approval
+  approverRole   String?        // TEAM_LEAD | ACCOUNT_MANAGER | ADMIN | CLIENT
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
