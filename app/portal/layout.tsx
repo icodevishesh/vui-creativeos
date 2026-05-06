@@ -89,7 +89,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
               <div className="relative">
                 <Icon className="w-4 h-4 shrink-0" />
                 {isNotif && unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                  <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
@@ -184,7 +184,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           >
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+              <span className="absolute top-1 right-1 min-w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}

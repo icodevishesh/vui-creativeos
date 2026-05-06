@@ -134,8 +134,8 @@ function NotificationCard({
       className={`
         group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200
         ${notification.isRead
-          ? 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
-          : 'bg-primary/40 border-primary/20 hover:border-primary/30 hover:shadow-md shadow-sm'
+          ? 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm shadow-sm mb-4'
+          : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm shadow-sm mb-4'
         }
       `}
     >
@@ -190,11 +190,11 @@ function NotificationCard({
         >
           <Trash2 className="w-4 h-4" />
         </button>
-        {notification.link && (
+        {/* {notification.link && (
           <span className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-all">
             <ChevronRight className="w-4 h-4" />
           </span>
-        )}
+        )} */}
       </div>
     </div>
   );

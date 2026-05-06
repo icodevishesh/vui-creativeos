@@ -122,19 +122,20 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
       aria-label="Sidebar navigation"
     >
       {/* ── Logo bar ───────────────────────────────────────────── */}
-      <div className="flex items-center justify-between h-16 px-3 border-b border-gray-100 flex-shrink-0">
+      <div className="flex items-center justify-between h-16 px-3 border-b border-gray-100 shrink-0">
         {/* Logo — hidden when collapsed */}
-        <div className={`flex items-center gap-2 ${collapsed ? 'hidden' : 'flex'}`}>
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-bold">VUI</span>
-          </div>
-          <h2 className="text-sm font-bold text-gray-900 tracking-tight">CreativeOS</h2>
-        </div>
+        {!collapsed && (
+          <img
+            src="/creativeos-logo.jpeg"
+            alt="CreativeOS"
+            className="h-16 w-auto object-contain"
+          />
+        )}
 
-        {/* When collapsed: just the icon centered */}
+        {/* When collapsed: small logo mark */}
         {collapsed && (
-          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
-            <span className="text-white text-xs font-bold">VUI</span>
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+            <span className="text-white text-xs font-bold">C</span>
           </div>
         )}
 
@@ -207,7 +208,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
       </nav>
 
       {/* ── User + Logout ───────────────────────────────────────── */}
-      <div className={`flex-shrink-0 border-t border-gray-100 ${collapsed ? 'p-2' : 'p-3'}`}>
+      <div className={`shrink-0 border-t border-gray-100 ${collapsed ? 'p-2' : 'p-3'}`}>
         {isLoading ? (
           <div className="h-10 bg-gray-50 rounded-xl animate-pulse" />
         ) : user ? (
@@ -245,7 +246,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
               </div>
               <button
                 onClick={logout}
-                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all flex-shrink-0"
+                className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all shrink-0"
                 title="Logout"
                 aria-label="Logout"
               >
