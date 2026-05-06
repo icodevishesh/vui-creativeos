@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
+import { createDesignerTasksForCalendar } from '@/lib/approval-helpers';
+import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -68,23 +70,10 @@ export async function POST(
     });
 
     if (relatedTask && updatedCopies.count > 0) {
-      await prisma.subTask.create({
-        data: {
-          mainTaskId: relatedTask.id,
-          projectId: relatedTask.projectId,
-          clientId: clientId,
-          title: `All copies approved by client`,
-          description: `${updatedCopies.count} copy/copies were approved in bulk`,
-          status: 'APPROVED',
-          reviewerName: clientUser.name || clientUser.email,
-          reviewerType: 'CLIENT',
-        },
-      });
-
       // Check if all copies are now approved
       const allCopies = await prisma.calendarCopy.findMany({
         where: { calendarId },
-        select: { status: true },
+        select: { id: true, status: true },
       });
 
       const allApproved = allCopies.every(c => c.status === 'APPROVED' || c.status === 'PUBLISHED');
@@ -93,6 +82,18 @@ export async function POST(
           where: { id: relatedTask.id },
           data: { status: TaskStatus.APPROVED },
         });
+        // Create designer tasks for all copies, each routed by media type to the right team member
+        await createDesignerTasksForCalendar(relatedTask as any);
+        // Notify the writer that their task is fully approved
+        if (relatedTask.assignedToId) {
+          dispatchNotification({
+            category: 'TASK_APPROVED',
+            recipientIds: [relatedTask.assignedToId],
+            title: 'All copies approved',
+            message: `All calendar copies for "${relatedTask.title}" have been approved by the client.`,
+            link: `/tasks/${relatedTask.id}`,
+          }).catch(err => console.error('[portal approve-all] notify TASK_APPROVED failed:', err));
+        }
       }
     }
 

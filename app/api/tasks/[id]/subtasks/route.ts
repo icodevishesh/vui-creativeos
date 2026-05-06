@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
+import { dispatchNotification } from "@/lib/notifications/dispatcher";
 
 // POST /api/tasks/[id]/subtasks
 // Create a new subtask for a main task
@@ -57,6 +58,17 @@ export async function POST(
             where: { id },
             data: { countSubTask: { increment: 1 } }
         });
+
+        // Notify subtask assignee
+        if (assignedToId) {
+            dispatchNotification({
+                category: 'TASK_ASSIGNED',
+                recipientIds: [assignedToId],
+                title: 'New subtask assigned to you',
+                message: `You have been assigned "${title}".`,
+                link: `/tasks/${id}`,
+            }).catch(err => console.error('[POST subtasks] notify assignee failed:', err));
+        }
 
         return NextResponse.json(subTask, { status: 201 });
     } catch (err) {

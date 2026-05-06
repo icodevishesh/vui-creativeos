@@ -557,7 +557,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                 className="w-full p-2 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 appearance-none"
                             >
                                 <option value="">Select type</option>
-                                <option value="SINGLE">Image (Single)</option>
+                                <option value="IMAGE">Image</option>
                                 <option value="VIDEO">Video</option>
                                 <option value="REEL">Reel</option>
                                 <option value="CAROUSEL">Carousel</option>

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { subDays } from "date-fns";
 import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
+import { notifyClientForReview } from "@/lib/notifications/task-notifications";
+import { dispatchNotification } from "@/lib/notifications/dispatcher";
 
 // GET /api/approvals
 export async function GET(req: NextRequest) {
@@ -180,21 +182,26 @@ export async function POST(req: NextRequest) {
                 });
 
                 // Record approval in history
-                await prisma.subTask.create({
-                    data: {
-                        title: `Approved → Client Review`,
-                        description: `Approved — Advanced to client review`,
-                        status: TaskStatus.APPROVED,
-                        mainTaskId: taskId,
-                        projectId: task.projectId,
-                        clientId: task.clientId,
-                        assignedToId: task.assignedToId || null,
-                        feedbacks: [],
-                        reviewerId: reviewerId || null,
-                        reviewerType: reviewerType || null,
-                        reviewerName: reviewerName || null,
-                    },
-                });
+                // await prisma.subTask.create({
+                //     data: {
+                //         title: `Approved → Client Review`,
+                //         description: `Approved — Advanced to client review`,
+                //         status: TaskStatus.APPROVED,
+                //         mainTaskId: taskId,
+                //         projectId: task.projectId,
+                //         clientId: task.clientId,
+                //         assignedToId: task.assignedToId || null,
+                //         feedbacks: [],
+                //         reviewerId: reviewerId || null,
+                //         reviewerType: reviewerType || null,
+                //         reviewerName: reviewerName || null,
+                //     },
+                // });
+
+                // Notify client that content is ready for their review
+                notifyClientForReview(updated as any).catch(err =>
+                    console.error('[approvals] notifyClientForReview failed:', err)
+                );
 
                 return NextResponse.json({ success: true, task: updated });
             }
@@ -229,21 +236,21 @@ export async function POST(req: NextRequest) {
                 });
 
                 // Record final approval in history
-                await prisma.subTask.create({
-                    data: {
-                        title: `Approved & Published`,
-                        description: `Approved — Final approval`,
-                        status: TaskStatus.APPROVED,
-                        mainTaskId: taskId,
-                        projectId: task.projectId,
-                        clientId: task.clientId,
-                        assignedToId: task.assignedToId || null,
-                        feedbacks: [],
-                        reviewerId: reviewerId || null,
-                        reviewerType: reviewerType || null,
-                        reviewerName: reviewerName || null,
-                    },
-                });
+                // await prisma.subTask.create({
+                //     data: {
+                //         title: `Approved & Published`,
+                //         description: `Approved — Final approval`,
+                //         status: TaskStatus.APPROVED,
+                //         mainTaskId: taskId,
+                //         projectId: task.projectId,
+                //         clientId: task.clientId,
+                //         assignedToId: task.assignedToId || null,
+                //         feedbacks: [],
+                //         reviewerId: reviewerId || null,
+                //         reviewerType: reviewerType || null,
+                //         reviewerName: reviewerName || null,
+                //     },
+                // });
 
                 // ── Designer task: mark the linked copy as PUBLISHED ──────────────
                 if (task.calendarCopyId) {
@@ -256,6 +263,17 @@ export async function POST(req: NextRequest) {
                 // ── Writer task: create designer tasks for every copy in the calendar ──
                 if (!task.calendarCopyId && task.calendarId) {
                     await createDesignerTasksForCalendar(task);
+                }
+
+                // Notify the writer/assignee that their task has been fully approved
+                if (task.assignedToId) {
+                    dispatchNotification({
+                        category: 'TASK_APPROVED',
+                        recipientIds: [task.assignedToId],
+                        title: 'Task approved',
+                        message: `"${task.title}" has been approved.`,
+                        link: `/tasks/${taskId}`,
+                    }).catch(err => console.error('[approvals] notify TASK_APPROVED failed:', err));
                 }
 
                 return NextResponse.json({ success: true, task: updated });
@@ -311,6 +329,17 @@ export async function POST(req: NextRequest) {
                 },
             });
 
+            // Notify assignee (writer) of rejection
+            if (task.assignedToId) {
+                dispatchNotification({
+                    category: 'TASK_REJECT',
+                    recipientIds: [task.assignedToId],
+                    title: 'Task rejected',
+                    message: `"${task.title}" was rejected. Reason: ${feedback}`,
+                    link: `/tasks/${taskId}`,
+                }).catch(err => console.error('[approvals] notify TASK_REJECT failed:', err));
+            }
+
             return NextResponse.json({ success: true, task: updatedTask });
         }
 
@@ -347,6 +376,17 @@ export async function POST(req: NextRequest) {
                     reviewerName: reviewerName || null,
                 },
             });
+
+            // Notify assignee (writer) of feedback
+            if (task.assignedToId) {
+                dispatchNotification({
+                    category: 'TASK_FEEDBACK',
+                    recipientIds: [task.assignedToId],
+                    title: 'Feedback on your task',
+                    message: `Feedback received on "${task.title}": ${feedback}`,
+                    link: `/tasks/${taskId}`,
+                }).catch(err => console.error('[approvals] notify TASK_FEEDBACK failed:', err));
+            }
 
             return NextResponse.json({ success: true, task: updatedTask });
         }

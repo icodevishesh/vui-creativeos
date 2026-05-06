@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
+import { notifyInternalReviewers } from "@/lib/notifications/task-notifications";
 
 // GET /api/tasks/[id]
 export async function GET(
@@ -103,6 +104,13 @@ export async function PATCH(
                 subTasks: true,
             },
         });
+
+        // Notify internal reviewers when writer submits task for review
+        if (status === TaskStatus.INTERNAL_REVIEW && currentTask.status !== TaskStatus.INTERNAL_REVIEW) {
+            notifyInternalReviewers(task as any).catch(err =>
+                console.error('[PATCH /api/tasks/:id] notifyInternalReviewers failed:', err)
+            );
+        }
 
         return NextResponse.json(task);
     } catch (err) {

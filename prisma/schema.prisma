@@ -799,7 +799,7 @@ model CalendarCopy {
   publishDate    DateTime?
   publishTime    String?        // Store as string like "HH:mm"
   platforms      String[]
-  mediaType      String?        // "SINGLE" | "CAROUSEL" | "VIDEO" | "REEL"
+  mediaType      String?        // "IMAGE" | "CAROUSEL" | "VIDEO" | "REEL"
   referenceUrl   String?
   status         String         @default("DRAFT") // DRAFT, INTERNAL_REVIEW, CLIENT_REVIEW, APPROVED, REJECTED
   createdAt      DateTime       @default(now())

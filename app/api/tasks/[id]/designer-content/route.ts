@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { TaskStatus } from "@prisma/client";
 import { saveFileToClientFolder } from "@/lib/storage/file-router";
+import { notifyInternalReviewers } from "@/lib/notifications/task-notifications";
 
 /**
  * PATCH /api/tasks/[id]/designer-content
@@ -152,6 +153,13 @@ export async function PATCH(
                 designerContent: true,
             },
         });
+
+        // Notify internal reviewers when task is submitted for review
+        if (statusRaw === TaskStatus.INTERNAL_REVIEW) {
+            notifyInternalReviewers(updated as any).catch(err =>
+                console.error('[designer-content] notifyInternalReviewers failed:', err)
+            );
+        }
 
         return NextResponse.json(updated);
     } catch (err) {

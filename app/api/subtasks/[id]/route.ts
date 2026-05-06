@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
+import { notifyInternalReviewers } from '@/lib/notifications/task-notifications';
 
 /**
  * PATCH /api/subtasks/[id]
@@ -32,10 +33,14 @@ export async function PATCH(
 
     // Also update the main task status so it re-enters the review pipeline
     if (status === TaskStatus.INTERNAL_REVIEW) {
-      await prisma.task.update({
+      const mainTask = await prisma.task.update({
         where: { id: subtask.mainTaskId },
         data: { status: TaskStatus.INTERNAL_REVIEW },
+        select: { id: true, title: true, organizationId: true, clientId: true, calendarId: true },
       });
+      notifyInternalReviewers(mainTask as any).catch(err =>
+        console.error('[subtasks PATCH] notifyInternalReviewers failed:', err)
+      );
     }
 
     return NextResponse.json(updated);
