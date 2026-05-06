@@ -15,6 +15,9 @@ import { NotificationType } from '@prisma/client';
 export const redisConnection = new IORedis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
+  // Upstash requires TLS — pass an empty tls object so ioredis performs
+  // the TLS handshake even when the URL scheme is rediss://
+  tls: {},
 });
 
 // ── Job payload ──────────────────────────────────────────────────────────────
