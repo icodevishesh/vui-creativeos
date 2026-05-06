@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
                                 isCarousel: true, frameCount: true,
                                 frames: { orderBy: { frameNumber: 'asc' } },
                                 bucket: { select: { id: true, name: true } },
-                            },
+                            } as any,
                             orderBy: { publishDate: 'asc' },
                         },
                     },
@@ -72,7 +72,7 @@ export async function GET(req: NextRequest) {
             .filter((id): id is string => !!id);
 
         const copies = copyIds.length > 0
-            ? await prisma.calendarCopy.findMany({
+            ? await (prisma.calendarCopy as any).findMany({
                   where: { id: { in: copyIds } },
                   select: {
                       id: true, content: true, caption: true, hashtags: true,
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
               })
             : [];
 
-        const copyMap = Object.fromEntries(copies.map(c => [c.id, c]));
+        const copyMap = Object.fromEntries((copies as any[]).map((c: any) => [c.id, c]));
         const result = tasks.map(t => ({
             ...t,
             calendarCopyId: (t as any).calendarCopyId ?? null,

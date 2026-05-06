@@ -73,7 +73,7 @@ export async function GET() {
             frames: { orderBy: { frameNumber: 'asc' } },
             status: true,
             bucket: { select: { id: true, name: true } },
-          },
+          } as any,
         },
         subTasks: {
           orderBy: { createdAt: 'asc' },
