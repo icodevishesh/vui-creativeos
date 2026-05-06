@@ -54,8 +54,8 @@ export default function SignIn() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white px-4">
-            <div className="w-full max-w-sm">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50/80 px-4">
+            <div className="w-full max-w-sm bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-semibold text-gray-900 mb-1">Sign in</h1>
                     <p className="text-sm text-gray-500">Enter your credentials to continue</p>
@@ -128,7 +128,7 @@ export default function SignIn() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-gray-900 text-white py-2.5 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
+                        className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-[#27b785] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm"
                     >
                         {isLoading ? 'Signing in...' : 'Sign in'}
                     </button>
