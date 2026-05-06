@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useQuery } from '@tanstack/react-query';
 import { Building2, Mail, Phone, User, RefreshCw, Briefcase, Globe } from 'lucide-react';
@@ -16,7 +16,7 @@ export default function PortalProfilePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <RefreshCw className="w-6 h-6 animate-spin text-indigo-600" />
+        <RefreshCw className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -48,7 +48,7 @@ export default function PortalProfilePage() {
       {/* Profile header card */}
       <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-200">
+          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-primary/30">
             {profile.companyName?.slice(0, 2).toUpperCase()}
           </div>
           <div>
@@ -89,7 +89,7 @@ export default function PortalProfilePage() {
           <h3 className="text-sm font-bold text-gray-900 mb-4">Subscribed Services</h3>
           <div className="flex flex-wrap gap-2">
             {profile.services.map((s: any) => (
-              <span key={s.id} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-xs font-semibold">
+              <span key={s.id} className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-semibold">
                 {s.service.replace(/_/g, ' ')}
               </span>
             ))}
@@ -106,7 +106,7 @@ export default function PortalProfilePage() {
           <div className="divide-y divide-gray-50">
             {profile.teamMembers.map((member: any) => (
               <div key={member.id} className="flex items-center gap-3 px-6 py-3.5">
-                <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {member.userName?.charAt(0).toUpperCase()}
                 </div>
                 <div>

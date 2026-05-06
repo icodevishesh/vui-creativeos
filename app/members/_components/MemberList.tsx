@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -29,13 +29,13 @@ export function MemberList() {
   return (
     <div className="grid grid-cols-1 gap-4">
       {members?.map((member: any) => (
-        <div key={member.id} className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-indigo-100 transition-all flex items-center justify-between group">
+        <div key={member.id} className="bg-white border border-gray-100 rounded-2xl p-5 hover:border-primary/20 transition-all flex items-center justify-between group">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold">
+            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold">
               {member.user?.name?.slice(0, 2).toUpperCase() || '??'}
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+              <h3 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors">
                 {member.user?.name || 'Unknown Member'}
               </h3>
               <div className="flex items-center gap-3 mt-1">
@@ -45,13 +45,13 @@ export function MemberList() {
                 </span>
                 {(member.roles && member.roles.length > 0
                   ? member.roles.map((r: string) => (
-                      <span key={r} className="flex items-center gap-1 text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      <span key={r} className="flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
                         <Shield className="w-3 h-3" />
                         {r.replace(/_/g, ' ')}
                       </span>
                     ))
                   : (
-                    <span className="flex items-center gap-1 text-[10px] font-medium text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
                       <Shield className="w-3 h-3" />
                       {member.customRole?.name || 'Member'}
                     </span>

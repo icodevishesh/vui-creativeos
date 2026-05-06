@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { FileText, Upload, Send, File, X, Image as ImageIcon, Clock, Plus, Globe, Link, Layers } from 'lucide-react';
@@ -62,10 +62,10 @@ const PLATFORM_STYLES: Record<string, { pill: string; zone: string; header: stri
     activeType: 'bg-sky-500 text-white border-sky-500',
   },
   Facebook: {
-    pill:       'bg-indigo-50 text-indigo-600 border-indigo-100',
-    zone:       'border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50/30',
-    header:     'text-indigo-600 bg-indigo-50 border-indigo-100',
-    activeType: 'bg-indigo-600 text-white border-indigo-600',
+    pill:       'bg-primary/10 text-primary border-primary/20',
+    zone:       'border-primary/30 hover:border-primary/60 hover:bg-primary/30',
+    header:     'text-primary bg-primary/10 border-primary/20',
+    activeType: 'bg-primary text-white border-primary',
   },
 };
 
@@ -372,8 +372,8 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
 
         {/* Copy reference */}
         {copy && (
-          <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 space-y-3">
-            <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Copy Reference</p>
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-3">
+            <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Copy Reference</p>
 
             <div className="flex flex-wrap gap-1.5">
               {platforms.map(p => (
@@ -390,7 +390,7 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
                 </span>
               )}
               {copy.bucket && (
-                <span className="text-[10px] font-bold bg-white border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold bg-white border border-primary/20 text-primary px-2 py-0.5 rounded-full">
                   {copy.bucket.name}
                 </span>
               )}
@@ -402,16 +402,16 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
               )}
             </div>
 
-            <p className="text-xs text-indigo-800 leading-relaxed">{copy.content}</p>
+            <p className="text-xs text-primary leading-relaxed">{copy.content}</p>
             {copy.caption && (
-              <p className="text-[11px] text-indigo-600 italic">{copy.caption}</p>
+              <p className="text-[11px] text-primary italic">{copy.caption}</p>
             )}
             {copy.referenceUrl && (
               <a
                 href={copy.referenceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 hover:underline break-all"
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:text-primary hover:underline break-all"
               >
                 <Link size={11} className="shrink-0" /> {copy.referenceUrl}
               </a>
@@ -481,7 +481,7 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
                   }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Frame {frame.frameNumber}</span>
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Frame {frame.frameNumber}</span>
                         {hasFile && <span className="text-[10px] font-bold text-emerald-500">✓ Uploaded</span>}
                         {frame.creativeStatus === 'UPLOADED' && !hasFile && (
                           <span className="text-[10px] font-bold text-emerald-400">Previously uploaded</span>
@@ -501,10 +501,10 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
                       <div className={`flex items-center justify-center gap-2 py-2 rounded-lg border-2 border-dashed text-xs font-bold transition-all ${
                         hasFile
                           ? 'border-emerald-300 text-emerald-600 bg-white'
-                          : 'border-gray-200 text-gray-400 bg-white hover:border-indigo-300 hover:text-indigo-500'
+                          : 'border-gray-200 text-gray-400 bg-white hover:border-primary/40 hover:text-primary'
                       }`}>
                         {isUploading ? (
-                          <><div className="w-3.5 h-3.5 border-2 border-indigo-400/30 border-t-indigo-500 rounded-full animate-spin" /> Uploading...</>
+                          <><div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /> Uploading...</>
                         ) : hasFile ? (
                           <><ImageIcon size={14} /> {filesByFrame[frame.id]!.name}</>  
                         ) : (

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -70,15 +70,15 @@ export function Header({ onOpenMobile }: HeaderProps) {
                 </p>
 
                 <div className='flex items-center justify-end gap-1 mt-1'>
-                  {roleLabel === "ADMIN_OWNER" ? <User className="w-3 h-3 text-indigo-600" /> : <Shield className="w-3 h-3 text-indigo-600" />}
-                  <p className="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider leading-tight">
+                  {roleLabel === "ADMIN_OWNER" ? <User className="w-3 h-3 text-primary" /> : <Shield className="w-3 h-3 text-primary" />}
+                  <p className="text-[10px] font-semibold text-primary uppercase tracking-wider leading-tight">
                     {roleLabel}
                   </p>
                 </div>
               </div>
             )}
             <div
-              className="w-9 h-9 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold"
+              className="w-9 h-9 rounded-lg bg-primary text-white flex items-center justify-center text-xs font-bold"
               aria-label="User avatar"
             >
               {isLoading ? '…' : initials}

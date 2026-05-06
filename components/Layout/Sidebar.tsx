@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import Link from 'next/link';
@@ -125,7 +125,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
       <div className="flex items-center justify-between h-16 px-3 border-b border-gray-100 flex-shrink-0">
         {/* Logo — hidden when collapsed */}
         <div className={`flex items-center gap-2 ${collapsed ? 'hidden' : 'flex'}`}>
-          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-white text-xs font-bold">VUI</span>
           </div>
           <h2 className="text-sm font-bold text-gray-900 tracking-tight">CreativeOS</h2>
@@ -133,7 +133,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
 
         {/* When collapsed: just the icon centered */}
         {collapsed && (
-          <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center mx-auto">
+          <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center mx-auto">
             <span className="text-white text-xs font-bold">VUI</span>
           </div>
         )}
@@ -141,7 +141,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
         {/* Collapse / expand toggle — top-right of sidebar */}
         <button
           onClick={onToggleCollapse}
-          className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all flex-shrink-0"
+          className="p-1.5 rounded-lg text-gray-400 hover:primary hover:bg-gray-100 transition-all shrink-0"
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
@@ -185,13 +185,13 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
                     className={`flex items-center py-2 rounded-xl transition-all
                       ${collapsed ? 'justify-center px-2' : 'gap-3 px-3'}
                       ${isActive
-                        ? 'bg-indigo-50 text-indigo-600'
+                        ? 'bg-primary/10 text-primary'
                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <item.icon
-                      className={`flex-shrink-0 ${collapsed ? 'w-5 h-5' : 'w-4 h-4'} ${isActive ? 'text-indigo-600' : 'text-gray-400'
+                      className={`shrink-0 ${collapsed ? 'w-5 h-5' : 'w-4 h-4'} ${isActive ? 'text-primary' : 'text-gray-400'
                         }`}
                       aria-hidden="true"
                     />
@@ -215,7 +215,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
             /* Collapsed: avatar + logout icon stacked */
             <div className="flex flex-col items-center gap-2">
               <div
-                className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-bold"
+                className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center text-xs font-bold"
                 title={user.name}
               >
                 {initials}
@@ -232,14 +232,14 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
           ) : (
             /* Expanded: avatar + name/role + logout */
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center text-xs font-bold shrink-0">
                 {initials}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] font-semibold text-gray-900 truncate leading-tight">
                   {user.name}
                 </p>
-                <p className="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider leading-tight truncate">
+                <p className="text-[10px] font-semibold text-primary uppercase tracking-wider leading-tight truncate">
                   {roleLabel}
                 </p>
               </div>

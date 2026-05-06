@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -62,13 +62,13 @@ export function AddRoleForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2 md:col-span-2">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-indigo-500" />
+            <ShieldAlert className="w-4 h-4 text-primary" />
             Role Name
           </label>
           <input
             type="text"
             placeholder="e.g. Lead Strategist"
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
             value={formData.name}
             onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
           />
@@ -76,12 +76,12 @@ export function AddRoleForm() {
 
         <div className="space-y-2 md:col-span-2">
           <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-indigo-500" />
+            <BookOpen className="w-4 h-4 text-primary" />
             Description
           </label>
           <textarea
             placeholder="Define the scope and responsibilities for this role..."
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm min-h-[100px] focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
             value={formData.description}
             onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
           />
@@ -90,7 +90,7 @@ export function AddRoleForm() {
 
       <div className="space-y-4">
         <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 mb-4">
-          <Key className="w-4 h-4 text-indigo-500" />
+          <Key className="w-4 h-4 text-primary" />
           Assign Permissions
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -102,15 +102,15 @@ export function AddRoleForm() {
                 type="button"
                 onClick={() => togglePermission(opt.id)}
                 className={`flex items-center justify-between p-3 rounded-lg border-2 transition-all ${isSelected
-                  ? 'border-indigo-500 bg-indigo-50/50'
-                  : 'border-gray-50 bg-white hover:border-indigo-200'
+                  ? 'border-primary bg-primary/50'
+                  : 'border-gray-50 bg-white hover:border-primary/30'
                   }`}
               >
                 <div className="text-left">
                   <div className="text-xs font-medium text-gray-900">{opt.name}</div>
                   <div className="text-[10px] text-gray-500">{opt.desc}</div>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-200'
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-white' : 'border-gray-200'
                   }`}>
                   {isSelected && <Check className="w-3 h-3" />}
                 </div>
@@ -124,7 +124,7 @@ export function AddRoleForm() {
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="w-full sm:w-64 flex items-center justify-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-70"
+          className="w-full sm:w-64 flex items-center justify-center gap-2 px-8 py-3 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary shadow-lg shadow-primary/20 transition-all disabled:opacity-70"
         >
           {mutation.isPending ? 'Creating Role...' : 'Create Custom Role'}
           {!mutation.isPending && <Plus className="w-4 h-4" />}

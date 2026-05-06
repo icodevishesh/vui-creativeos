@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -249,7 +249,7 @@ export default function TasksPage() {
       <div className="bg-white p-4 rounded-lg border border-gray-100 shadow-sm flex flex-wrap gap-4 items-center">
         <div className="flex items-center gap-3 w-full justify-start">
           <select
-            className="pl-3 pr-8 py-2 rounded-lg border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
+            className="pl-3 pr-8 py-2 rounded-lg border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
             value={selectedClientId}
             onChange={(e) => setSelectedClientId(e.target.value)}
           >
@@ -260,7 +260,7 @@ export default function TasksPage() {
           </select>
 
           <select
-            className="pl-3 pr-8 py-2 rounded-lg border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
+            className="pl-3 pr-8 py-2 rounded-lg border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
           >

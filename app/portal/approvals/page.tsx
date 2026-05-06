@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -57,7 +57,7 @@ interface ApprovalTask {
 
 const TASK_STATUS_BADGE: Record<string, { label: string; className: string }> = {
   INTERNAL_REVIEW: { label: 'Internal Review', className: 'bg-[#FFF8E6] text-[#D97706]' },
-  CLIENT_REVIEW: { label: 'Client Review', className: 'bg-indigo-50 text-indigo-600' },
+  CLIENT_REVIEW: { label: 'Client Review', className: 'bg-primary/10 text-primary' },
   APPROVED: { label: 'Approved', className: 'bg-emerald-50 text-emerald-700' },
   PUBLISHED: { label: 'Published', className: 'bg-emerald-50 text-emerald-700' },
 };
@@ -88,8 +88,8 @@ function ClientCalendarGroup({
         }`}
         onClick={isMulti ? () => setOpen((v) => !v) : undefined}
       >
-        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-          <Building2 className="w-4 h-4 text-indigo-600" />
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <Building2 className="w-4 h-4 text-primary" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -99,7 +99,7 @@ function ClientCalendarGroup({
               {tasks.length} calendar{tasks.length !== 1 ? 's' : ''}
             </span>
             {statusCounts['CLIENT_REVIEW'] ? (
-              <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 px-1.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded-full">
                 {statusCounts['CLIENT_REVIEW']} awaiting review
               </span>
             ) : null}
@@ -155,12 +155,12 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
       className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50/60 transition-colors group"
       onClick={() => router.push(`/portal/approvals/calendar/${calendar.id}`)}
     >
-      <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-indigo-100 group-hover:bg-indigo-50 transition-colors">
-        <BookOpen className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+      <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-primary/20 group-hover:bg-primary/10 transition-colors">
+        <BookOpen className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary transition-colors" />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-indigo-700 transition-colors">
+        <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-primary transition-colors">
           {task.title}
         </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -194,7 +194,7 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badge.className}`}>
           {badge.label}
         </span>
-        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-400 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary/60 transition-colors" />
       </div>
     </div>
   );
@@ -213,7 +213,7 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
     Instagram: 'bg-pink-50 text-pink-600 border-pink-100',
     LinkedIn: 'bg-blue-50 text-blue-700 border-blue-100',
     Twitter: 'bg-sky-50 text-sky-600 border-sky-100',
-    Facebook: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    Facebook: 'bg-primary/10 text-primary border-primary/20',
   };
 
   return (
@@ -230,15 +230,15 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
         <div className="flex flex-1 min-h-0 overflow-hidden">
           <div className="w-64 shrink-0 border-r border-gray-100 overflow-y-auto bg-gray-50/40 p-3 space-y-1.5">
             {calendar.objective && (
-              <div className="mb-3 px-3 py-2.5 bg-indigo-50 border border-indigo-100 rounded-lg">
-                <p className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Objective</p>
-                <p className="text-[11px] text-indigo-800 leading-relaxed">{calendar.objective}</p>
+              <div className="mb-3 px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
+                <p className="text-[9px] font-bold text-primary/60 uppercase tracking-widest mb-1">Objective</p>
+                <p className="text-[11px] text-primary leading-relaxed">{calendar.objective}</p>
               </div>
             )}
             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-1 pb-1">Copies ({copies.length})</p>
             {copies.map((copy, idx) => (
               <button key={copy.id} onClick={() => setActiveIdx(idx)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${activeIdx === idx ? 'bg-white border-indigo-200 shadow-sm' : 'border-transparent hover:bg-white hover:border-gray-100'}`}>
+                className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${activeIdx === idx ? 'bg-white border-primary/30 shadow-sm' : 'border-transparent hover:bg-white hover:border-gray-100'}`}>
                 <div className="flex items-center gap-1.5 mb-1 flex-wrap">
                   {copy.mediaType && <span className="text-[9px] font-bold bg-violet-50 text-violet-600 border border-violet-100 px-1.5 py-0.5 rounded-full">{copy.mediaType}</span>}
                 </div>
@@ -282,25 +282,25 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
               {activeCopy.hashtags && (
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hashtags</p>
-                  <p className="text-sm font-semibold text-indigo-500 wrap-break-word">{activeCopy.hashtags}</p>
+                  <p className="text-sm font-semibold text-primary wrap-break-word">{activeCopy.hashtags}</p>
                 </div>
               )}
               {activeCopy.platforms && activeCopy.platforms.length > 0 && (
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Platforms</p>
-                  <p className="text-sm font-semibold text-indigo-500 wrap-break-word">{activeCopy.platforms.join(", ")}</p>
+                  <p className="text-sm font-semibold text-primary wrap-break-word">{activeCopy.platforms.join(", ")}</p>
                 </div>
               )}
               {activeCopy.mediaType &&
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Media Type</p>
-                  <p className="text-sm font-semibold text-indigo-500 wrap-break-word">{activeCopy.mediaType}</p>
+                  <p className="text-sm font-semibold text-primary wrap-break-word">{activeCopy.mediaType}</p>
                 </div>}
 
               {copies.length > 1 && (
                 <div className="flex items-center gap-2 pt-2">
                   {copies.map((_, i) => (
-                    <button key={i} onClick={() => setActiveIdx(i)} className={`w-2 h-2 rounded-full transition-all ${i === activeIdx ? 'bg-indigo-500 scale-125' : 'bg-gray-200 hover:bg-gray-300'}`} />
+                    <button key={i} onClick={() => setActiveIdx(i)} className={`w-2 h-2 rounded-full transition-all ${i === activeIdx ? 'bg-primary scale-125' : 'bg-gray-200 hover:bg-gray-300'}`} />
                   ))}
                   <span className="ml-2 text-xs text-gray-400">{activeIdx + 1} / {copies.length}</span>
                 </div>
@@ -361,7 +361,7 @@ function DesignPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
                 {copy.hashtags && (
                   <div className="bg-white border border-gray-100 rounded-lg p-3 space-y-1.5">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hashtags</p>
-                    <p className="text-xs text-indigo-500 font-medium wrap-break-word">{copy.hashtags}</p>
+                    <p className="text-xs text-primary font-medium wrap-break-word">{copy.hashtags}</p>
                   </div>
                 )}
               </div>
@@ -371,7 +371,7 @@ function DesignPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
                 Instagram: 'bg-pink-50 text-pink-600 border-pink-100',
                 LinkedIn:  'bg-blue-50 text-blue-700 border-blue-100',
                 Twitter:   'bg-sky-50 text-sky-600 border-sky-100',
-                Facebook:  'bg-indigo-50 text-indigo-600 border-indigo-100',
+                Facebook:  'bg-primary/10 text-primary border-primary/20',
               };
               const pill = (p: string) => PILL[p] ?? 'bg-gray-50 text-gray-500 border-gray-200';
 
@@ -400,7 +400,7 @@ function DesignPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
                       )}
                       {items.map(({ file, idx }) => (
                         <button key={file.id} onClick={() => setActiveFile(idx)}
-                          className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all text-xs font-medium ${activeFile === idx ? 'bg-indigo-50 text-indigo-700 border border-indigo-100' : 'text-gray-600 hover:bg-gray-100 border border-transparent'}`}>
+                          className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all text-xs font-medium ${activeFile === idx ? 'bg-primary/10 text-primary border border-primary/20' : 'text-gray-600 hover:bg-gray-100 border border-transparent'}`}>
                           {isImage(file.mimeType) ? <ImageIcon className="w-3.5 h-3.5 shrink-0" /> : <FileText className="w-3.5 h-3.5 shrink-0" />}
                           <span className="truncate">{file.fileName}</span>
                           {file.fileSize && <span className="ml-auto shrink-0 text-[10px] text-gray-400">{formatBytes(file.fileSize)}</span>}
@@ -527,7 +527,7 @@ function FeedbackModal({ isOpen, onClose, onSubmit, actionType, taskTitle, isLoa
               onChange={(e) => setFeedback(e.target.value)}
               placeholder={isReject ? 'Explain why this needs changes...' : 'Share your revision notes...'}
               rows={4}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white text-gray-900 placeholder:text-gray-400 resize-none"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-gray-900 placeholder:text-gray-400 resize-none"
             />
           </div>
         </div>
@@ -576,7 +576,7 @@ function ApprovalCard({ task, onApprove, onReject, onFeedback, onPreview, onPrev
               <span>{currentVersion}</span>
             </div>
           </div>
-          <span className="shrink-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg bg-indigo-50 text-indigo-600">
+          <span className="shrink-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg bg-primary/10 text-primary">
             Awaiting Your Review
           </span>
         </div>
@@ -618,8 +618,8 @@ function ApprovalCard({ task, onApprove, onReject, onFeedback, onPreview, onPrev
         {/* Designer task: copy snippet */}
         {isDesignerTask && task.calendarCopy && (
           <div className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 flex items-start gap-3">
-            <div className="w-6 h-6 rounded-md bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-              <FileText className="w-3.5 h-3.5 text-indigo-600" />
+            <div className="w-6 h-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText className="w-3.5 h-3.5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Creative Brief</p>
@@ -656,7 +656,7 @@ function ApprovalCard({ task, onApprove, onReject, onFeedback, onPreview, onPrev
           )}
           {isDesignerTask && hasFiles && (
             <button onClick={onPreview}
-              className="ml-auto inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all">
+              className="ml-auto inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-all">
               <Eye className="w-3.5 h-3.5" />Preview Design
             </button>
           )}
@@ -734,6 +734,10 @@ export default function PortalApprovalsPage() {
     },
   });
 
+  // Filter tasks: writer tasks (calendarId) vs design tasks (calendarCopyId)
+  const writerTasks = tasks.filter(t => t.calendar && !t.calendarCopy);
+  const designTasks = tasks.filter(t => t.calendarCopy);
+
   const actionMutation = useMutation({
     mutationFn: (payload: { taskId: string; action: string; feedback?: string }) =>
       fetch('/api/portal/approvals', {
@@ -775,7 +779,7 @@ export default function PortalApprovalsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
-          <RefreshCw className="w-5 h-5 animate-spin text-indigo-400" />
+          <RefreshCw className="w-5 h-5 animate-spin text-primary/60" />
         </div>
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-lg border border-red-100">
@@ -794,12 +798,12 @@ export default function PortalApprovalsPage() {
           <p className="text-sm text-gray-400">No items are waiting for your review right now.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
-          {/* Content Calendars Section Header */}
-          {(() => {
-            // Group tasks by client
+        <div className="flex flex-col gap-8">
+          {/* Content Calendars Section */}
+          {writerTasks.length > 0 && (() => {
+            // Group writer tasks by client
             type ClientGroup = { client: { id: string; companyName: string }; tasks: ApprovalTask[] };
-            const grouped = tasks.reduce<Record<string, ClientGroup>>((acc: Record<string, ClientGroup>, task: ApprovalTask) => {
+            const grouped = writerTasks.reduce<Record<string, ClientGroup>>((acc: Record<string, ClientGroup>, task: ApprovalTask) => {
               const clientId = task.client.id;
               if (!acc[clientId]) acc[clientId] = { client: task.client, tasks: [] };
               acc[clientId].tasks.push(task);
@@ -808,11 +812,11 @@ export default function PortalApprovalsPage() {
             const clientGroups = Object.values(grouped) as ClientGroup[];
 
             return (
-              <>
+              <div className="space-y-6">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Content Calendars</span>
-                  <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded-full">
-                    {clientGroups.length} client{clientGroups.length !== 1 ? 's' : ''} · {tasks.length} calendar{tasks.length !== 1 ? 's' : ''}
+                  <span className="text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full">
+                    {clientGroups.length} client{clientGroups.length !== 1 ? 's' : ''} · {writerTasks.length} calendar{writerTasks.length !== 1 ? 's' : ''}
                   </span>
                 </div>
 
@@ -824,15 +828,42 @@ export default function PortalApprovalsPage() {
                     tasks={clientTasks}
                   />
                 ))}
-              </>
+              </div>
             );
           })()}
+
+          {/* Design Approvals Section */}
+          {designTasks.length > 0 && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Design Approvals</span>
+                <span className="text-[10px] font-bold bg-violet-50 text-violet-600 border border-violet-100 px-2 py-0.5 rounded-full">
+                  {designTasks.length} design{designTasks.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {designTasks.map((task) => (
+                  <ApprovalCard
+                    key={task.id}
+                    task={task}
+                    onApprove={() => handleApprove(task)}
+                    onReject={() => setModalState({ isOpen: true, actionType: 'reject', task })}
+                    onFeedback={() => setModalState({ isOpen: true, actionType: 'feedback', task })}
+                    onPreview={() => setPreviewTask(task)}
+                    onPreviewCopies={() => {}}
+                    isActioning={actionMutation.isPending}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* Approved Works */}
       {approvedTasks.length > 0 && (
-        <div className="space-y-4 pt-4 border-t border-gray-100">
+        <div className="space-y-4 pt-4 pb-4 border-t border-gray-100">
           <div className="flex items-center gap-2">
             <BadgeCheck className="w-5 h-5 text-violet-500" />
             <h2 className="text-base font-bold text-gray-900">Approved Works</h2>

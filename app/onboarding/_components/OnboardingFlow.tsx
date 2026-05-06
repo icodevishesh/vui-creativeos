@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -67,7 +67,7 @@ function CredentialsModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-linear-to-r from-indigo-600 to-indigo-500 px-6 py-5">
+        <div className="bg-linear-to-r from-primary to-primary px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
@@ -75,7 +75,7 @@ function CredentialsModal({
               </div>
               <div>
                 <h2 className="text-sm font-bold text-white">Client Portal Credentials</h2>
-                <p className="text-xs text-indigo-200">{companyName}</p>
+                <p className="text-xs text-primary/30">{companyName}</p>
               </div>
             </div>
             <button onClick={onClose} className="text-white/70 hover:text-white transition-colors">
@@ -113,7 +113,7 @@ function CredentialsModal({
 
           <div className="pt-2 space-y-1.5">
             <p className="text-xs text-gray-400 font-medium">Client portal login URL</p>
-            <p className="font-mono text-xs text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg break-all">
+            <p className="font-mono text-xs text-primary bg-primary/10 px-3 py-2 rounded-lg break-all">
               {typeof window !== 'undefined' ? window.location.origin : ''}/sign-in
             </p>
           </div>
@@ -122,7 +122,7 @@ function CredentialsModal({
         <div className="px-6 pb-6">
           <button
             onClick={onClose}
-            className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all"
+            className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary transition-all"
           >
             Done — Go to Clients
           </button>
@@ -230,7 +230,7 @@ const validatePhone = (v: string) => {
         {/* Progress Line */}
         <div className="absolute top-1/3 left-0 w-full h-0.5 rounded-full bg-gray-200 -translate-y-1/2 z-0" />
         <div
-          className="absolute top-1/3 left-0 h-0.5 rounded-full bg-indigo-600 -translate-y-1/2 z-0 transition-all duration-300"
+          className="absolute top-1/3 left-0 h-0.5 rounded-full bg-primary -translate-y-1/2 z-0 transition-all duration-300"
           style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
         />
 
@@ -238,7 +238,7 @@ const validatePhone = (v: string) => {
           <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
             <div
               className={`w-15 h-15 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${currentStep >= step.id
-                ? 'bg-white border-indigo-500 text-indigo-500 shadow-sm'
+                ? 'bg-white border-primary text-primary shadow-sm'
                 : 'bg-white border-gray-200 text-gray-400'
                 }`}
             >
@@ -271,7 +271,7 @@ const validatePhone = (v: string) => {
                     <input
                       type="text"
                       placeholder="Acme Corp"
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary"
                       value={formData.companyName}
                       onChange={(e) => updateField('companyName', e.target.value)}
                     />
@@ -284,7 +284,7 @@ const validatePhone = (v: string) => {
                     <input
                       type="text"
                       placeholder="John Doe"
-                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary"
                       value={formData.contactPerson}
                       onChange={(e) => updateField('contactPerson', e.target.value)}
                     />
@@ -298,10 +298,10 @@ const validatePhone = (v: string) => {
                     <input
                       type="email"
                       placeholder="john@acme.com"
-                      className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-indigo-500 ${
+                      className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:border-primary ${
                         emailError
                           ? 'border-red-400 focus:ring-red-400/20'
-                          : 'border-gray-100 focus:ring-indigo-500/10'
+                          : 'border-gray-100 focus:ring-primary/10'
                       }`}
                       value={formData.email}
                       onChange={(e) => {
@@ -333,7 +333,7 @@ const validatePhone = (v: string) => {
                   <input
                     type="text"
                     placeholder="Technology, SaaS, etc."
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary"
                     value={formData.industry}
                     onChange={(e) => updateField('industry', e.target.value)}
                   />
@@ -360,8 +360,8 @@ const validatePhone = (v: string) => {
                     key={type.id}
                     onClick={() => updateField('engagementType', type.id)}
                     className={`p-6 rounded-xl border-2 text-left transition-all ${formData.engagementType === type.id
-                      ? 'border-indigo-500 bg-indigo-50/50 ring-4 ring-indigo-500/5'
-                      : 'border-gray-100 bg-white hover:border-indigo-200'
+                      ? 'border-primary bg-primary/50 ring-4 ring-primary/5'
+                      : 'border-gray-100 bg-white hover:border-primary/30'
                       }`}
                   >
                     <div className="font-semibold text-gray-900 mb-1">{type.name}</div>
@@ -389,15 +389,15 @@ const validatePhone = (v: string) => {
                       key={service.id}
                       onClick={() => toggleService(service.id)}
                       className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${isActive
-                        ? 'border-indigo-500 bg-indigo-50/50'
-                        : 'border-gray-100 bg-white hover:border-indigo-200'
+                        ? 'border-primary bg-primary/50'
+                        : 'border-gray-100 bg-white hover:border-primary/30'
                         }`}
                     >
                       <div className="text-left">
                         <div className="font-semibold text-gray-900">{service.name}</div>
                         <div className="text-xs text-gray-500">{service.desc}</div>
                       </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isActive ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-gray-200'
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isActive ? 'bg-primary border-primary text-white' : 'border-gray-200'
                         }`}>
                         {isActive && <Check className="w-4 h-4" />}
                       </div>
@@ -425,7 +425,7 @@ const validatePhone = (v: string) => {
             <button
               onClick={handleSubmit}
               disabled={mutation.isPending}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 shadow-md shadow-indigo-200 transition-all disabled:opacity-70"
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-xs font-semibold hover:bg-primary shadow-md shadow-primary/30 transition-all disabled:opacity-70"
             >
               {mutation.isPending ? 'Onboarding...' : 'Complete Onboarding'}
               {!mutation.isPending && <Sparkles className="w-4 h-4" />}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from 'react';
 import { Target, Layers, FileText, ChevronRight, Plus, ArrowLeft, Send, Trash2, Edit2, Check, Loader2 } from 'lucide-react';
@@ -141,7 +141,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                 {renderStepHeader()}
                 <div className="bg-white border border-gray-100 rounded-lg p-8 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                             <Target size={20} />
                         </div>
                         <div>
@@ -159,7 +159,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                             value={calendarName}
                             onChange={(e) => setCalendarName(e.target.value)}
                             placeholder={taskTitle || 'Enter a custom calendar name…'}
-                            className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white transition-all text-gray-700"
+                            className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-gray-700"
                         />
                     </div>
 
@@ -167,14 +167,14 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                         value={objective}
                         onChange={(e) => setObjective(e.target.value)}
                         placeholder="e.g., Increase brand awareness through educational content and drive 20% more engagement on Instagram..."
-                        className="w-full min-h-[160px] p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white transition-all text-gray-700 resize-none"
+                        className="w-full min-h-[160px] p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-gray-700 resize-none"
                     />
 
                     <div className="flex justify-end mt-8">
                         <button
                             onClick={handleNextStep1}
                             disabled={!objective || isLoading}
-                            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-100"
+                            className="flex items-center gap-2 bg-primary hover:bg-primary disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Next: Content Buckets <ChevronRight size={18} /></>}
                         </button>
@@ -237,7 +237,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                         <button
                             onClick={handleNextStep2}
                             disabled={buckets.some(b => !b.name) || isLoading}
-                            className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-indigo-100"
+                            className="flex items-center gap-2 bg-primary hover:bg-primary disabled:opacity-50 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-primary/20"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <>Next: Create Copies <ChevronRight size={18} /></>}
                         </button>
@@ -261,7 +261,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                         <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1 mt-4">Content Buckets</p>
                         <div className="mt-3 flex flex-wrap gap-2">
                             {calendar.buckets.map((b: any, i: number) => (
-                                <span key={i} className="px-2 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-lg uppercase">
+                                <span key={i} className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg uppercase">
                                     {b.name}
                                 </span>
                             ))}

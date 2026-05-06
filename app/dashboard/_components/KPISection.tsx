@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -92,8 +92,8 @@ export function KPISection() {
         title: 'Open Tasks',
         value: data.openTasks,
         subtitle: 'Across all projects',
-        icon: <CheckSquare className="w-5 h-5 text-indigo-600" />,
-        iconBgColor: 'bg-indigo-50',
+        icon: <CheckSquare className="w-5 h-5 text-primary" />,
+        iconBgColor: 'bg-primary/10',
       },
       {
         title: 'Pending Approvals',

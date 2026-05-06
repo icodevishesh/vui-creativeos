@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -48,7 +48,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
 
   const getFileIcon = (type: string) => {
     switch (type) {
-      case 'BRAND_GUIDELINES': return <FileImage className="w-4 h-4 text-indigo-500" />;
+      case 'BRAND_GUIDELINES': return <FileImage className="w-4 h-4 text-primary" />;
       case 'STRATEGY_DECK': return <FileCode className="w-4 h-4 text-amber-500" />;
       case 'CONTRACT': return <FileText className="w-4 h-4 text-emerald-500" />;
       default: return <FileJson className="w-4 h-4 text-gray-500" />;
@@ -57,7 +57,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
 
   if (isLoading) return (
     <div className="flex justify-center p-20">
-      <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+      <RefreshCw className="w-8 h-8 text-primary animate-spin" />
     </div>
   );
 
@@ -70,7 +70,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
         </div>
         <button
           onClick={() => setIsUploading(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
         >
           <Plus className="w-4 h-4" />
           Add Document
@@ -107,7 +107,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
                   {new Date(doc.uploadedAt).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <button className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                  <button className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all opacity-0 group-hover:opacity-100">
                     <Download className="w-4 h-4" />
                   </button>
                 </td>
@@ -143,7 +143,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
                 <input
                   type="text"
                   placeholder="e.g. Q1 Strategy Deck.pptx"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium"
                   value={formData.fileName}
                   onChange={(e) => setFormData(p => ({ ...p, fileName: e.target.value }))}
                 />
@@ -152,7 +152,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Category</label>
                 <select
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium"
                   value={formData.type}
                   onChange={(e) => setFormData(p => ({ ...p, type: e.target.value as DocumentType }))}
                 >
@@ -193,7 +193,7 @@ export function DocumentsTab({ clientId, companyName }: DocumentsTabProps) {
                     });
                   }}
                   disabled={!uploadedFileData || mutation.isPending}
-                  className="px-10 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-10 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {mutation.isPending ? 'Saving...' : 'Submit Document'}
                 </button>

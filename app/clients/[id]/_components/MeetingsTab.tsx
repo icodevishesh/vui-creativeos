@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -45,7 +45,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
 
   if (isLoading) return (
     <div className="flex justify-center p-20">
-      <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+      <RefreshCw className="w-8 h-8 text-primary animate-spin" />
     </div>
   );
 
@@ -58,21 +58,21 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
         </div>
         <button
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
         >
           <Plus className="w-4 h-4" />
           Log Meeting
         </button>
       </div>
 
-      <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-indigo-100 before:via-gray-100 before:to-transparent">
+      <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/20 before:via-gray-100 before:to-transparent">
         {meetings?.map((meeting: any) => (
           <div key={meeting.id} className="relative flex items-start gap-8 animate-in slide-in-from-left duration-500">
-            <div className="relative flex items-center justify-center p-2 bg-white border-2 border-indigo-100 rounded-full z-10 shadow-sm mt-1">
-              <Calendar className="w-5 h-5 text-indigo-600" />
+            <div className="relative flex items-center justify-center p-2 bg-white border-2 border-primary/20 rounded-full z-10 shadow-sm mt-1">
+              <Calendar className="w-5 h-5 text-primary" />
             </div>
 
-            <div className="flex-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-indigo-100 transition-all">
+            <div className="flex-1 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:border-primary/20 transition-all">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div>
                   <h4 className="text-lg font-semibold text-gray-900 tracking-tight">{meeting.title}</h4>
@@ -122,7 +122,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
                 <input
                   type="text"
                   placeholder="e.g. Weekly Strategy Review"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium"
                   value={formData.title}
                   onChange={(e) => setFormData(p => ({ ...p, title: e.target.value }))}
                 />
@@ -134,7 +134,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
                   <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="date"
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium"
                     value={formData.meetingDate}
                     onChange={(e) => setFormData(p => ({ ...p, meetingDate: e.target.value }))}
                   />
@@ -145,7 +145,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
                 <label className="text-sm font-bold text-gray-700">Detailed Notes</label>
                 <textarea
                   placeholder="Summarize the key takeaways and action items..."
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[150px] focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm min-h-[150px] focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium"
                   value={formData.notes}
                   onChange={(e) => setFormData(p => ({ ...p, notes: e.target.value }))}
                 />
@@ -162,7 +162,7 @@ export function MeetingsTab({ clientId }: MeetingsTabProps) {
                 <button
                   type="submit"
                   disabled={mutation.isPending}
-                  className="px-10 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-70"
+                  className="px-10 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all disabled:opacity-70"
                 >
                   {mutation.isPending ? 'Logging...' : 'Save Sync Log'}
                 </button>

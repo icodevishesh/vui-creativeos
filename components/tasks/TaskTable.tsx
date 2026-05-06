@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from 'react';
 import {
@@ -57,12 +57,12 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
           const task = row.original;
           return (
             <div className="flex flex-col gap-1">
-              <span className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors text-xs">
+              <span className="font-semibold text-gray-900 group-hover:text-primary transition-colors text-xs">
                 {task.title}
               </span>
               <div className="flex items-center gap-2">
                 {task.countSubTask > 0 && (
-                  <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-lg">
+                  <div className="flex items-center gap-1 text-[11px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-lg">
                     <Layout className="w-3 h-3" />
                     {task.countSubTask}
                   </div>

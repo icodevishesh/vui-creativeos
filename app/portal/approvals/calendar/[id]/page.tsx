@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -15,6 +15,8 @@ import {
   User,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Building2,
   BookOpen,
   ThumbsUp,
@@ -90,7 +92,7 @@ const platformColors: Record<string, string> = {
   Instagram: 'bg-pink-50 text-pink-600 border-pink-100',
   LinkedIn: 'bg-blue-50 text-blue-700 border-blue-100',
   Twitter: 'bg-sky-50 text-sky-600 border-sky-100',
-  Facebook: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+  Facebook: 'bg-primary/10 text-primary border-primary/20',
 };
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
@@ -99,7 +101,7 @@ function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     PENDING: 'bg-gray-50 text-gray-600 border-gray-200',
     IN_REVIEW: 'bg-amber-50 text-amber-600 border-amber-100',
-    CLIENT_REVIEW: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+    CLIENT_REVIEW: 'bg-primary/10 text-primary border-primary/20',
     APPROVED: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     PUBLISHED: 'bg-emerald-50 text-emerald-700 border-emerald-100',
     REJECTED: 'bg-rose-50 text-rose-600 border-rose-100',
@@ -116,6 +118,102 @@ function StatusBadge({ status }: { status: string }) {
     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || styles.PENDING}`}>
       {labels[status] || status}
     </span>
+  );
+}
+
+// ─── Carousel Slider ──────────────────────────────────────────────────────────
+
+function CarouselSlider({ frames }: { frames: CarouselFrame[] }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const frame = frames[activeIdx];
+
+  return (
+    <div>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+      >
+        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        Carousel Frames ({frames.length})
+      </button>
+
+      {isExpanded && (
+        <div className="mt-3 bg-primary/60 border border-primary/20 rounded-xl overflow-hidden">
+          {/* Slide */}
+          <div className="p-4 space-y-2">
+            {/* Frame header */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-gray-500">Frame {frame.frameNumber}</span>
+              <StatusBadge status={frame.creativeStatus} />
+            </div>
+
+            {/* Creative image or placeholder */}
+            {frame.creativeUrl ? (
+              <img
+                src={frame.creativeUrl}
+                alt={`Frame ${frame.frameNumber}`}
+                className="w-full max-h-48 object-contain rounded"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-16 text-primary/40 text-xs font-bold uppercase tracking-widest">
+                {frame.creativeStatus === 'UPLOADED' ? 'Creative uploaded' : 'Awaiting designer upload'}
+              </div>
+            )}
+
+            {/* Caption */}
+            <span className="text-xs font-bold text-primary">Caption</span>
+            {frame.caption
+              ? <p className="text-xs text-primary leading-relaxed">{frame.caption}</p>
+              : <p className="text-xs text-primary/40 italic">No caption</p>
+            }
+
+            {/* Hashtags */}
+            <span className="text-xs font-bold text-primary">Hashtags</span>
+            {frame.hashtags
+              ? <p className="text-[10px] font-bold text-primary/60">{frame.hashtags}</p>
+              : <p className="text-[10px] text-primary/40 italic">No hashtags</p>
+            }
+          </div>
+
+          {/* Controls */}
+          {frames.length > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-primary/20">
+              <button
+                onClick={() => setActiveIdx((i) => Math.max(0, i - 1))}
+                disabled={activeIdx === 0}
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-primary/20 text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Dots */}
+              <div className="flex items-center gap-1.5">
+                {frames.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveIdx(i)}
+                    className={`rounded-full transition-all ${
+                      i === activeIdx
+                        ? 'w-4 h-2 bg-primary'
+                        : 'w-2 h-2 bg-primary/30 hover:bg-primary/40'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={() => setActiveIdx((i) => Math.min(frames.length - 1, i + 1))}
+                disabled={activeIdx === frames.length - 1}
+                className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-primary/20 text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -241,7 +339,7 @@ function CopyCard({
               value={feedbackText}
               onChange={(e) => setFeedbackText(e.target.value)}
               placeholder="Enter your feedback or change requests..."
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
               rows={3}
             />
             <div className="flex items-center justify-end gap-2 mt-2">
@@ -294,39 +392,13 @@ function CopyCard({
         {copy.hashtags && (
           <div>
             <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Hashtags</h4>
-            <p className="text-sm text-indigo-600 font-medium">{copy.hashtags}</p>
+            <p className="text-sm text-primary font-medium">{copy.hashtags}</p>
           </div>
         )}
 
         {/* Carousel Frames */}
         {copy.isCarousel && copy.frames && copy.frames.length > 0 && (
-          <div>
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              Carousel Frames ({copy.frames.length})
-            </button>
-            {isExpanded && (
-              <div className="mt-3 space-y-3">
-                {copy.frames.map((frame) => (
-                  <div key={frame.id} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs font-medium text-gray-500">Frame {frame.frameNumber}</span>
-                      <StatusBadge status={frame.creativeStatus} />
-                    </div>
-                    {frame.caption && (
-                      <p className="text-sm text-gray-600 mb-2">{frame.caption}</p>
-                    )}
-                    {frame.hashtags && (
-                      <p className="text-sm text-indigo-600">{frame.hashtags}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <CarouselSlider frames={copy.frames} />
         )}
       </div>
     </div>
@@ -364,7 +436,7 @@ export default function PortalCalendarPage({ params }: { params: Promise<{ id: s
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -377,7 +449,7 @@ export default function PortalCalendarPage({ params }: { params: Promise<{ id: s
           <p className="text-sm text-gray-500 mb-4">{(error as Error)?.message || 'Calendar not found'}</p>
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20"
           >
             <ArrowLeft className="w-4 h-4" />
             Go Back
@@ -431,9 +503,9 @@ export default function PortalCalendarPage({ params }: { params: Promise<{ id: s
           </div>
 
           {calendar.objective && (
-            <div className="mt-4 p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
-              <p className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">Objective</p>
-              <p className="text-sm text-indigo-900">{calendar.objective}</p>
+            <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+              <p className="text-xs font-semibold text-primary/60 uppercase tracking-wider mb-1">Objective</p>
+              <p className="text-sm text-primary">{calendar.objective}</p>
             </div>
           )}
         </div>
@@ -462,7 +534,7 @@ export default function PortalCalendarPage({ params }: { params: Promise<{ id: s
         {/* Copies List */}
         <div className="space-y-6">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-indigo-500" />
+            <BookOpen className="w-5 h-5 text-primary" />
             Content Copies
           </h2>
 

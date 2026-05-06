@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Search } from 'lucide-react';
@@ -103,10 +103,10 @@ export default function PhoneInput({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       <div
-        className={`flex items-center bg-gray-50 border rounded-lg overflow-hidden transition-all focus-within:ring-2 focus-within:border-indigo-500 ${
+        className={`flex items-center bg-gray-50 border rounded-lg overflow-hidden transition-all focus-within:ring-2 focus-within:border-primary ${
           error
             ? 'border-red-400 focus-within:ring-red-400/20'
-            : 'border-gray-100 focus-within:ring-indigo-500/10'
+            : 'border-gray-100 focus-within:ring-primary/10'
         }`}
       >
         {/* Country selector trigger */}
@@ -150,7 +150,7 @@ export default function PhoneInput({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search country..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60"
               />
             </div>
           </div>
@@ -165,8 +165,8 @@ export default function PhoneInput({
                   <button
                     type="button"
                     onClick={() => handleSelect(country)}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-indigo-50 transition-colors ${
-                      selected.code === country.code ? 'bg-indigo-50/80 font-medium' : ''
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-primary/10 transition-colors ${
+                      selected.code === country.code ? 'bg-primary/80 font-medium' : ''
                     }`}
                   >
                     <span className="text-base leading-none w-6">{country.flag}</span>

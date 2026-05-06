@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -144,7 +144,7 @@ const TABS = [
 
 const TASK_STATUS_BADGE: Record<string, { label: string; className: string }> = {
   INTERNAL_REVIEW: { label: "Internal Review", className: "bg-[#FFF8E6] text-[#D97706]" },
-  CLIENT_REVIEW: { label: "Client Review", className: "bg-indigo-50 text-indigo-600" },
+  CLIENT_REVIEW: { label: "Client Review", className: "bg-primary/10 text-primary" },
   APPROVED: { label: "Approved", className: "bg-emerald-50 text-emerald-700" },
 };
 
@@ -201,7 +201,7 @@ function DesignPreviewModal({
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-1.5">
                   {copy.platform && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full">
                       <Globe className="w-2.5 h-2.5" /> {copy.platform}
                     </span>
                   )}
@@ -236,7 +236,7 @@ function DesignPreviewModal({
                 {copy.hashtags && (
                   <div className="bg-white border border-gray-100 rounded-lg p-3 space-y-1.5">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hashtags</p>
-                    <p className="text-xs text-indigo-500 font-medium break-words">{copy.hashtags}</p>
+                    <p className="text-xs text-primary font-medium break-words">{copy.hashtags}</p>
                   </div>
                 )}
               </div>
@@ -249,7 +249,7 @@ function DesignPreviewModal({
                 Instagram: 'bg-pink-50 text-pink-600 border-pink-100',
                 LinkedIn:  'bg-blue-50 text-blue-700 border-blue-100',
                 Twitter:   'bg-sky-50 text-sky-600 border-sky-100',
-                Facebook:  'bg-indigo-50 text-indigo-600 border-indigo-100',
+                Facebook:  'bg-primary/10 text-primary border-primary/20',
               };
               const pill = (p: string) => PILL[p] ?? 'bg-gray-50 text-gray-500 border-gray-200';
 
@@ -284,7 +284,7 @@ function DesignPreviewModal({
                           key={file.id}
                           onClick={() => setActiveFile(idx)}
                           className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left transition-all text-xs font-medium ${activeFile === idx
-                            ? "bg-indigo-50 text-indigo-700 border border-indigo-100"
+                            ? "bg-primary/10 text-primary border border-primary/20"
                             : "text-gray-600 hover:bg-gray-100 border border-transparent"
                           }`}
                         >
@@ -478,11 +478,11 @@ function FeedbackModal({
           <div className="bg-gray-50 rounded-lg p-3 flex flex-col gap-1">
             <p className="text-xs text-gray-500 font-medium">Auto-filled Reviewer</p>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+              <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold">
                 {currentUser?.name?.charAt(0) || "U"}
               </div>
               <p className="text-xs font-bold text-gray-900">{currentUser?.name || "Loading..."}</p>
-              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-1.5 py-0.5 rounded">
                 {currentUser?.roles?.[0]?.replace(/_/g, ' ') || currentUser?.userType || "User"}
               </span>
             </div>
@@ -501,7 +501,7 @@ function FeedbackModal({
                   : "Share your feedback or revision notes..."
               }
               rows={4}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white text-gray-900 placeholder:text-gray-400 resize-none"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-gray-900 placeholder:text-gray-400 resize-none"
             />
           </div>
         </div>
@@ -580,7 +580,7 @@ function DesignApprovalCard({
             </div>
           </div>
           <span
-            className={`shrink-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg ${isInternal ? "bg-[#FFF8E6] text-[#D97706]" : "bg-indigo-50 text-indigo-600"
+            className={`shrink-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg ${isInternal ? "bg-[#FFF8E6] text-[#D97706]" : "bg-primary/10 text-primary"
               }`}
           >
             {isInternal ? "Internal Review" : ""}
@@ -589,8 +589,8 @@ function DesignApprovalCard({
 
         {copy && (
           <div className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 flex items-start gap-3">
-            <div className="w-6 h-6 rounded-md bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-              <FileText className="w-3.5 h-3.5 text-indigo-600" />
+            <div className="w-6 h-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText className="w-3.5 h-3.5 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Copy Reference</p>
@@ -636,7 +636,7 @@ function DesignApprovalCard({
           {hasFiles && (
             <button
               onClick={onPreview}
-              className="ml-auto inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all shadow-sm"
+              className="ml-auto inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-all shadow-sm"
             >
               <Eye className="w-3.5 h-3.5" />
               Preview Design
@@ -729,8 +729,8 @@ function ClientCalendarGroup({
         }`}
         onClick={isMulti ? () => setOpen((v) => !v) : undefined}
       >
-        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-          <Building2 className="w-4 h-4 text-indigo-600" />
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <Building2 className="w-4 h-4 text-primary" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -745,7 +745,7 @@ function ClientCalendarGroup({
               </span>
             )}
             {statusCounts["CLIENT_REVIEW"] && (
-              <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 px-1.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded-full">
                 {statusCounts["CLIENT_REVIEW"]} client review
               </span>
             )}
@@ -803,12 +803,12 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
       className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50/60 transition-colors group"
       onClick={() => router.push(`/approvals/calendar/${calendar.id}`)}
     >
-      <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-indigo-100 group-hover:bg-indigo-50 transition-colors">
-        <BookOpen className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+      <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-primary/20 group-hover:bg-primary/10 transition-colors">
+        <BookOpen className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary transition-colors" />
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-indigo-700 transition-colors">
+        <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-primary transition-colors">
           {task.title}
         </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -842,7 +842,7 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badge.className}`}>
           {badge.label}
         </span>
-        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-400 transition-colors" />
+        <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary/60 transition-colors" />
       </div>
     </div>
   );
@@ -973,7 +973,7 @@ export default function ApprovalsPage() {
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Content Calendars</p>
-          <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+          <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
             {clientGroups.length} client{clientGroups.length !== 1 ? "s" : ""} · {calendarTasks.length} calendar{calendarTasks.length !== 1 ? "s" : ""}
           </span>
         </div>

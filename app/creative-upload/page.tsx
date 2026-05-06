@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -155,7 +155,7 @@ export default function CreativeUploadPage() {
           {selectedClient && (
             <div className="text-right hidden sm:block">
               <p className="text-[10px] font-medium text-gray-400 uppercase tracking-widest leading-none mb-1">Target Folder</p>
-              <p className="text-[11px] font-medium text-indigo-600 leading-none">/uploads/{selectedClient.companyName.toLowerCase().replace(/ /g, "_")}</p>
+              <p className="text-[11px] font-medium text-primary leading-none">/uploads/{selectedClient.companyName.toLowerCase().replace(/ /g, "_")}</p>
             </div>
           )}
           <div className="relative group w-48">
@@ -163,7 +163,7 @@ export default function CreativeUploadPage() {
               value={selectedClientId}
               onChange={(e) => setSelectedClientId(e.target.value)}
               disabled={clientsLoading}
-              className="w-full appearance-none bg-white border border-gray-200 text-[11px] font-medium text-gray-900 rounded-lg focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 block px-4 py-1.5 pr-8 cursor-pointer transition-all hover:border-indigo-300 shadow-sm"
+              className="w-full appearance-none bg-white border border-gray-200 text-[11px] font-medium text-gray-900 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary block px-4 py-1.5 pr-8 cursor-pointer transition-all hover:border-primary/40 shadow-sm"
             >
               <option value="">Select Client</option>
               {clients.map((client) => (
@@ -194,12 +194,12 @@ export default function CreativeUploadPage() {
             disabled={!selectedClientId || uploading}
           >
             <div className={`relative group transition-all ${(!selectedClientId || uploading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
-              <div className="absolute inset-0 bg-indigo-50/20 rounded-lg -m-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative border-2 border-dashed border-gray-100 rounded-lg bg-white p-12 text-center transition-all hover:border-indigo-200">
+              <div className="absolute inset-0 bg-primary/20 rounded-lg -m-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative border-2 border-dashed border-gray-100 rounded-lg bg-white p-12 text-center transition-all hover:border-primary/30">
                 <div className="w-12 h-12 flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform">
                   {uploading ? (
                     <div className="relative">
-                      <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+                      <Loader2 className="w-6 h-6 text-primary animate-spin" />
                     </div>
                   ) : (
                     <UploadCloud className={`w-12 h-12 ${!selectedClientId ? 'text-blue-500' : 'text-blue-600'}`} />
@@ -225,7 +225,7 @@ export default function CreativeUploadPage() {
                 {uploading && (
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-50 rounded-b-3xl overflow-hidden">
                     <div
-                      className="h-full bg-indigo-600 transition-all duration-300 ease-out"
+                      className="h-full bg-primary transition-all duration-300 ease-out"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
@@ -248,14 +248,14 @@ export default function CreativeUploadPage() {
           {assets.slice(0, 5).map((asset) => (
             <div
               key={asset.id}
-              className="group relative bg-white rounded-lg border border-gray-100 p-4 flex items-center justify-between transition-all hover:shadow-md hover:shadow-indigo-50/50 hover:border-indigo-100"
+              className="group relative bg-white rounded-lg border border-gray-100 p-4 flex items-center justify-between transition-all hover:shadow-md hover:shadow-primary/50 hover:border-primary/20"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-indigo-50 transition-colors border border-gray-50 group-hover:border-indigo-100">
+                <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-colors border border-gray-50 group-hover:border-primary/20">
                   {getFileIcon(asset.type)}
                 </div>
                 <div className="space-y-0.5">
-                  <h4 className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                  <h4 className="text-sm font-medium text-gray-900 group-hover:text-primary transition-colors">
                     {asset.name}
                   </h4>
                   <div className="flex items-center gap-2 text-[11px] font-medium text-gray-400">
@@ -280,7 +280,7 @@ export default function CreativeUploadPage() {
                   href={asset.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-7 h-7 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all opacity-0 group-hover:opacity-100"
+                  className="w-7 h-7 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary/30 hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"
                 >
                   <ArrowUpRight className="w-3.5 h-3.5" />
                 </a>

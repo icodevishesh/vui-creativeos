@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /**
  * app/notifications/page.tsx
@@ -73,7 +73,7 @@ const CATEGORY_META: Record<
   TASK_APPROVED:            { label: 'Task Approved',       icon: CheckCheck,    color: 'text-green-600',  bg: 'bg-green-50'  },
   TASK_FEEDBACK:            { label: 'Feedback Received',   icon: MessageSquare, color: 'text-orange-600', bg: 'bg-orange-50' },
   TASK_REJECT:              { label: 'Task Rejected',       icon: ClipboardList, color: 'text-red-600',    bg: 'bg-red-50'    },
-  CLIENT_ONBOARDED:         { label: 'Client Onboarded',    icon: UserCheck,     color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  CLIENT_ONBOARDED:         { label: 'Client Onboarded',    icon: UserCheck,     color: 'text-primary', bg: 'bg-primary/10' },
   CLIENT_PROJECT:           { label: 'New Project',         icon: Folders,       color: 'text-blue-600',   bg: 'bg-blue-50'   },
   CLIENT_SCOPE_OF_WORK:     { label: 'Scope of Work',       icon: FileText,      color: 'text-purple-600', bg: 'bg-purple-50' },
   CLIENT_DOCUMENT_UPLOADED: { label: 'Document Uploaded',   icon: FileText,      color: 'text-teal-600',   bg: 'bg-teal-50'   },
@@ -135,7 +135,7 @@ function NotificationCard({
         group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-200
         ${notification.isRead
           ? 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
-          : 'bg-indigo-50/40 border-indigo-100 hover:border-indigo-200 hover:shadow-md shadow-sm'
+          : 'bg-primary/40 border-primary/20 hover:border-primary/30 hover:shadow-md shadow-sm'
         }
       `}
     >
@@ -158,7 +158,7 @@ function NotificationCard({
 
           {/* Unread indicator */}
           {!notification.isRead && (
-            <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-indigo-500 mt-1" aria-label="Unread" />
+            <span className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-primary mt-1" aria-label="Unread" />
           )}
         </div>
 
@@ -175,7 +175,7 @@ function NotificationCard({
         {!notification.isRead && (
           <button
             onClick={(e) => { e.preventDefault(); onMarkRead(notification.id); }}
-            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+            className="p-1.5 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
             title="Mark as read"
             aria-label="Mark as read"
           >
@@ -328,7 +328,7 @@ export default function NotificationsPage() {
           {/* Preferences link */}
           <Link
             href="/notifications/preferences"
-            className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl border border-gray-200 hover:border-indigo-200 transition-all"
+            className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-600 hover:text-primary hover:bg-primary/10 rounded-xl border border-gray-200 hover:border-primary/30 transition-all"
           >
             <Settings className="w-4 h-4" />
             Preferences
@@ -339,7 +339,7 @@ export default function NotificationsPage() {
             <button
               onClick={() => markAllMutation.mutate()}
               disabled={markAllMutation.isPending}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all disabled:opacity-70"
+              className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary rounded-xl transition-all disabled:opacity-70"
             >
               <CheckCheck className="w-4 h-4" />
               Mark all read
@@ -362,7 +362,7 @@ export default function NotificationsPage() {
           >
             {f === 'all' ? 'All' : 'Unread'}
             {f === 'unread' && unread > 0 && (
-              <span className="ml-2 bg-indigo-100 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              <span className="ml-2 bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                 {unread}
               </span>
             )}
@@ -380,7 +380,7 @@ export default function NotificationsPage() {
       ) : isError ? (
         <div className="py-16 text-center">
           <p className="text-sm text-red-500 font-semibold">Failed to load notifications.</p>
-          <button onClick={() => refetch()} className="mt-3 text-sm text-indigo-600 underline">
+          <button onClick={() => refetch()} className="mt-3 text-sm text-primary underline">
             Try again
           </button>
         </div>
@@ -412,7 +412,7 @@ export default function NotificationsPage() {
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={isFetching}
-                className="px-5 py-2.5 text-sm font-semibold text-indigo-600 hover:bg-indigo-50 rounded-xl border border-indigo-100 hover:border-indigo-200 transition-all disabled:opacity-60"
+                className="px-5 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10 rounded-xl border border-primary/20 hover:border-primary/30 transition-all disabled:opacity-60"
               >
                 {isFetching ? 'Loading…' : 'Load more'}
               </button>

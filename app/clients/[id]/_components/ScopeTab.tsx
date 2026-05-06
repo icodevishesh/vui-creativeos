@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -154,7 +154,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
 
   if (isClientLoading || isScopeLoading) return (
     <div className="flex justify-center p-20">
-      <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+      <RefreshCw className="w-8 h-8 text-primary animate-spin" />
     </div>
   );
 
@@ -179,7 +179,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
               });
               setIsAdding(true);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
           >
             <Plus className="w-4 h-4" />
             Add New Service
@@ -206,7 +206,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                 {item.budget && (
                   <div className="text-right">
                     <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
-                    <p className="text-xl font-bold text-indigo-600">
+                    <p className="text-xl font-bold text-primary">
                       {item.details?.currency === 'INR' ? '₹' : '$'}{item.budget.toLocaleString()}
                     </p>
                   </div>
@@ -250,7 +250,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                       {Object.entries(item.details.deliverables).map(([p, count]: any) => (
                         <div key={p} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
                           <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">{p.replace(/_/g, ' ')}</span>
-                          <span className="text-xs font-bold text-indigo-600">{count} posts / mo</span>
+                          <span className="text-xs font-bold text-primary">{count} posts / mo</span>
                         </div>
                       ))}
                     </div>
@@ -295,7 +295,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
           }}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg ${isAdding
             ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-none'
-            : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-100'
+            : 'bg-primary text-white hover:bg-primary shadow-primary/20'
             }`}
         >
           {isAdding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
@@ -307,12 +307,12 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
       {!isFinalized && client?.services?.length > 0 && (
         <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
           <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-indigo-600" />
+            <Briefcase className="w-4 h-4 text-primary" />
             Services Requested during Onboarding
           </h3>
           <div className="flex flex-wrap gap-2">
             {client.services.map((s: any) => (
-              <span key={s.id} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-black uppercase tracking-widest rounded-lg border border-indigo-100">
+              <span key={s.id} className="px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg border border-primary/20">
                 {s.service.replace(/_/g, ' ')}
               </span>
             ))}
@@ -327,7 +327,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
             <label className="text-xs font-bold text-gray-700">Service Category</label>
             <div className="relative">
               <select
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-indigo-600 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all cursor-pointer appearance-none"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-primary text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                 value={formData.service}
                 onChange={(e) => setFormData((p: any) => ({ ...p, service: e.target.value }))}
               >
@@ -336,12 +336,12 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                   <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-600 pointer-events-none" />
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
             </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-700">Monthly Budget Estimate</label>
-            <div className="flex bg-gray-50 border border-gray-100 rounded-xl focus-within:ring-2 focus-within:ring-indigo-500/10 focus-within:border-indigo-500 transition-all overflow-hidden relative">
+            <div className="flex bg-gray-50 border border-gray-100 rounded-xl focus-within:ring-2 focus-within:ring-primary/10 focus-within:border-primary transition-all overflow-hidden relative">
               <select
                 className="pl-4 pr-8 py-3 bg-gray-100 border-r border-gray-200 text-gray-700 text-sm font-bold focus:outline-none appearance-none cursor-pointer"
                 value={formData.details?.currency || 'USD'}
@@ -378,7 +378,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                       key={platform.id}
                       onClick={() => handleTogglePlatform(platform.id)}
                       className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${isSelected
-                        ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                        ? 'border-primary bg-primary/50 text-primary'
                         : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
                         }`}
                     >
@@ -402,7 +402,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                       <input
                         type="number"
                         placeholder="0"
-                        className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10"
+                        className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10"
                         value={formData.details.deliverables[platformId] || ''}
                         onChange={(e) => handleDeliverableChange(platformId, e.target.value)}
                       />
@@ -420,8 +420,8 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                     key={type}
                     onClick={() => handleToggleContentSplit(type)}
                     className={`px-4 py-2 rounded-lg text-xs font-bold border-2 transition-all ${formData.details.contentSplit.includes(type)
-                      ? 'bg-indigo-600 border-indigo-600 text-white'
-                      : 'bg-white border-gray-100 text-gray-500 hover:border-indigo-100'
+                      ? 'bg-primary border-primary text-white'
+                      : 'bg-white border-gray-100 text-gray-500 hover:border-primary/20'
                       }`}
                   >
                     {type}
@@ -444,7 +444,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                       key={platform.id}
                       onClick={() => handleTogglePlatform(platform.id)}
                       className={`flex items-center justify-between p-5 rounded-lg border-2 transition-all ${isSelected
-                        ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600'
+                        ? 'border-primary bg-primary/50 text-primary'
                         : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
                         }`}
                     >
@@ -462,7 +462,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
           <label className="text-xs font-bold text-gray-900">Brief Scope Description <span className="text-gray-400 font-normal">(Optional)</span></label>
           <textarea
             placeholder="Outline specific objectives, goals, and any additional notes for this service..."
-            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-xs min-h-[120px] focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium leading-relaxed"
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-xs min-h-[120px] focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium leading-relaxed"
             value={formData.description}
             onChange={(e) => setFormData((p: any) => ({ ...p, description: e.target.value }))}
           />
@@ -471,7 +471,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
         <div className="flex items-center justify-end pt-4">
           <button
             onClick={() => setIsConfirming(true)}
-            className="px-8 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             Finalize Scope of Work
           </button>
@@ -495,17 +495,17 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="relative bg-white w-full max-w-lg rounded-lg p-8 shadow-2xl overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-indigo-500 via-purple-500 to-indigo-500" />
+              <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-primary via-purple-500 to-primary" />
 
               <div className="flex flex-col items-center text-center space-y-6">
-                <div className="w-16 h-16 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
+                <div className="w-16 h-16 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
 
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold text-gray-900 tracking-tight">Final Confirmation</h3>
                   <p className="text-gray-500 font-medium px-4">
-                    Are you sure you want to finalize this scope? This action <span className="text-indigo-600 font-bold underline decoration-indigo-200 underline-offset-4">cannot be reversed</span> and will set the official roadmap for the client.
+                    Are you sure you want to finalize this scope? This action <span className="text-primary font-bold underline decoration-primary/30 underline-offset-4">cannot be reversed</span> and will set the official roadmap for the client.
                   </p>
                 </div>
 
@@ -513,7 +513,7 @@ export function ScopeTab({ clientId }: ScopeTabProps) {
                   <button
                     disabled={mutation.isPending}
                     onClick={() => mutation.mutate(formData)}
-                    className="w-full py-4 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
+                    className="w-full py-4 bg-primary text-white rounded-lg font-bold hover:bg-primary transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                   >
                     {mutation.isPending ? 'Processing...' : 'Yes, Finalize Now'}
                   </button>

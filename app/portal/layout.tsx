@@ -1,17 +1,19 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2 } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2, Bell } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
+import { useNotificationCount } from '@/context/NotificationContext';
 
 const NAV_ITEMS = [
   { href: '/portal/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portal/gantt', label: 'Gantt Chart', icon: BarChart2 },
   { href: '/portal/approvals', label: 'Approvals', icon: CheckCircle2 },
+  { href: '/portal/notifications', label: 'Notifications', icon: Bell },
   { href: '/portal/profile', label: 'My Profile', icon: User },
 ];
 
@@ -19,6 +21,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { unreadCount } = useNotificationCount();
 
   // Guard: only CLIENT users may access the portal
   const { data: me, isLoading: meLoading } = useQuery({
@@ -58,7 +61,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       {/* Logo */}
       <div className="px-6 py-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <span className="text-white text-xs font-bold">C</span>
           </div>
           <div>
@@ -71,19 +74,32 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href;
+          const isActive = pathname === href || pathname.startsWith(href + '/');
+          const isNotif = href === '/portal/notifications';
           return (
             <Link
               key={href}
               href={href}
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
-                ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200'
+                ? 'bg-primary text-white shadow-sm shadow-primary/30'
                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                 }`}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <div className="relative">
+                <Icon className="w-4 h-4 shrink-0" />
+                {isNotif && unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </div>
               {label}
+              {isNotif && unreadCount > 0 && !isActive && (
+                <span className="ml-auto text-[10px] font-bold bg-red-50 text-red-500 border border-red-100 px-1.5 py-0.5 rounded-full">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -95,7 +111,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
         {profile && (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
               {profile.companyName?.slice(0, 2).toUpperCase() || 'CL'}
             </div>
             <div className="min-w-0">
@@ -107,7 +123,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center p-2 bg-indigo-50 gap-3 rounded-lg text-indigo-600 hover:text-red-600 hover:bg-red-50 transition-all"
+          className="w-full flex items-center p-2 bg-primary/10 gap-3 rounded-lg text-primary hover:text-red-600 hover:bg-red-50 transition-all"
         >
           <LogOut className="w-4 h-4 shrink-0" />
           <span className='text-sm font-semibold'>Sign Out</span>
@@ -142,18 +158,37 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
       {/* Main content */}
       <div className="flex flex-col flex-1 lg:pl-60">
-        {/* Mobile header */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-20">
-          <button onClick={() => setMobileOpen(true)} className="p-2 text-gray-500 hover:text-gray-900">
+        {/* Top header (all screen sizes) */}
+        <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 sticky top-0 z-20">
+          {/* Mobile: hamburger */}
+          <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 text-gray-500 hover:text-gray-900">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-indigo-600 rounded-md flex items-center justify-center">
+
+          {/* Mobile: logo */}
+          <div className="lg:hidden flex items-center gap-2">
+            <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
               <span className="text-white text-[10px] font-bold">C</span>
             </div>
             <span className="text-sm font-bold text-gray-900">Client Portal</span>
           </div>
-          <div className="w-9" />
+
+          {/* Desktop: page title spacer */}
+          <div className="hidden lg:block" />
+
+          {/* Bell icon — shown on all sizes */}
+          <Link
+            href="/portal/notifications"
+            className="relative p-2 text-gray-500 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+            title="Notifications"
+          >
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Link>
         </header>
 
         <main className="flex-1 overflow-auto p-6">

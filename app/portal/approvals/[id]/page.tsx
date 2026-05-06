@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, use } from "react";
 import { useRouter } from "next/navigation";
@@ -114,14 +114,14 @@ const PLATFORM_STYLE: Record<string, string> = {
   Instagram: "bg-pink-50 text-pink-600 border-pink-100",
   LinkedIn: "bg-blue-50 text-blue-700 border-blue-100",
   Twitter: "bg-sky-50 text-sky-600 border-sky-100",
-  Facebook: "bg-indigo-50 text-indigo-600 border-indigo-100",
+  Facebook: "bg-primary/10 text-primary border-primary/20",
 };
 
 const STATUS_STYLE: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-500 border-gray-200",
   UNDER_REVIEW: "bg-amber-50 text-amber-600 border-amber-200",
   INTERNAL_REVIEW: "bg-amber-50 text-amber-600 border-amber-200",
-  CLIENT_REVIEW: "bg-indigo-50 text-indigo-600 border-indigo-200",
+  CLIENT_REVIEW: "bg-primary/10 text-primary border-primary/30",
   APPROVED: "bg-emerald-50 text-emerald-600 border-emerald-200",
   REJECTED: "bg-rose-50 text-rose-600 border-rose-200",
   PUBLISHED: "bg-violet-50 text-violet-600 border-violet-200",
@@ -131,7 +131,7 @@ const STATUS_DOT: Record<string, string> = {
   DRAFT: "bg-slate-400",
   UNDER_REVIEW: "bg-amber-400",
   INTERNAL_REVIEW: "bg-amber-400",
-  CLIENT_REVIEW: "bg-indigo-400",
+  CLIENT_REVIEW: "bg-primary/60",
   APPROVED: "bg-emerald-500",
   REJECTED: "bg-rose-500",
   PUBLISHED: "bg-violet-500",
@@ -139,7 +139,7 @@ const STATUS_DOT: Record<string, string> = {
 
 const TASK_STATUS_STYLE: Record<string, string> = {
   INTERNAL_REVIEW: "bg-amber-50 text-amber-700 border-amber-200",
-  CLIENT_REVIEW: "bg-indigo-50 text-indigo-600 border-indigo-200",
+  CLIENT_REVIEW: "bg-primary/10 text-primary border-primary/30",
   APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
   OPEN: "bg-gray-100 text-gray-500 border-gray-200",
 };
@@ -393,7 +393,7 @@ function EditCopyModal({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={5}
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             />
           </div>
           <div>
@@ -402,7 +402,7 @@ function EditCopyModal({
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               rows={2}
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 resize-none"
+              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none"
               placeholder="Optional caption..."
             />
           </div>
@@ -412,7 +412,7 @@ function EditCopyModal({
               type="text"
               value={hashtags}
               onChange={(e) => setHashtags(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary/20"
               placeholder="#hashtag1 #hashtag2..."
             />
           </div>
@@ -428,7 +428,7 @@ function EditCopyModal({
           <button
             onClick={handleSave}
             disabled={saving || !content.trim()}
-            className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-all shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-primary hover:bg-primary rounded-lg transition-all shadow-sm disabled:opacity-50"
           >
             <Check className="w-4 h-4" />
             {saving ? "Saving..." : "Save Changes"}
@@ -507,11 +507,11 @@ function FeedbackModal({
           <div className="bg-gray-50 rounded-lg p-3 flex flex-col gap-1">
             <p className="text-xs text-gray-500 font-medium">Reviewer</p>
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-bold">
+              <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-[10px] font-bold">
                 {currentUser?.name?.charAt(0) || "U"}
               </div>
               <p className="text-xs font-bold text-gray-900">{currentUser?.name || "Loading..."}</p>
-              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider bg-indigo-50 px-1.5 py-0.5 rounded">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider bg-primary/10 px-1.5 py-0.5 rounded">
                 {currentUser?.roles?.[0]?.replace(/_/g, ' ') || currentUser?.userType || "User"}
               </span>
             </div>
@@ -526,7 +526,7 @@ function FeedbackModal({
               onChange={(e) => setFeedback(e.target.value)}
               placeholder={isReject ? "Explain why..." : "Share revision notes..."}
               rows={4}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 bg-white text-gray-900 placeholder:text-gray-400 resize-none"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white text-gray-900 placeholder:text-gray-400 resize-none"
             />
           </div>
         </div>
@@ -561,27 +561,27 @@ function CarouselSlider({ frames }: { frames: CarouselFrame[] }) {
   const [active, setActive] = useState(0);
   const frame = frames[active];
   return (
-    <div className="border border-indigo-100 rounded-lg overflow-hidden">
+    <div className="border border-primary/20 rounded-lg overflow-hidden">
       {/* Slide */}
-      <div className="bg-indigo-50/60 p-4 min-h-80px space-y-1">
+      <div className="bg-primary/60 p-4 min-h-80px space-y-1">
         {frame?.creativeUrl ? (
           <img src={frame.creativeUrl} alt={`Frame ${frame.frameNumber}`} className="w-full max-h-48 object-contain rounded" />
         ) : (
-          <div className="flex items-center justify-center h-16 text-indigo-300 text-xs font-bold uppercase tracking-widest">
+          <div className="flex items-center justify-center h-16 text-primary/40 text-xs font-bold uppercase tracking-widest">
             {frame?.creativeStatus === 'UPLOADED' ? 'Creative uploaded' : 'Awaiting designer upload'}
           </div>
         )}
-        <span className="text-xs font-bold text-indigo-600">Caption</span>
-        {frame?.caption && <p className="text-xs text-indigo-800 leading-relaxed">{frame.caption}</p>}
-        <span className="text-xs font-bold text-indigo-600">Hashtags</span>
-        {frame?.hashtags && <p className="text-[10px] font-bold text-indigo-400">{frame.hashtags}</p>}
+        <span className="text-xs font-bold text-primary">Caption</span>
+        {frame?.caption && <p className="text-xs text-primary leading-relaxed">{frame.caption}</p>}
+        <span className="text-xs font-bold text-primary">Hashtags</span>
+        {frame?.hashtags && <p className="text-[10px] font-bold text-primary/60">{frame.hashtags}</p>}
       </div>
       {/* Nav */}
-      <div className="flex items-center justify-between px-3 py-2 bg-white border-t border-indigo-50">
+      <div className="flex items-center justify-between px-3 py-2 bg-white border-t border-primary/10">
         <button
           onClick={() => setActive(p => Math.max(0, p - 1))}
           disabled={active === 0}
-          className="px-2 py-1 text-xs font-bold text-indigo-500 disabled:opacity-30 hover:text-indigo-700 transition-colors"
+          className="px-2 py-1 text-xs font-bold text-primary disabled:opacity-30 hover:text-primary transition-colors"
         >← Prev</button>
         <div className="flex gap-1">
           {frames.map((_, i) => (
@@ -589,7 +589,7 @@ function CarouselSlider({ frames }: { frames: CarouselFrame[] }) {
               key={i}
               onClick={() => setActive(i)}
               className={`w-2 h-2 rounded-full transition-all ${
-                i === active ? 'bg-indigo-600' : 'bg-indigo-200 hover:bg-indigo-400'
+                i === active ? 'bg-primary' : 'bg-primary/30 hover:bg-primary/60'
               }`}
             />
           ))}
@@ -597,11 +597,11 @@ function CarouselSlider({ frames }: { frames: CarouselFrame[] }) {
         <button
           onClick={() => setActive(p => Math.min(frames.length - 1, p + 1))}
           disabled={active === frames.length - 1}
-          className="px-2 py-1 text-xs font-bold text-indigo-500 disabled:opacity-30 hover:text-indigo-700 transition-colors"
+          className="px-2 py-1 text-xs font-bold text-primary disabled:opacity-30 hover:text-primary transition-colors"
         >Next →</button>
       </div>
-      <div className="px-3 py-1.5 bg-indigo-50/40 text-center">
-        <span className="text-[10px] font-bold text-indigo-400">{active + 1} / {frames.length}</span>
+      <div className="px-3 py-1.5 bg-primary/40 text-center">
+        <span className="text-[10px] font-bold text-primary/60">{active + 1} / {frames.length}</span>
       </div>
     </div>
   );
@@ -708,7 +708,7 @@ function CopyRow({
                 </span>
               )}
               {copy.isCarousel && (
-                <span className="text-[10px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Layers className="w-2.5 h-2.5" /> {copy.frameCount}F
                 </span>
               )}
@@ -744,7 +744,7 @@ function CopyRow({
           <div className="flex items-center gap-1.5 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setEditOpen(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors"
             >
               <Edit2 className="w-3 h-3" />
               Edit
@@ -785,7 +785,7 @@ function CopyRow({
             {/* Carousel slider */}
             {copy.isCarousel && copy.frames && copy.frames.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-2 flex items-center gap-1">
                   <Layers className="w-3 h-3" /> Carousel — {copy.frameCount} frames
                 </p>
                 <CarouselSlider frames={copy.frames} />
@@ -807,14 +807,14 @@ function CopyRow({
             {!copy.isCarousel && copy.hashtags && (
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hashtags</p>
-                <p className="text-xs text-indigo-500 font-medium break-words">{copy.hashtags}</p>
+                <p className="text-xs text-primary font-medium break-words">{copy.hashtags}</p>
               </div>
             )}
             {copy.referenceUrl && (
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Reference URL</p>
                 <a href={copy.referenceUrl} target="_blank" rel="noopener noreferrer"
-                  className="text-xs text-indigo-500 hover:underline break-all">{copy.referenceUrl}</a>
+                  className="text-xs text-primary hover:underline break-all">{copy.referenceUrl}</a>
               </div>
             )}
           </div>
@@ -1005,7 +1005,7 @@ export default function CalendarApprovalDetailPage({
         <p className="text-sm text-gray-500">Calendar not found.</p>
         <button
           onClick={() => router.push("/approvals")}
-          className="text-xs text-indigo-600 hover:underline"
+          className="text-xs text-primary hover:underline"
         >
           Back to Approvals
         </button>
@@ -1028,7 +1028,7 @@ export default function CalendarApprovalDetailPage({
 
           <button
             onClick={() => setVisualizeOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg hover:bg-indigo-100 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-all"
           >
             <LayoutGrid className="w-4 h-4" />
             Visualize
@@ -1039,8 +1039,8 @@ export default function CalendarApprovalDetailPage({
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-4 min-w-0">
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                <BookOpen className="w-6 h-6 text-indigo-600" />
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <BookOpen className="w-6 h-6 text-primary" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-gray-900 tracking-tight">{calendar.name}</h1>
@@ -1090,9 +1090,9 @@ export default function CalendarApprovalDetailPage({
             )}
             {/* Awaiting client approval — show status badge only, no action buttons */}
             {reviewTask && reviewTask.status === "CLIENT_REVIEW" && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-lg">
-                <Clock className="w-4 h-4 text-indigo-500" />
-                <span className="text-sm font-semibold text-indigo-600">Awaiting Client Approval</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-primary">Awaiting Client Approval</span>
               </div>
             )}
           </div>
@@ -1129,11 +1129,11 @@ export default function CalendarApprovalDetailPage({
 
           {/* Objective */}
           {calendar.objective && (
-            <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3">
-              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+              <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1">
                 Calendar Objective
               </p>
-              <p className="text-sm text-indigo-800 leading-relaxed">{calendar.objective}</p>
+              <p className="text-sm text-primary leading-relaxed">{calendar.objective}</p>
             </div>
           )}
 
@@ -1166,21 +1166,21 @@ export default function CalendarApprovalDetailPage({
                       onClick={() => setActiveBucketId(isActive ? null : bucket.id)}
                       className={`flex flex-col items-start px-3 py-2 rounded-xl border transition-all text-left ${
                         isActive
-                          ? "bg-indigo-600 text-white border-indigo-600"
-                          : "bg-white text-gray-700 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50"
+                          ? "bg-primary text-white border-primary"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-primary/40 hover:bg-primary/50"
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold">{bucket.name}</span>
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                          isActive ? "bg-white/20 text-white" : "bg-indigo-50 text-indigo-500"
+                          isActive ? "bg-white/20 text-white" : "bg-primary/10 text-primary"
                         }`}>
                           {count}
                         </span>
                       </div>
                       {bucket.description && (
                         <span className={`text-[10px] mt-0.5 leading-tight max-w-160px line-clamp-1 ${
-                          isActive ? "text-indigo-100" : "text-gray-400"
+                          isActive ? "text-primary/20" : "text-gray-400"
                         }`}>
                           {bucket.description}
                         </span>

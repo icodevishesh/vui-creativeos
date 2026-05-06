@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -96,7 +96,7 @@ export function AddMemberForm() {
 
   if (generatedPass) {
     return (
-      <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-8 text-center animate-in fade-in zoom-in duration-300">
+      <div className="bg-primary/10 border border-primary/20 rounded-lg p-8 text-center animate-in fade-in zoom-in duration-300">
         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
           <CheckCircle2 className="w-8 h-8 text-green-500" />
         </div>
@@ -106,11 +106,11 @@ export function AddMemberForm() {
           <span className="font-bold text-gray-900"> {formData.name}</span>.
         </p>
 
-        <div className="bg-white border border-indigo-200 rounded-xl p-4 flex items-center justify-between mb-8 max-w-md mx-auto shadow-sm">
-          <code className="text-lg font-mono font-bold text-indigo-600">{generatedPass}</code>
+        <div className="bg-white border border-primary/30 rounded-xl p-4 flex items-center justify-between mb-8 max-w-md mx-auto shadow-sm">
+          <code className="text-lg font-mono font-bold text-primary">{generatedPass}</code>
           <button
             onClick={copyPassword}
-            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+            className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
           >
             <Copy className="w-5 h-5" />
           </button>
@@ -118,7 +118,7 @@ export function AddMemberForm() {
 
         <button
           onClick={resetForm}
-          className="text-sm font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-4"
+          className="text-sm font-bold text-primary hover:text-primary underline underline-offset-4"
         >
           Add another member
         </button>
@@ -131,13 +131,13 @@ export function AddMemberForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-sm font-normal text-gray-700 flex items-center gap-2">
-            <UserPlus className="w-4 h-4 text-indigo-500" />
+            <UserPlus className="w-4 h-4 text-primary" />
             Full Name
           </label>
           <input
             type="text"
             placeholder="e.g. Sarah Jenkins"
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
             value={formData.name}
             onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
           />
@@ -145,13 +145,13 @@ export function AddMemberForm() {
 
         <div className="space-y-2">
           <label className="text-sm font-normal text-gray-700 flex items-center gap-2">
-            <Mail className="w-4 h-4 text-indigo-500" />
+            <Mail className="w-4 h-4 text-primary" />
             Email Address
           </label>
           <input
             type="email"
             placeholder="sarah@agency.com"
-            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
             value={formData.email}
             onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
           />
@@ -159,7 +159,7 @@ export function AddMemberForm() {
 
         <div className="md:col-span-2 space-y-3">
           <label className="text-sm font-normal text-gray-700 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-indigo-500" />
+            <Shield className="w-4 h-4 text-primary" />
             Assign Roles
             <span className="text-xs text-gray-400 font-normal">(select 1–2 roles)</span>
           </label>
@@ -170,13 +170,13 @@ export function AddMemberForm() {
               {formData.selectedRoles.map((role) => (
                 <span
                   key={role}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold"
                 >
                   {role.replace(/_/g, ' ')}
                   <button
                     type="button"
                     onClick={() => toggleRole(role)}
-                    className="hover:bg-indigo-100 rounded-full p-0.5 transition-colors"
+                    className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -197,15 +197,15 @@ export function AddMemberForm() {
                   onClick={() => !isDisabled && toggleRole(role)}
                   className={`flex items-center justify-between px-3 py-2 rounded-lg border-2 text-xs font-medium transition-all ${
                     isSelected
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      ? 'border-primary bg-primary/10 text-primary'
                       : isDisabled
                         ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
-                        : 'border-gray-100 bg-white text-gray-700 hover:border-indigo-200'
+                        : 'border-gray-100 bg-white text-gray-700 hover:border-primary/30'
                   }`}
                 >
                   {role.replace(/_/g, ' ')}
                   {isSelected && (
-                    <div className="w-4 h-4 rounded-full bg-indigo-500 flex items-center justify-center">
+                    <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-2.5 h-2.5 text-white" />
                     </div>
                   )}
@@ -219,7 +219,7 @@ export function AddMemberForm() {
             <div className="space-y-2 pt-2">
               <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Custom Roles (optional)</p>
               <select
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all"
                 value={formData.customRoleId}
                 onChange={(e) => setFormData(p => ({ ...p, customRoleId: e.target.value }))}
               >
@@ -239,7 +239,7 @@ export function AddMemberForm() {
         <button
           type="submit"
           disabled={mutation.isPending || isLoadingRoles}
-          className="w-full sm:w-64 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-70"
+          className="w-full sm:w-64 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all disabled:opacity-70"
         >
           {mutation.isPending ? (
             <>

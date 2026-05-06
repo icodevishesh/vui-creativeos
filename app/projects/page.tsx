@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -221,12 +221,12 @@ function ProjectRow({ project, onEdit, onDelete, onStatusChange, isUpdating, isD
         <div className="bg-white border border-gray-100 rounded-xl px-5 py-4 flex flex-col gap-2 hover:border-gray-200 hover:shadow-sm transition-all duration-150 group">
             <div className="flex justify-between items-center w-full">
                 <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-[14px] leading-snug group-hover:text-indigo-700 transition-colors">
+                    <p className="font-semibold text-gray-900 text-[14px] leading-snug group-hover:text-primary transition-colors">
                         {project.name}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         {project.client?.companyName && (
-                            <span className="text-[11px] font-medium text-indigo-500 uppercase tracking-wider">
+                            <span className="text-[11px] font-medium text-primary uppercase tracking-wider">
                                 {project.client.companyName}
                             </span>
                         )}
@@ -235,7 +235,7 @@ function ProjectRow({ project, onEdit, onDelete, onStatusChange, isUpdating, isD
                 {/* Status dropdown */}
                 <div className="shrink-0">
                     {isUpdating ? (
-                        <span className="w-2 h-2 rounded-full border-2 border-gray-300 border-t-indigo-500 animate-spin inline-block text-xs" />
+                        <span className="w-2 h-2 rounded-full border-2 border-gray-300 border-t-primary animate-spin inline-block text-xs" />
                     ) : (
                         <StatusDropdown
                             projectId={project.id}
@@ -284,7 +284,7 @@ function ProjectRow({ project, onEdit, onDelete, onStatusChange, isUpdating, isD
                     onClick={() => onEdit(project)}
                     disabled={busy}
                     title="Edit project"
-                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-indigo-50 hover:text-indigo-600 disabled:opacity-40 transition-colors"
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:bg-primary/10 hover:text-primary disabled:opacity-40 transition-colors"
                 >
                     <Pencil className="w-3.5 h-3.5" />
                 </button>
@@ -351,25 +351,25 @@ function EditProjectModal({ project, onClose, onSubmit, isLoading }: EditProject
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-medium text-gray-600">Project Name</label>
                         <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
-                            className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                            className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[13px] font-medium text-gray-600">Start Date</label>
                             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50" />
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[13px] font-medium text-gray-600">End Date</label>
                             <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)}
-                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50" />
                         </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-medium text-gray-600">Description</label>
                         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
                             placeholder="Brief overview..."
-                            className="px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 resize-none" />
+                            className="px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50 resize-none" />
                     </div>
                     <div className="flex gap-3 mt-1">
                         <button type="button" onClick={onClose}
@@ -427,13 +427,13 @@ function NewProjectModal({ clients, preselectedClientId, onClose, onSubmit, isLo
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-medium text-gray-600">Project Name</label>
                         <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Q4 Marketing Campaign" required
-                            className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                            className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50" />
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-medium text-gray-600">Client</label>
                         <div className="relative">
                             <select value={clientId} onChange={(e) => setClientId(e.target.value)} required
-                                className="w-full h-10 pl-3.5 pr-9 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 appearance-none">
+                                className="w-full h-10 pl-3.5 pr-9 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50 appearance-none">
                                 <option value="" disabled>Select a client...</option>
                                 {clients.map((c) => <option key={c.id} value={c.id}>{c.companyName}</option>)}
                             </select>
@@ -446,18 +446,18 @@ function NewProjectModal({ clients, preselectedClientId, onClose, onSubmit, isLo
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[13px] font-medium text-gray-600">Start Date</label>
                             <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50" />
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[13px] font-medium text-gray-600">End Date</label>
                             <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)}
-                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50" />
+                                className="h-10 px-3.5 rounded-lg border border-gray-200 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50" />
                         </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[13px] font-medium text-gray-600">Description</label>
                         <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief overview of the project objectives..." rows={3}
-                            className="px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-gray-50/50 resize-none" />
+                            className="px-3.5 py-2.5 rounded-lg border border-gray-200 text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-gray-50/50 resize-none" />
                     </div>
                     <div className="flex gap-3 mt-1">
                         <button type="button" onClick={onClose} className="flex-1 h-10 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">Cancel</button>
@@ -660,7 +660,7 @@ export default function ProjectsPage() {
                                 <select
                                     value={selectedClientId}
                                     onChange={(e) => setSelectedClientId(e.target.value)}
-                                    className="h-10 pl-2 pr-9 rounded-lg border border-gray-200 text-[10px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all bg-white appearance-none min-w-200px"
+                                    className="h-10 pl-2 pr-9 rounded-lg border border-gray-200 text-[10px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-white appearance-none min-w-200px"
                                 >
                                     <option value="">All clients</option>
                                     {clients.map((c) => (
@@ -683,11 +683,11 @@ export default function ProjectsPage() {
 
                         {/* Client badge */}
                         {selectedClient && (
-                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-100">
-                                <div className="w-6 h-6 rounded-lg bg-indigo-200 text-indigo-700 flex items-center justify-center text-[10px] font-bold">
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                                <div className="w-6 h-6 rounded-lg bg-primary/30 text-primary flex items-center justify-center text-[10px] font-bold">
                                     {getInitials(selectedClient.companyName)}
                                 </div>
-                                <span className="text-sm text-indigo-700 font-medium">
+                                <span className="text-sm text-primary font-medium">
                                     {selectedClient.companyName}
                                 </span>
                                 <span

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -128,8 +128,8 @@ export function OverviewTab({ client }: OverviewTabProps) {
       title: 'Requirement Notes',
       content: client.requirementNotes,
       icon: Target,
-      color: 'text-indigo-500',
-      bg: 'bg-indigo-50'
+      color: 'text-primary',
+      bg: 'bg-primary/10'
     }
   ];
 
@@ -150,7 +150,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
               </div>
               <button
                 onClick={() => handleEdit(card.id, card.content)}
-                className="p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-xl transition-all"
+                className="p-2.5 text-gray-400 hover:text-primary hover:bg-primary/50 rounded-xl transition-all"
               >
                 <Edit2 className="w-4 h-4" />
               </button>
@@ -232,7 +232,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
         <div className="md:col-span-2 bg-white p-6 rounded-lg border border-gray-100 shadow-sm relative overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+              <div className="p-2 bg-primary/10 text-primary rounded-xl">
                 <LinkIcon className="w-4 h-4" />
               </div>
               <div>
@@ -243,7 +243,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
             <button
               onClick={handleSaveSocialLinks}
               disabled={mutation.isPending}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50"
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               {mutation.isPending ? 'Syncing...' : 'Save Presence'}
@@ -258,7 +258,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="instagram.com/handle"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
                   value={socialLinks.instagram}
                   onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
                 />
@@ -271,7 +271,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="facebook.com/page"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
                   value={socialLinks.facebook}
                   onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
                 />
@@ -284,7 +284,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="youtube.com/@channel"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
                   value={socialLinks.youtube}
                   onChange={(e) => setSocialLinks({ ...socialLinks, youtube: e.target.value })}
                 />
@@ -297,7 +297,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <input
                   type="text"
                   placeholder="linkedin.com/company/handle"
-                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"
+                  className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all"
                   value={socialLinks.linkedin}
                   onChange={(e) => setSocialLinks({ ...socialLinks, linkedin: e.target.value })}
                 />
@@ -318,14 +318,14 @@ export function OverviewTab({ client }: OverviewTabProps) {
                   <input
                     type="text"
                     placeholder="Platform (e.g. TikTok)"
-                    className="w-32 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500"
+                    className="w-32 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary"
                     value={item.label}
                     onChange={(e) => updateOtherSocial(idx, 'label', e.target.value)}
                   />
                   <input
                     type="text"
                     placeholder="URL"
-                    className="flex-1 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-indigo-500"
+                    className="flex-1 px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs font-semibold focus:outline-none focus:border-primary"
                     value={item.url}
                     onChange={(e) => updateOtherSocial(idx, 'url', e.target.value)}
                   />
@@ -339,7 +339,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
               ))}
               <button
                 onClick={handleAddOtherSocial}
-                className="group flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 hover:border-indigo-200 hover:text-indigo-600 transition-all"
+                className="group flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-100 rounded-xl text-gray-400 hover:border-primary/30 hover:text-primary transition-all"
               >
                 <Plus className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Add Custom Property</span>
@@ -366,7 +366,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="relative bg-white w-full max-w-xl rounded-lg p-8 shadow-2xl overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500" />
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-purple-500 to-primary" />
 
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-xl font-bold text-gray-900 tracking-tight">Edit {editingField.replace(/([A-Z])/g, ' $1').trim()}</h3>
@@ -379,7 +379,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
               </div>
 
               <textarea
-                className="w-full min-h-[250px] p-6 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all font-medium leading-relaxed"
+                className="w-full min-h-[250px] p-6 bg-gray-50 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium leading-relaxed"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 placeholder="Enter detailed notes..."
@@ -395,7 +395,7 @@ export function OverviewTab({ client }: OverviewTabProps) {
                 <button
                   onClick={handleSave}
                   disabled={mutation.isPending}
-                  className="px-8 py-3 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all active:scale-95 disabled:opacity-50"
+                  className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary shadow-xl shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {mutation.isPending ? 'Saving...' : 'Confirm Update'}
                 </button>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import { FilePlus, Calendar, Clock, Image, Hash, Globe, Trash2, Send, Plus, Loader2, AlertTriangle, X, Eye, Film, Link, Edit2, Check, Layers } from 'lucide-react';
@@ -31,7 +31,7 @@ const PLATFORM_STYLES: Record<Platform, { bg: string; text: string; border: stri
     Instagram: { bg: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200', active: 'bg-pink-500 text-white border-pink-500' },
     LinkedIn: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', active: 'bg-blue-600 text-white border-blue-600' },
     Twitter: { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-200', active: 'bg-sky-500 text-white border-sky-500' },
-    Facebook: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200', active: 'bg-indigo-600 text-white border-indigo-600' },
+    Facebook: { bg: 'bg-primary/10', text: 'text-primary', border: 'border-primary/30', active: 'bg-primary text-white border-primary' },
 };
 
 // ─── Platform Multi-Select ────────────────────────────────────────────────────
@@ -130,9 +130,9 @@ function SubmitPreviewModal({
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {calendarObjective && (
-                        <div className="bg-indigo-50 border border-indigo-100 rounded-lg px-4 py-3">
-                            <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Calendar Objective</p>
-                            <p className="text-xs text-indigo-800 leading-relaxed">{calendarObjective}</p>
+                        <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+                            <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1">Calendar Objective</p>
+                            <p className="text-xs text-primary leading-relaxed">{calendarObjective}</p>
                         </div>
                     )}
 
@@ -568,11 +568,11 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
                     {/* ── Carousel frame builder ─────────────────────────── */}
                     {isCarouselMode && (
-                        <div className="border border-indigo-100 rounded-xl bg-indigo-50/40 p-4 space-y-4">
+                        <div className="border border-primary/20 rounded-xl bg-primary/40 p-4 space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Layers className="w-4 h-4 text-indigo-500" />
-                                    <span className="text-xs font-bold text-indigo-700 uppercase tracking-widest">Carousel Frames</span>
+                                    <Layers className="w-4 h-4 text-primary" />
+                                    <span className="text-xs font-bold text-primary uppercase tracking-widest">Carousel Frames</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs text-gray-500 font-medium">Frames:</span>
@@ -584,8 +584,8 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                 onClick={() => handleFrameCountChange(n)}
                                                 className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
                                                     frameCount === n
-                                                        ? 'bg-indigo-600 text-white'
-                                                        : 'bg-white border border-gray-200 text-gray-500 hover:border-indigo-300'
+                                                        ? 'bg-primary text-white'
+                                                        : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
                                                 }`}
                                             >{n}</button>
                                         ))}
@@ -602,8 +602,8 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                         onClick={() => setActiveFrame(i)}
                                         className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                                             activeFrame === i
-                                                ? 'bg-indigo-600 text-white'
-                                                : 'bg-white border border-gray-200 text-gray-500 hover:border-indigo-300'
+                                                ? 'bg-primary text-white'
+                                                : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
                                         }`}
                                     >
                                         Frame {i + 1}
@@ -615,7 +615,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                             {/* Active frame inputs */}
                             <div className="space-y-3">
                                 <div>
-                                    <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block mb-1">
+                                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">
                                         Frame {activeFrame + 1} Caption *
                                     </label>
                                     <textarea
@@ -623,11 +623,11 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                         onChange={e => updateFrame(activeFrame, 'caption', e.target.value)}
                                         rows={3}
                                         placeholder={`Copy text for Frame ${activeFrame + 1}...`}
-                                        className="w-full p-3 bg-white border border-indigo-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-indigo-100"
+                                        className="w-full p-3 bg-white border border-primary/30 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-primary/20"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest block mb-1">
+                                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">
                                         Frame {activeFrame + 1} Hashtags
                                     </label>
                                     <input
@@ -635,7 +635,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                         value={frames[activeFrame]?.hashtags ?? ''}
                                         onChange={e => updateFrame(activeFrame, 'hashtags', e.target.value)}
                                         placeholder="#frame1hashtags"
-                                        className="w-full p-2 bg-white border border-indigo-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                        className="w-full p-2 bg-white border border-primary/30 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
                                     />
                                 </div>
                                 <div className="flex justify-between">
@@ -643,14 +643,14 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                         type="button"
                                         disabled={activeFrame === 0}
                                         onClick={() => setActiveFrame(p => p - 1)}
-                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-indigo-300 disabled:opacity-30 transition-all"
+                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
                                     >← Prev</button>
                                     <span className="text-xs text-gray-400 font-medium self-center">{activeFrame + 1} / {frameCount}</span>
                                     <button
                                         type="button"
                                         disabled={activeFrame === frameCount - 1}
                                         onClick={() => setActiveFrame(p => p + 1)}
-                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-indigo-300 disabled:opacity-30 transition-all"
+                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
                                     >Next →</button>
                                 </div>
                             </div>
@@ -662,7 +662,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                         <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">
                             Platforms
                             {form.platforms.length > 0 && (
-                                <span className="ml-2 normal-case text-indigo-500 font-semibold">
+                                <span className="ml-2 normal-case text-primary font-semibold">
                                     {form.platforms.length} selected
                                 </span>
                             )}
@@ -678,7 +678,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold transition-all"
+                            className="flex items-center gap-1 bg-primary hover:bg-primary disabled:opacity-50 text-white px-4 py-2 rounded-lg font-bold transition-all"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Plus size={20} /> Add Copy to Calendar</>}
                         </button>
@@ -706,7 +706,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                         /* ── Inline Edit Form ── */
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Editing Copy</span>
+                                                <span className="text-xs font-bold text-primary uppercase tracking-widest">Editing Copy</span>
                                                 <button type="button" onClick={() => setEditingCopyId(null)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
                                             </div>
                                             <textarea
@@ -714,21 +714,21 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                 onChange={e => setEditForm({ ...editForm, content: e.target.value })}
                                                 rows={3}
                                                 placeholder="Creative copy..."
-                                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-indigo-100"
+                                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-primary/20"
                                             />
                                             <textarea
                                                 value={editForm.caption}
                                                 onChange={e => setEditForm({ ...editForm, caption: e.target.value })}
                                                 rows={2}
                                                 placeholder="Caption..."
-                                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-indigo-100"
+                                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-primary/20"
                                             />
                                             <input
                                                 type="text"
                                                 value={editForm.hashtags}
                                                 onChange={e => setEditForm({ ...editForm, hashtags: e.target.value })}
                                                 placeholder="#hashtags"
-                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
                                             />
                                             <div className="relative">
                                                 <Link size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
@@ -737,30 +737,30 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                     value={editForm.referenceUrl}
                                                     onChange={e => setEditForm({ ...editForm, referenceUrl: e.target.value })}
                                                     placeholder="https://reference-url.com"
-                                                    className="w-full p-2 pl-9 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100"
+                                                    className="w-full p-2 pl-9 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
                                                 />
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
                                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Publish Date</label>
-                                                    <input type="date" value={editForm.publishDate} onChange={e => setEditForm({ ...editForm, publishDate: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100" />
+                                                    <input type="date" value={editForm.publishDate} onChange={e => setEditForm({ ...editForm, publishDate: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20" />
                                                 </div>
                                                 <div>
                                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Publish Time</label>
-                                                    <input type="time" value={editForm.publishTime} onChange={e => setEditForm({ ...editForm, publishTime: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100" />
+                                                    <input type="time" value={editForm.publishTime} onChange={e => setEditForm({ ...editForm, publishTime: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20" />
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
                                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Bucket</label>
-                                                    <select value={editForm.bucketId} onChange={e => setEditForm({ ...editForm, bucketId: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100 appearance-none">
+                                                    <select value={editForm.bucketId} onChange={e => setEditForm({ ...editForm, bucketId: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-none">
                                                         <option value="">Select bucket</option>
                                                         {buckets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                                                     </select>
                                                 </div>
                                                 <div>
                                                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Media Type</label>
-                                                    <select value={editForm.mediaType} onChange={e => setEditForm({ ...editForm, mediaType: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-indigo-100 appearance-none">
+                                                    <select value={editForm.mediaType} onChange={e => setEditForm({ ...editForm, mediaType: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-none">
                                                         <option value="">Select type</option>
                                                         <option value="Image">Image</option>
                                                         <option value="Video">Video</option>
@@ -783,7 +783,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                     type="button"
                                                     onClick={() => saveEdit(copy.id)}
                                                     disabled={savingCopyId === copy.id}
-                                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all"
+                                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-primary hover:bg-primary disabled:opacity-50 text-white text-xs font-bold rounded-lg transition-all"
                                                 >
                                                     {savingCopyId === copy.id ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
                                                     Save
@@ -800,7 +800,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                 </div>
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     {copy.isCarousel && (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-full border border-indigo-100">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full border border-primary/20">
                                                             <Layers className="w-2.5 h-2.5" /> {copy.frameCount}F
                                                         </span>
                                                     )}
@@ -812,9 +812,9 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                             {copy.isCarousel && Array.isArray(copy.frames) && copy.frames.length > 0 && (
                                                 <div className="mb-3 space-y-1">
                                                     {copy.frames.map((f: any) => (
-                                                        <div key={f.id} className="flex items-start gap-2 px-3 py-2 bg-indigo-50/60 rounded-lg">
-                                                            <span className="text-[10px] font-bold text-indigo-400 w-12 shrink-0 pt-0.5">F{f.frameNumber}</span>
-                                                            <p className="text-xs text-indigo-800 leading-relaxed line-clamp-2">{f.caption || <span className="italic text-indigo-300">No caption</span>}</p>
+                                                        <div key={f.id} className="flex items-start gap-2 px-3 py-2 bg-primary/60 rounded-lg">
+                                                            <span className="text-[10px] font-bold text-primary/60 w-12 shrink-0 pt-0.5">F{f.frameNumber}</span>
+                                                            <p className="text-xs text-primary leading-relaxed line-clamp-2">{f.caption || <span className="italic text-primary/40">No caption</span>}</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -855,7 +855,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
                                             {copy.referenceUrl && (
                                                 <div className="mt-2">
-                                                    <a href={copy.referenceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 hover:underline truncate max-w-full">
+                                                    <a href={copy.referenceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary hover:underline truncate max-w-full">
                                                         <Link size={11} /> {copy.referenceUrl}
                                                     </a>
                                                 </div>
@@ -865,7 +865,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                 <button
                                                     type="button"
                                                     onClick={() => startEdit(copy)}
-                                                    className="flex items-center gap-2 text-indigo-400 hover:text-indigo-600 px-3 py-1.5 text-xs font-bold transition-all"
+                                                    className="flex items-center gap-2 text-primary/60 hover:text-primary px-3 py-1.5 text-xs font-bold transition-all"
                                                 >
                                                     <Edit2 size={13} /> Edit
                                                 </button>

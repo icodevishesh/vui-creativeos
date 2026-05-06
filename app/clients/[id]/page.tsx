@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -43,13 +43,13 @@ function CredentialsModal({ isOpen, email, password, onClose }: {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 px-6 py-5">
+        <div className="bg-gradient-to-r from-primary to-primary px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center"><KeyRound className="w-5 h-5 text-white" /></div>
               <div>
                 <h2 className="text-sm font-bold text-white">Client Portal Credentials</h2>
-                <p className="text-xs text-indigo-200">{email}</p>
+                <p className="text-xs text-primary/30">{email}</p>
               </div>
             </div>
             <button onClick={onClose} className="text-white/70 hover:text-white"><X className="w-5 h-5" /></button>
@@ -72,11 +72,11 @@ function CredentialsModal({ isOpen, email, password, onClose }: {
           ))}
           <div className="pt-2 space-y-1.5">
             <p className="text-xs text-gray-400 font-medium">Client portal login</p>
-            <p className="font-mono text-xs text-indigo-600 bg-indigo-50 px-3 py-2 rounded-lg">{typeof window !== 'undefined' ? window.location.origin : ''}/sign-in</p>
+            <p className="font-mono text-xs text-primary bg-primary/10 px-3 py-2 rounded-lg">{typeof window !== 'undefined' ? window.location.origin : ''}/sign-in</p>
           </div>
         </div>
         <div className="px-6 pb-6">
-          <button onClick={onClose} className="w-full py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all">Done</button>
+          <button onClick={onClose} className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary transition-all">Done</button>
         </div>
       </div>
     </div>
@@ -154,7 +154,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+        <RefreshCw className="w-8 h-8 text-primary animate-spin" />
         <p className="text-sm font-bold text-gray-500 uppercase tracking-widest">Loading Client Context...</p>
       </div>
     );
@@ -164,7 +164,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold text-gray-900">Client not found</h2>
-        <Link href="/clients" className="text-indigo-600 hover:underline mt-4 inline-block">
+        <Link href="/clients" className="text-primary hover:underline mt-4 inline-block">
           Back to all clients
         </Link>
       </div>
@@ -175,7 +175,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Breadcrumbs / Back */}
       <div className="flex items-center gap-2 text-sm font-medium text-gray-400">
-        <Link href="/clients" className="hover:text-indigo-600 transition-colors flex items-center gap-1">
+        <Link href="/clients" className="hover:text-primary transition-colors flex items-center gap-1">
           <ArrowLeft className="w-4 h-4" />
           Back to Clients
         </Link>
@@ -186,7 +186,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
       {/* Profile Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
         <div className="flex items-center gap-4">
-          <div className="w-14 h-14 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-lg font-semibold shadow-xl shadow-indigo-100/50">
+          <div className="w-14 h-14 bg-primary rounded-lg flex items-center justify-center text-white text-lg font-semibold shadow-xl shadow-primary/50">
             {client.companyName.slice(0, 2).toUpperCase()}
           </div>
           <div>
@@ -208,7 +208,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
           <button
             onClick={() => generateCredentials.mutate()}
             disabled={generateCredentials.isPending}
-            className="inline-flex items-center gap-2 px-3.5 py-2 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-all shadow-sm disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-primary/10 text-primary border border-primary/20 rounded-lg text-xs font-bold hover:bg-primary/20 transition-all shadow-sm disabled:opacity-50"
           >
             <KeyRound className="w-3.5 h-3.5" />
             {generateCredentials.isPending ? 'Generating...' : 'Portal Credentials'}
@@ -217,7 +217,7 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
             value={client.status}
             onChange={(e) => updateStatus.mutate(e.target.value)}
             disabled={updateStatus.isPending}
-            className="px-3.5 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-xs font-bold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm cursor-pointer disabled:opacity-50"
+            className="px-3.5 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-xs font-bold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary transition-all shadow-sm cursor-pointer disabled:opacity-50"
           >
             <option value="ACTIVE">Active</option>
             <option value="PENDING">Pending</option>
@@ -244,11 +244,11 @@ export default function ClientProfilePage({ params }: { params: Promise<{ id: st
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${isActive
-                ? 'bg-white text-indigo-600 shadow-sm'
+                ? 'bg-white text-primary shadow-sm'
                 : 'text-gray-500 hover:text-gray-900'
                 }`}
             >
-              <tab.icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-gray-400'}`} />
+              <tab.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-gray-400'}`} />
               {tab.name}
             </button>
           );

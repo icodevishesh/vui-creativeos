@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import {
@@ -135,7 +135,7 @@ export function TaskDetailModal({
                 <select
                   value={task.status}
                   onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
-                  className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/10 appearance-none bg-gray-50/50"
+                  className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-gray-100 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 appearance-none bg-gray-50/50"
                 >
                   {STATUS_OPTIONS
                     .filter(s => !readOnly || ['OPEN', 'IN_PROGRESS', 'ON_HOLD'].includes(s.value))
@@ -152,13 +152,13 @@ export function TaskDetailModal({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Layout className="w-5 h-5 text-indigo-500" />
+                <Layout className="w-5 h-5 text-primary" />
                 <h3 className="font-bold text-sm text-gray-900">Subtasks ({task.subTasks?.length || 0})</h3>
               </div>
               {!readOnly && (
                 <button
                   onClick={() => setShowSubTaskForm(true)}
-                  className="text-indigo-600 hover:text-indigo-700 text-sm font-bold flex items-center gap-1"
+                  className="text-primary hover:text-primary text-sm font-bold flex items-center gap-1"
                 >
                   <Plus className="w-4 h-4" />
                   <span className="text-sm">New Subtask</span>
@@ -167,15 +167,15 @@ export function TaskDetailModal({
             </div>
 
             {!readOnly && showSubTaskForm && (
-              <form onSubmit={handleCreateSubTask} className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 flex gap-2 animate-in fade-in slide-in-from-top-2">
+              <form onSubmit={handleCreateSubTask} className="bg-primary/50 p-4 rounded-2xl border border-primary/20 flex gap-2 animate-in fade-in slide-in-from-top-2">
                 <input
                   autoFocus
                   placeholder="What needs to be done?"
-                  className="flex-1 bg-white px-4 py-2 rounded-xl text-sm border border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="flex-1 bg-white px-4 py-2 rounded-xl text-sm border border-primary/20 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   value={subTaskTitle}
                   onChange={(e) => setSubTaskTitle(e.target.value)}
                 />
-                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold">Add</button>
+                <button type="submit" className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold">Add</button>
                 <button type="button" onClick={() => setShowSubTaskForm(false)} className="text-gray-400 px-2 font-bold">Cancel</button>
               </form>
             )}
@@ -223,7 +223,7 @@ export function TaskDetailModal({
                 <textarea
                   placeholder="Add feedback or notes..."
                   rows={3}
-                  className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 text-sm resize-none font-medium"
+                  className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/10 text-sm resize-none font-medium"
                   value={newFeedback}
                   onChange={(e) => setNewFeedback(e.target.value)}
                 />

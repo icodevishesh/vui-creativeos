@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useMemo } from 'react';
 import { FileText, Clock, Eye } from 'lucide-react';
@@ -74,9 +74,9 @@ export const Stats: React.FC<StatsProps> = ({ tasks, isLoading }) => {
         label="Open Tasks"
         value={stats.openTasks}
         icon={FileText}
-        colorClass="text-indigo-600"
-        bgColorClass="bg-indigo-50"
-        iconColorClass="text-indigo-500"
+        colorClass="text-primary"
+        bgColorClass="bg-primary/10"
+        iconColorClass="text-primary"
         isLoading={isLoading}
       />
       <StatCard

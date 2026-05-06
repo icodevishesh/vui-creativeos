@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { X, Calendar, User, Briefcase, Layout, AlertCircle, Loader2 } from "lucide-react";
@@ -56,7 +56,7 @@ export function NewTaskModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={onClose} />
       
-      <div className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl shadow-indigo-500/10 overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl shadow-primary/10 overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
           <h2 className="text-xl font-bold text-gray-900">Create New Task</h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
@@ -73,7 +73,7 @@ export function NewTaskModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Design homepage banner"
-              className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium"
+              className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all font-medium"
             />
           </div>
 
@@ -91,7 +91,7 @@ export function NewTaskModal({
                     setProjectId("");
                     setAssignedToId(""); // reset assignee on change
                   }}
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 appearance-none bg-gray-50/30 transition-all font-medium text-sm"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 appearance-none bg-gray-50/30 transition-all font-medium text-sm"
                 >
                   <option value="">Select Client</option>
                   {clients.map(c => (
@@ -111,7 +111,7 @@ export function NewTaskModal({
                   value={projectId}
                   disabled={!clientId}
                   onChange={(e) => setProjectId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 appearance-none bg-gray-50/30 transition-all font-medium text-sm disabled:opacity-50"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 appearance-none bg-gray-50/30 transition-all font-medium text-sm disabled:opacity-50"
                 >
                   <option value="">Select Project</option>
                   {filteredProjects.map(p => (
@@ -132,7 +132,7 @@ export function NewTaskModal({
                   value={assignedToId}
                   disabled={!clientId || clientTeamMembers.length === 0}
                   onChange={(e) => setAssignedToId(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 appearance-none bg-gray-50/30 transition-all font-medium text-sm disabled:opacity-50"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 appearance-none bg-gray-50/30 transition-all font-medium text-sm disabled:opacity-50"
                 >
                   <option value="">Unassigned</option>
                   {clientTeamMembers.map((m: any) => (
@@ -149,7 +149,7 @@ export function NewTaskModal({
                 <select
                   value={priority}
                   onChange={(e) => setPriority(e.target.value as TaskPriority)}
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 appearance-none bg-gray-50/30 transition-all font-medium text-sm"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 appearance-none bg-gray-50/30 transition-all font-medium text-sm"
                 >
                   <option value="LOW">Low</option>
                   <option value="MEDIUM">Medium</option>
@@ -168,7 +168,7 @@ export function NewTaskModal({
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium text-sm"
+                className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all font-medium text-sm"
               />
             </div>
 
@@ -179,7 +179,7 @@ export function NewTaskModal({
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium text-sm"
+                className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all font-medium text-sm"
               />
             </div>
           </div>
@@ -192,14 +192,14 @@ export function NewTaskModal({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Add details about the task..."
-              className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all font-medium text-sm resize-none"
+              className="w-full px-4 py-3 rounded-2xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all font-medium text-sm resize-none"
             />
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-indigo-600 text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-all mt-4"
+            className="w-full bg-primary text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary disabled:opacity-50 transition-all mt-4"
           >
             {isLoading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

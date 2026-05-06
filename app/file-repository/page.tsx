@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -145,7 +145,7 @@ export default function FileRepositoryPage() {
   if (rootLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-40 gap-4">
-        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin" />
+        <Loader2 className="w-10 h-10 text-primary animate-spin" />
         <p className="text-sm font-medium text-gray-500">Loading file repository…</p>
       </div>
     );
@@ -162,7 +162,7 @@ export default function FileRepositoryPage() {
             <nav className="flex items-center gap-1.5 text-sm mb-1">
               <button
                 onClick={goBack}
-                className="text-gray-400 hover:text-indigo-600 font-medium transition-colors"
+                className="text-gray-400 hover:text-primary font-medium transition-colors"
               >
                 File Repository
               </button>
@@ -193,14 +193,14 @@ export default function FileRepositoryPage() {
               placeholder="Search files…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-gray-200 pl-9 pr-4 py-2 text-sm font-medium rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none text-gray-900 placeholder:text-gray-400"
+              className="w-full bg-white border border-gray-200 pl-9 pr-4 py-2 text-sm font-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none text-gray-900 placeholder:text-gray-400"
             />
           </div>
 
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as 'date' | 'name' | 'size')}
-            className="h-9 pl-3 pr-7 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer appearance-none"
+            className="h-9 pl-3 pr-7 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer appearance-none"
           >
             <option value="date">Newest first</option>
             <option value="name">Name A–Z</option>
@@ -228,7 +228,7 @@ export default function FileRepositoryPage() {
         {/* Content */}
         {filesLoading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
           </div>
         ) : processedFiles.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 gap-3">
@@ -251,7 +251,7 @@ export default function FileRepositoryPage() {
             {processedFiles.map((file, i) => (
               <div
                 key={file.id}
-                className={`group grid grid-cols-[minmax(0,1fr)_80px_100px_140px_44px] gap-4 px-5 py-3.5 items-center hover:bg-indigo-50/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
+                className={`group grid grid-cols-[minmax(0,1fr)_80px_100px_140px_44px] gap-4 px-5 py-3.5 items-center hover:bg-primary/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${fileIconBg(file.mimeType)}`}>
@@ -271,7 +271,7 @@ export default function FileRepositoryPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Download"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all opacity-0 group-hover:opacity-100"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"
                 >
                   <Download className="w-4 h-4" />
                 </a>
@@ -287,7 +287,7 @@ export default function FileRepositoryPage() {
                 href={file.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-3 hover:shadow-xl hover:shadow-indigo-50 hover:border-indigo-100 hover:-translate-y-0.5 transition-all text-center"
+                className="group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-3 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/20 hover:-translate-y-0.5 transition-all text-center"
               >
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${fileIconBg(file.mimeType)} group-hover:scale-105 transition-transform`}>
                   <FileTypeIcon mimeType={file.mimeType} className="w-7 h-7" />
@@ -323,7 +323,7 @@ export default function FileRepositoryPage() {
           placeholder="Search clients…"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-white border border-gray-200 pl-9 pr-4 py-2 text-sm font-medium rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none text-gray-900 placeholder:text-gray-400 transition-all"
+          className="w-full bg-white border border-gray-200 pl-9 pr-4 py-2 text-sm font-medium rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-gray-900 placeholder:text-gray-400 transition-all"
         />
       </div>
 
@@ -344,13 +344,13 @@ export default function FileRepositoryPage() {
               <button
                 key={folder.id}
                 onClick={() => openFolder(folder)}
-                className="group bg-white border border-gray-100 p-5 rounded-2xl flex flex-col items-center text-center gap-3 transition-all hover:shadow-xl hover:shadow-indigo-50 hover:border-indigo-100 hover:-translate-y-1 min-h-[130px] justify-center w-full"
+                className="group bg-white border border-gray-100 p-5 rounded-2xl flex flex-col items-center text-center gap-3 transition-all hover:shadow-xl hover:shadow-primary/10 hover:border-primary/20 hover:-translate-y-1 min-h-[130px] justify-center w-full"
               >
-                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-500 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shrink-0">
                   <Folder className="w-7 h-7" />
                 </div>
                 <div className="w-full min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate" title={folder.name}>
+                  <h3 className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors truncate" title={folder.name}>
                     {folder.name}
                   </h3>
                   <p className="text-xs font-medium text-gray-400 mt-0.5">
@@ -383,7 +383,7 @@ export default function FileRepositoryPage() {
             {rootData!.recentFiles.map((file, i) => (
               <div
                 key={file.id}
-                className={`group grid grid-cols-[minmax(0,1fr)_160px_80px_100px_140px_44px] gap-4 px-5 py-3.5 items-center hover:bg-indigo-50/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
+                className={`group grid grid-cols-[minmax(0,1fr)_160px_80px_100px_140px_44px] gap-4 px-5 py-3.5 items-center hover:bg-primary/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${fileIconBg(file.mimeType)}`}>
@@ -400,7 +400,7 @@ export default function FileRepositoryPage() {
                       setSearchQuery('');
                     }
                   }}
-                  className="text-xs font-medium text-gray-500 hover:text-indigo-600 truncate text-left transition-colors"
+                  className="text-xs font-medium text-gray-500 hover:text-primary truncate text-left transition-colors"
                   title={file.clientName}
                 >
                   {file.clientName}
@@ -415,7 +415,7 @@ export default function FileRepositoryPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Download"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all opacity-0 group-hover:opacity-100"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"
                 >
                   <Download className="w-4 h-4" />
                 </a>

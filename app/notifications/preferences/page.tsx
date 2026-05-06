@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 /**
  * app/notifications/preferences/page.tsx
@@ -74,7 +74,7 @@ const PREFERENCE_GROUPS: CategoryGroup[] = [
   {
     groupLabel: 'Client & Projects',
     items: [
-      { category: 'CLIENT_ONBOARDED',         label: 'Client Onboarded',    description: 'When a new client is added to your workspace.',  icon: UserCheck, color: 'text-indigo-600',  bg: 'bg-indigo-50'  },
+      { category: 'CLIENT_ONBOARDED',         label: 'Client Onboarded',    description: 'When a new client is added to your workspace.',  icon: UserCheck, color: 'text-primary',  bg: 'bg-primary/10'  },
       { category: 'CLIENT_PROJECT',            label: 'New Project',         description: 'When a new project is created for a client.',    icon: Folders,   color: 'text-blue-600',    bg: 'bg-blue-50'    },
       { category: 'CLIENT_SCOPE_OF_WORK',      label: 'Scope of Work',       description: 'When the scope of work is updated.',             icon: FileText,  color: 'text-purple-600',  bg: 'bg-purple-50'  },
       { category: 'CLIENT_DOCUMENT_UPLOADED',  label: 'Document Uploaded',   description: 'When a document is uploaded for a client.',      icon: FileText,  color: 'text-teal-600',    bg: 'bg-teal-50'    },
@@ -112,9 +112,9 @@ function Toggle({
       onClick={() => onChange(!checked)}
       className={`
         relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
-        transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+        transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
         disabled:opacity-50 disabled:cursor-not-allowed
-        ${checked ? 'bg-indigo-600' : 'bg-gray-200'}
+        ${checked ? 'bg-primary' : 'bg-gray-200'}
       `}
     >
       <span
@@ -257,7 +257,7 @@ export default function NotificationPreferencesPage() {
 
       {/* ── Breadcrumb ────────────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5 text-[12px] text-gray-400">
-        <Link href="/notifications" className="hover:text-indigo-600 transition-colors">Notifications</Link>
+        <Link href="/notifications" className="hover:text-primary transition-colors">Notifications</Link>
         <ChevronRight className="w-3.5 h-3.5" />
         <span className="text-gray-700 font-semibold">Preferences</span>
       </div>
@@ -287,7 +287,7 @@ export default function NotificationPreferencesPage() {
       {/* ── Stats summary ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         {[
-          { label: 'In-App On',  count: inAppOnCount,  total, icon: Monitor, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+          { label: 'In-App On',  count: inAppOnCount,  total, icon: Monitor, color: 'text-primary', bg: 'bg-primary/10' },
           { label: 'Email On',   count: emailOnCount,  total, icon: Mail,    color: 'text-blue-600',   bg: 'bg-blue-50'   },
         ].map((stat) => (
           <div key={stat.label} className="flex items-center gap-3 bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
@@ -323,7 +323,7 @@ export default function NotificationPreferencesPage() {
                 <button
                   onClick={() => setAllChannel(field, true)}
                   title={`Enable all ${label}`}
-                  className="p-0.5 text-gray-400 hover:text-indigo-600 transition-colors"
+                  className="p-0.5 text-gray-400 hover:text-primary transition-colors"
                   aria-label={`Enable all ${label}`}
                 >
                   <Bell className="w-3 h-3" />
@@ -423,7 +423,7 @@ export default function NotificationPreferencesPage() {
         <button
           onClick={saveAll}
           disabled={saving || loading || !dirty}
-          className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+          className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-primary hover:bg-primary rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Saving…' : 'Save preferences'}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, Clock, Building2, RefreshCw, AlertCircle, BadgeCheck } from 'lucide-react';
@@ -35,7 +35,7 @@ export default function PortalDashboardPage() {
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <RefreshCw className="w-6 h-6 animate-spin text-indigo-600" />
+        <RefreshCw className="w-6 h-6 animate-spin text-primary" />
       </div>
     );
   }
@@ -63,7 +63,7 @@ export default function PortalDashboardPage() {
       {/* Welcome header */}
       <div>
         <h1 className="text-2xl font-semibold text-gray-900">
-          Welcome back, <span className="text-indigo-600">{profile.contactPerson?.split(' ')[0]}</span>
+          Welcome back, <span className="text-primary">{profile.contactPerson?.split(' ')[0]}</span>
         </h1>
         <p className="text-sm text-gray-400 mt-1">{profile.companyName} · Client Portal</p>
       </div>
@@ -91,8 +91,8 @@ export default function PortalDashboardPage() {
         </div>
 
         <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-          <div className="w-11 h-11 bg-indigo-50 rounded-lg flex items-center justify-center shrink-0">
-            <Building2 className="w-5 h-5 text-indigo-500" />
+          <div className="w-11 h-11 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-primary" />
           </div>
           <div>
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Projects</p>
@@ -120,7 +120,7 @@ export default function PortalDashboardPage() {
             <h2 className="text-sm font-bold text-gray-900">Items Awaiting Your Review</h2>
             <Link
               href="/portal/approvals"
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+              className="text-xs font-semibold text-primary hover:text-primary transition-colors"
             >
               View all →
             </Link>
@@ -138,7 +138,7 @@ export default function PortalDashboardPage() {
                 </div>
                 <Link
                   href="/portal/approvals"
-                  className="shrink-0 ml-4 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-all"
+                  className="shrink-0 ml-4 px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-all"
                 >
                   Review
                 </Link>
@@ -154,7 +154,7 @@ export default function PortalDashboardPage() {
           <h2 className="text-sm font-bold text-gray-900 mb-4">Your Services</h2>
           <div className="flex flex-wrap gap-2">
             {profile.services.map((s: any) => (
-              <span key={s.id} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full text-xs font-semibold">
+              <span key={s.id} className="px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-semibold">
                 {s.service.replace(/_/g, ' ')}
               </span>
             ))}

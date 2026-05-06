@@ -1,4 +1,4 @@
-// app/page.tsx
+﻿// app/page.tsx
 'use client';
 
 import React from 'react';
@@ -104,7 +104,7 @@ export default function LandingPage() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">VUI</span>
               </div>
               <span className="text-xl font-bold text-gray-900">
@@ -122,7 +122,7 @@ export default function LandingPage() {
               </Link>
               <Link
                 href="/sign-up"
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary transition-colors shadow-sm"
               >
                 Sign Up
               </Link>
@@ -138,7 +138,7 @@ export default function LandingPage() {
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               Creative Agency
               <br />
-              <span className="text-indigo-600">Management Simplified</span>
+              <span className="text-primary">Management Simplified</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
               Streamline your creative workflow with an all-in-one platform for
@@ -148,7 +148,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/sign-up"
-                className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-white bg-primary rounded-lg hover:bg-primary transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
               >
                 Get Started Free
                 <ArrowRight className="w-5 h-5" />
@@ -160,7 +160,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 max-w-4xl mx-auto">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-4xl font-bold text-indigo-600 mb-2">
+                <div className="text-4xl font-bold text-primary mb-2">
                   {stat.value}
                 </div>
                 <div className="text-sm text-gray-600 font-medium">
@@ -191,10 +191,10 @@ export default function LandingPage() {
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-lg p-6 border border-gray-200 hover:border-indigo-300 hover:shadow-lg transition-all group"
+                  className="bg-white rounded-lg p-6 border border-gray-200 hover:border-primary/40 hover:shadow-lg transition-all group"
                 >
-                  <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center mb-4 group-hover:bg-indigo-100 transition-colors">
-                    <Icon className="w-6 h-6 text-indigo-600" />
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <Icon className="w-6 h-6 text-primary" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     {feature.title}
@@ -226,7 +226,7 @@ export default function LandingPage() {
               const Icon = benefit.icon;
               return (
                 <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -257,7 +257,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="relative">
               <div className="bg-white rounded-lg p-8 border border-gray-200 h-full">
-                <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6">
+                <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-6">
                   1
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -274,7 +274,7 @@ export default function LandingPage() {
 
             <div className="relative">
               <div className="bg-white rounded-lg p-8 border border-gray-200 h-full">
-                <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6">
+                <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-6">
                   2
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -290,7 +290,7 @@ export default function LandingPage() {
             </div>
 
             <div className="bg-white rounded-lg p-8 border border-gray-200">
-              <div className="w-12 h-12 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xl font-bold mb-6">
+              <div className="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-6">
                 3
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -308,24 +308,24 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl p-12 text-center text-white shadow-2xl">
+          <div className="bg-gradient-to-br from-primary to-primary rounded-2xl p-12 text-center text-white shadow-2xl">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Ready to Transform Your Agency?
             </h2>
-            <p className="text-lg text-indigo-100 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-primary/20 mb-8 max-w-2xl mx-auto">
               Join hundreds of creative agencies already using CreativeOS to
               streamline their workflow and deliver better results.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/sign-up"
-                className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-indigo-600 bg-white rounded-lg hover:bg-gray-50 transition-all shadow-lg flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-primary bg-white rounded-lg hover:bg-gray-50 transition-all shadow-lg flex items-center justify-center gap-2"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
-            <p className="text-sm text-indigo-200 mt-6">
+            <p className="text-sm text-primary/30 mt-6">
               No credit card required • 14-day free trial • Cancel anytime
             </p>
           </div>
@@ -339,7 +339,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xs">VUI</span>
                 </div>
                 <span className="text-lg font-bold text-white">

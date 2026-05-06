@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from 'react';
 import {
@@ -177,36 +177,36 @@ export const DesignerTaskList: React.FC<DesignerTaskListProps> = ({
 
                   {/* Copy Context */}
                   {task.calendarCopy && (
-                    <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 space-y-2">
-                      <h5 className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wide">Copy Reference</h5>
+                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 space-y-2">
+                      <h5 className="text-[10px] font-semibold text-primary/60 uppercase tracking-wide">Copy Reference</h5>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {task.calendarCopy.platform && (
-                          <span className="text-[10px] font-bold bg-white border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{task.calendarCopy.platform}</span>
+                          <span className="text-[10px] font-bold bg-white border border-primary/20 text-primary px-2 py-0.5 rounded-full">{task.calendarCopy.platform}</span>
                         )}
                         {task.calendarCopy.mediaType && (
-                          <span className="text-[10px] font-bold bg-white border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{task.calendarCopy.mediaType}</span>
+                          <span className="text-[10px] font-bold bg-white border border-primary/20 text-primary px-2 py-0.5 rounded-full">{task.calendarCopy.mediaType}</span>
                         )}
                         {task.calendarCopy.bucket && (
-                          <span className="text-[10px] font-bold bg-white border border-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">{task.calendarCopy.bucket.name}</span>
+                          <span className="text-[10px] font-bold bg-white border border-primary/20 text-primary px-2 py-0.5 rounded-full">{task.calendarCopy.bucket.name}</span>
                         )}
                         {task.calendarCopy.publishDate && (
-                          <span className="text-[10px] font-bold bg-white border border-indigo-100 text-gray-500 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] font-bold bg-white border border-primary/20 text-gray-500 px-2 py-0.5 rounded-full">
                             Publish: {new Date(task.calendarCopy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             {task.calendarCopy.publishTime && ` at ${task.calendarCopy.publishTime}`}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-indigo-800 leading-relaxed line-clamp-3">{task.calendarCopy.content}</p>
+                      <p className="text-xs text-primary leading-relaxed line-clamp-3">{task.calendarCopy.content}</p>
                       {task.calendarCopy.caption && (
-                        <p className="text-[11px] text-indigo-600 italic line-clamp-2">{task.calendarCopy.caption}</p>
+                        <p className="text-[11px] text-primary italic line-clamp-2">{task.calendarCopy.caption}</p>
                       )}
-                      <span className="text-[11px] font-semibold text-indigo-600 mr-1">Reference URL:</span>
+                      <span className="text-[11px] font-semibold text-primary mr-1">Reference URL:</span>
                       {task.calendarCopy.referenceUrl && (
                         <a
                           href={task.calendarCopy.referenceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 hover:underline break-all"
+                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary hover:underline break-all"
                         >
                           <Link size={11} className="shrink-0" /> {task.calendarCopy.referenceUrl}
                         </a>

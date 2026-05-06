@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -41,11 +41,11 @@ export default function MembersPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as Tab)}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${isActive
-                ? 'bg-white text-indigo-600 shadow-sm'
+                ? 'bg-white text-primary shadow-sm'
                 : 'text-gray-500 hover:text-gray-900'
                 }`}
             >
-              <tab.icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-gray-400'}`} />
+              <tab.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-gray-400'}`} />
               {tab.name}
             </button>
           );

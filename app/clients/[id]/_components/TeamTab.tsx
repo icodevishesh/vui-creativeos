@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -71,7 +71,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
 
   if (isLoadingTeam) return (
     <div className="flex justify-center p-20">
-      <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+      <RefreshCw className="w-8 h-8 text-primary animate-spin" />
     </div>
   );
 
@@ -84,7 +84,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
         </div>
         <button
           onClick={() => setIsAssigning(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
         >
           <UserPlus className="w-4 h-4" />
           Assign Member
@@ -95,10 +95,10 @@ export function TeamTab({ clientId }: TeamTabProps) {
         {team?.map((member: any) => (
           <div
             key={member.id}
-            className="group flex items-center justify-between bg-white p-5 rounded-lg border border-gray-100 shadow-sm hover:border-indigo-100 transition-all"
+            className="group flex items-center justify-between bg-white p-5 rounded-lg border border-gray-100 shadow-sm hover:border-primary/20 transition-all"
           >
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 font-bold text-lg">
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold text-lg">
                 {member.userName.slice(0, 2).toUpperCase()}
               </div>
               <div>
@@ -153,7 +153,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-gray-700">Select Member</label>
                 <select
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-medium"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium"
                   value={formData.userId}
                   onChange={(e) => {
                     const newUserId = e.target.value;
@@ -191,7 +191,7 @@ export function TeamTab({ clientId }: TeamTabProps) {
                 <button
                   type="submit"
                   disabled={assignMutation.isPending}
-                  className="px-10 py-3 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-70"
+                  className="px-10 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all disabled:opacity-70"
                 >
                   {assignMutation.isPending ? 'Assigning...' : 'Complete Assignment'}
                 </button>
