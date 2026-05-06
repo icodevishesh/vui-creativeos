@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
 import { createDesignerTasksForCalendar } from '@/lib/approval-helpers';
+import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -176,6 +177,22 @@ export async function POST(req: NextRequest) {
         await createDesignerTasksForCalendar(task);
       }
 
+      // ── Notify assignee + creator about approval ──────────────────
+      const approvalRecipients = [
+        task.assignedToId,
+        (task as any).createdById,
+      ].filter((id): id is string => !!id && id !== clientUser.id);
+
+      if (approvalRecipients.length > 0) {
+        await dispatchNotification({
+          category: 'TASK_APPROVED',
+          recipientIds: [...new Set(approvalRecipients)],
+          title: 'Task approved by client',
+          message: `"${task.title}" has been approved by the client.`,
+          link: `/tasks/${taskId}`,
+        });
+      }
+
       return NextResponse.json({ success: true, task: updated });
     }
 
@@ -214,6 +231,19 @@ export async function POST(req: NextRequest) {
           reviewerName,
         },
       });
+
+      // ── Notify assignee about feedback / rejection ────────────────
+      if (task.assignedToId) {
+        await dispatchNotification({
+          category: action === 'reject' ? 'TASK_REJECT' : 'TASK_FEEDBACK',
+          recipientIds: [task.assignedToId],
+          title: action === 'reject'
+            ? 'Task rejected by client'
+            : 'Client feedback received',
+          message: `"${task.title}" — ${label}: ${feedback}`,
+          link: `/tasks/${taskId}`,
+        });
+      }
 
       return NextResponse.json({ success: true, task: updated });
     }

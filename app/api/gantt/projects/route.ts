@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 // GET /api/gantt/projects
 // Returns projects for the project selector.
@@ -103,6 +104,21 @@ export async function POST(req: Request) {
         status: 'PLANNING',
       },
     });
+
+    // ── Notify org owner (ADMIN_OWNER) about the new project ───────────
+    const orgOwner = await prisma.organization.findUnique({
+      where: { id: client.organizationId },
+      select: { ownerId: true },
+    });
+    if (orgOwner) {
+      await dispatchNotification({
+        category: 'CLIENT_PROJECT',
+        recipientIds: [orgOwner.ownerId],
+        title: 'New project created',
+        message: `Project "${name}" was created for a client.`,
+        link: `/gantt-chart`,
+      });
+    }
 
     return NextResponse.json(project);
   } catch (error) {

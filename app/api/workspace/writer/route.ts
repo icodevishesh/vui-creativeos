@@ -75,6 +75,15 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
+
+    // task = []
+    // client approve
+    // --> all copy approved 
+    // --> approved 
+
+
+
+
     const result = tasks.map((task) => {
       const { subTasks, ...rest } = task;
       // Only surface revision subtasks when the task is OPEN and needs writer action.

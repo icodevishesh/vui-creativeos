@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 type Params = { params: Promise<{ projectId: string }> };
 
@@ -100,6 +101,21 @@ export async function POST(req: Request, { params }: Params) {
         clientId: project.clientId,
       },
     });
+
+    // ── Notify org owner about the new Gantt task ───────────────────
+    const fullProject = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { organization: { select: { ownerId: true } }, name: true },
+    });
+    if (fullProject?.organization?.ownerId) {
+      await dispatchNotification({
+        category: 'CLIENT_GANTCHART_CREATION',
+        recipientIds: [fullProject.organization.ownerId],
+        title: 'Gantt task added',
+        message: `Task "${text}" was added to project "${fullProject.name}".`,
+        link: `/gantt-chart`,
+      });
+    }
 
     return NextResponse.json({ id: task.id });
   } catch (error) {

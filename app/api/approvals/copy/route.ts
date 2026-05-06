@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
+import { dispatchNotification } from "@/lib/notifications/dispatcher";
 
 /**
  * TODO: Add to queue for notification for subtasks
@@ -63,8 +64,8 @@ export async function PATCH(req: NextRequest) {
             // Advance copy status based on current task stage
             const newCopyStatus =
                 task.status === TaskStatus.INTERNAL_REVIEW ? "CLIENT_REVIEW" :
-                task.status === TaskStatus.CLIENT_REVIEW ? "APPROVED" :
-                "APPROVED";
+                    task.status === TaskStatus.CLIENT_REVIEW ? "APPROVED" :
+                        "APPROVED";
 
             await prisma.calendarCopy.update({
                 where: { id: copyId },
@@ -82,11 +83,13 @@ export async function PATCH(req: NextRequest) {
             );
 
             let newTaskStatus: string = task.status;
+
             if (allApproved && task.status === TaskStatus.CLIENT_REVIEW) {
                 newTaskStatus = TaskStatus.APPROVED;
             } else if (
                 task.status === TaskStatus.INTERNAL_REVIEW &&
                 allCopies.every((c) => c.status === "CLIENT_REVIEW" || c.status === "APPROVED" || c.status === "PUBLISHED")
+
             ) {
                 newTaskStatus = TaskStatus.CLIENT_REVIEW;
             }
@@ -98,7 +101,19 @@ export async function PATCH(req: NextRequest) {
 
             // If task just reached APPROVED, spawn designer tasks
             if (newTaskStatus === TaskStatus.APPROVED && !task.calendarCopyId) {
+                // TODO: check media url for task selection
                 await createDesignerTasksForCalendar(task);
+            }
+
+            // ── Notify assignee of approval ────────────────────────────
+            if (task.assignedToId) {
+                await dispatchNotification({
+                    category: 'TASK_APPROVED',
+                    recipientIds: [task.assignedToId],
+                    title: 'Copy approved',
+                    message: `A calendar copy for task "${task.title}" has been approved.`,
+                    link: `/tasks/${taskId}`,
+                });
             }
 
             return NextResponse.json({
@@ -143,6 +158,17 @@ export async function PATCH(req: NextRequest) {
                     reviewerName: reviewerName || null,
                 },
             });
+
+            // ── Notify assignee of rejection ────────────────────────────
+            if (task.assignedToId) {
+                await dispatchNotification({
+                    category: 'TASK_REJECT',
+                    recipientIds: [task.assignedToId],
+                    title: 'Copy rejected',
+                    message: `A calendar copy for task "${task.title}" was rejected. Reason: ${feedback}`,
+                    link: `/tasks/${taskId}`,
+                });
+            }
 
             return NextResponse.json({
                 success: true,

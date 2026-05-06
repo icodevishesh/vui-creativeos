@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 type Params = { params: Promise<{ projectId: string; id: string }> };
 
@@ -91,6 +92,21 @@ export async function PUT(req: Request, { params }: Params) {
         ...(parent !== undefined && { parent }),
       },
     });
+
+    // ── Notify org owner about the Gantt task update ────────────────
+    const fullProject = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { organization: { select: { ownerId: true } }, name: true },
+    });
+    if (fullProject?.organization?.ownerId) {
+      await dispatchNotification({
+        category: 'CLIENT_GANTCHART_UPDATE',
+        recipientIds: [fullProject.organization.ownerId],
+        title: 'Gantt task updated',
+        message: `A task was updated in project "${fullProject.name}".`,
+        link: `/gantt-chart`,
+      });
+    }
 
     return NextResponse.json({ id: updated.id });
   } catch (error) {

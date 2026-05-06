@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
+import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -85,6 +86,17 @@ export async function POST(
         await prisma.task.update({
           where: { id: relatedTask.id },
           data: { status: TaskStatus.CLIENT_REVIEW },
+        });
+      }
+
+      // ── Notify the task assignee about the client feedback ─────────
+      if (relatedTask.assignedToId) {
+        await dispatchNotification({
+          category: 'TASK_FEEDBACK',
+          recipientIds: [relatedTask.assignedToId],
+          title: 'Client feedback on calendar copy',
+          message: `The client left feedback on a copy: "${feedback}".`,
+          link: `/tasks/${relatedTask.id}`,
         });
       }
     }

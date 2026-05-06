@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus, TaskPriority } from "@prisma/client";
+import { dispatchNotification } from "@/lib/notifications/dispatcher";
 
 // GET /api/tasks
 // Query params: projectId, clientId, organizationId
@@ -115,6 +116,17 @@ export async function POST(req: NextRequest) {
                 assignedTo: { select: { id: true, name: true } },
             },
         });
+
+        // ── Notify assignee ──────────────────────────────────────────────
+        if (assignedToId) {
+            await dispatchNotification({
+                category: 'TASK_ASSIGNED',
+                recipientIds: [assignedToId],
+                title: 'New task assigned to you',
+                message: `You have been assigned the task "${title}".`,
+                link: `/tasks/${task.id}`,
+            });
+        }
 
         return NextResponse.json(task, { status: 201 });
     } catch (err) {

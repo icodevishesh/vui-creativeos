@@ -8,6 +8,7 @@ import { prisma } from '../../../lib/prisma';
 import { EngagementType, ServiceType } from '@prisma/client';
 import { ensureClientFolder } from '@/lib/storage/file-router';
 import bcrypt from 'bcryptjs';
+import { dispatchNotification } from '@/lib/notifications/dispatcher';
 
 function generatePassword(): string {
   const upper = 'ABCDEFGHJKMNPQRSTUVWXYZ';
@@ -133,6 +134,15 @@ export async function POST(req: Request) {
 
     // Auto-create the client's upload folder in the repository
     await ensureClientFolder(client.id, client.companyName);
+
+    // ── Notify admin that a new client has been onboarded ─────────────
+    await dispatchNotification({
+      category: 'CLIENT_ONBOARDED',
+      recipientIds: [adminUser.id],
+      title: 'New client onboarded',
+      message: `"${companyName}" has been successfully added as a client.`,
+      link: `/clients`,
+    });
 
     return NextResponse.json({ ...client, generatedPassword: plainPassword });
   } catch (error) {
