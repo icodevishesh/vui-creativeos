@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 import { withApiLogging } from '@/lib/api-logging';
 
 
@@ -51,6 +52,23 @@ export const POST = withApiLogging(async function POST(
         userRole,
       },
     });
+
+    const client = await prisma.clientProfile.findUnique({
+      where: { id },
+      select: { companyName: true },
+    });
+
+    if (client) {
+      await notifyClientTeamMembers({
+        clientId: id,
+        category: 'CLIENT_TEAM_MEMBER_ADDED',
+        title: 'Team member added',
+        message: `${member.userName} has been added to the client team for ${client.companyName}.`,
+        link: `/clients/${id}`,
+      }).catch((error) => {
+        console.error('[CLIENT_TEAM_POST] notifyClientTeamMembers failed:', error);
+      });
+    }
     
     return NextResponse.json(member);
   } catch (error) {

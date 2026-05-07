@@ -5,7 +5,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
-import { dispatchNotification } from '@/lib/notifications/dispatcher';
 import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 import { withApiLogging } from '@/lib/api-logging';
 
@@ -22,11 +21,23 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
 
     if (user?.userType === 'CLIENT') {
       const clientProfile = await prisma.clientProfile.findFirst({
-        where: { email: user.email },
+        where: {
+          OR: [
+            { userId: user.id },
+            { email: user.email },
+          ],
+        },
         select: { id: true },
       });
       if (!clientProfile) return NextResponse.json([]);
       clientIdFilter = clientProfile.id;
+    } else if (user?.userType === 'CLIENT_MEMBER') {
+      const teamMember = await prisma.clientTeamMember.findFirst({
+        where: { userId: user.id },
+        select: { clientId: true },
+      });
+      if (!teamMember) return NextResponse.json([]);
+      clientIdFilter = teamMember.clientId;
     } else {
       const { searchParams } = new URL(req.url);
       const param = searchParams.get('clientId');
@@ -106,22 +117,6 @@ export const POST = withApiLogging(async function POST(req: Request) {
         status: 'PLANNING',
       },
     });
-
-    // Notify org owner (ADMIN_OWNER) about the new project
-    const orgOwner = await prisma.organization.findUnique({
-      where: { id: client.organizationId },
-      select: { ownerId: true },
-    });
-
-    if (orgOwner) {
-      await dispatchNotification({
-        category: 'CLIENT_PROJECT',
-        recipientIds: [orgOwner.ownerId],
-        title: 'New project created',
-        message: `Project "${name}" was created for a client.`,
-        link: `/gantt-chart`,
-      });
-    }
 
     await notifyClientTeamMembers({
       clientId,

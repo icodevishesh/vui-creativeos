@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2, Bell } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2, Bell, UploadCloud } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { useNotificationCount } from '@/context/NotificationContext';
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/portal/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portal/gantt', label: 'Gantt Chart', icon: BarChart2 },
   { href: '/portal/approvals', label: 'Approvals', icon: CheckCircle2 },
+  { href: '/portal/creative-uploads', label: 'Creative Uploads', icon: UploadCloud },
   { href: '/portal/notifications', label: 'Notifications', icon: Bell },
   { href: '/portal/profile', label: 'My Profile', icon: User },
 ];

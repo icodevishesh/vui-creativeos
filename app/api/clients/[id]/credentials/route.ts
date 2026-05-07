@@ -12,12 +12,19 @@ export const POST = withApiLogging(async function POST(req: NextRequest, { param
     const client = await prisma.clientProfile.findUnique({ where: { id } });
     if (!client) return NextResponse.json({ error: 'Client not found' }, { status: 404 });
 
-    const user = await prisma.user.findUnique({ where: { email: client.email } });
-    if (!user || user.userType !== 'CLIENT') {
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { id: client.userId },
+          { email: client.email },
+        ],
+      },
+    });
+    if (!user || !['CLIENT', 'CLIENT_MEMBER'].includes(user.userType)) {
       return NextResponse.json({ error: 'No portal account found for this client' }, { status: 404 });
     }
 
-    return NextResponse.json({ email: client.email, generatedPassword: user.password });
+    return NextResponse.json({ email: user.email, generatedPassword: user.password });
   } catch (err) {
     console.error('[POST /api/clients/[id]/credentials]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

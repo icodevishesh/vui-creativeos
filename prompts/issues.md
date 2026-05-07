@@ -88,3 +88,22 @@ This type of user will be added by a client for his client's portal.
 The CLIENT_MEMBER should have all the access same as CLIENT, no changes in permission.
 
 I need to create this flow, so make a implement plan to create this flow. In which files do i need to make changes? and what changes i need to do?
+
+- remove upload another button form client document tab
+- limit gantt chart notification update
+- clients are not reciveing notification
+  1. added team members
+  2. new project created
+  3. gantt chart created/updated
+  4. copy submitted for client review
+
+- show creative uploades in client portal
+
+- writer can revoke a submitted copy only if the status is internal_review (new feature)
+
+http://localhost:3000/portal/creative-uploads
+
+C:\Users\VUI Live\elevana-projects\vui-creativeos\app\uploads\[...path]\route.ts
+
+take refrence from below file
+C:\Users\VUI Live\elevana-projects\vui-creativeos\app\creative-upload\page.tsx

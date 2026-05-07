@@ -190,19 +190,6 @@ export default function Upload({ folderName, onUploadComplete, disabled }: Uploa
 							{error && (
 								<p className="text-red-400 text-sm text-center">{error}</p>
 							)}
-
-							{completed && (
-								<button
-									onClick={() => {
-										setFile(null);
-										setCompleted(false);
-										setProgress(0);
-									}}
-									className="w-full py-3 rounded-lg bg-black text-white hover:bg-black/95 font-bold hover:opacity-90 transition-opacity"
-								>
-									Upload Another
-								</button>
-							)}
 						</div>
 					)}
 				</div>

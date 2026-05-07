@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { MemberRole } from '@prisma/client';
 import { dispatchNotification } from './dispatcher';
+import { notifyClientTeamMembers } from './client-notifications';
 
 interface TaskRef {
   id: string;
@@ -61,20 +62,13 @@ export async function notifyInternalReviewers(task: TaskRef): Promise<void> {
  * and is ready for their review.
  */
 export async function notifyClientForReview(task: TaskRef): Promise<void> {
-  const client = await prisma.clientProfile.findUnique({
-    where: { id: task.clientId },
-    select: { userId: true },
-  });
-
-  if (!client?.userId) return;
-
   const link = task.calendarId
     ? `/portal/approvals/calendar/${task.calendarId}`
     : `/portal/approvals`;
 
-  await dispatchNotification({
+  await notifyClientTeamMembers({
+    clientId: task.clientId,
     category: 'TASK_CLIENT_REVIEW',
-    recipientIds: [client.userId],
     title: 'Content Ready for Your Review',
     message: `"${task.title}" has been approved internally and is ready for your review.`,
     link,

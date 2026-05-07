@@ -36,11 +36,35 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
 
     const client = await prisma.clientProfile.findUnique({
       where: { id: clientId },
-      select: { id: true, companyName: true },
+      select: { id: true, companyName: true, userId: true, email: true },
     });
 
     if (!client) {
       return NextResponse.json({ error: 'Client not found' }, { status: 404 });
+    }
+
+    let allowedClientId: string | null = client.id;
+    if (user.userType === 'CLIENT') {
+      const ownClient = await prisma.clientProfile.findFirst({
+        where: {
+          OR: [
+            { userId: user.id },
+            { email: user.email },
+          ],
+        },
+        select: { id: true },
+      });
+      allowedClientId = ownClient?.id ?? null;
+    } else if (user.userType === 'CLIENT_MEMBER') {
+      const teamMember = await prisma.clientTeamMember.findFirst({
+        where: { userId: user.id },
+        select: { clientId: true },
+      });
+      allowedClientId = teamMember?.clientId ?? null;
+    }
+
+    if (!allowedClientId || allowedClientId !== client.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { asset } = await saveFileToClientFolder({

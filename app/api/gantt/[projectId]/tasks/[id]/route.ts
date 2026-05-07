@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 import { withApiLogging } from '@/lib/api-logging';
 
 
@@ -11,21 +11,33 @@ type Params = { params: Promise<{ projectId: string; id: string }> };
  * TODO: Add to queue for notification for subtasks
  */
 
+const dateValue = (value: unknown) => {
+  if (value === undefined || value === null || value === '') return undefined;
+  const date = new Date(value as string);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
+const normalizeParent = (value: unknown) => {
+  if (value === undefined) return undefined;
+  if (value === 0 || value === '0' || value === null || value === '') return null;
+  return String(value);
+};
+
 // PUT /api/gantt/[projectId]/tasks/[id]
 export const PUT = withApiLogging(async function PUT(req: Request, { params }: Params) {
   try {
     const { id, projectId } = await params;
     const body = await req.json();
 
-    const task = await prisma.ganttTask.findFirst({ 
-      where: { id, projectId } 
+    const task = await prisma.ganttTask.findFirst({
+      where: { id, projectId },
     });
-    
+
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }
 
-    // ── Reorder operation ──────────────────────────────────────────────
+    // Move/reorder operations should not create client-facing notifications.
     if (body.operation === 'move') {
       const { mode, target } = body as { mode: 'before' | 'after' | 'child'; target: string };
 
@@ -64,23 +76,28 @@ export const PUT = withApiLogging(async function PUT(req: Request, { params }: P
       return NextResponse.json({ id });
     }
 
-    // ── Normal update ─────────────────────────────────────────────────
-    const { 
-      text, 
-      start, 
-      end, 
+    const {
+      text,
+      start,
+      end,
       duration: rawDuration = 1,
       progress: rawProgress = 0,
       type = 'task',
       parent: rawParent,
-      mode,
-      target,
     } = body;
 
-    // Sanitize inputs if provided
     const duration = rawDuration !== undefined ? Math.max(1, Math.round(Number(rawDuration))) : undefined;
     const progress = rawProgress !== undefined ? Math.min(1, Math.max(0, Number(rawProgress))) : undefined;
-    const parent = (rawParent === 0 || rawParent === '0') ? null : rawParent;
+    const parent = normalizeParent(rawParent);
+
+    const hasMeaningfulChange =
+      (text !== undefined && text !== task.text) ||
+      (start !== undefined && dateValue(start) !== dateValue(task.start)) ||
+      (end !== undefined && dateValue(end) !== dateValue(task.end)) ||
+      (duration !== undefined && duration !== task.duration) ||
+      (progress !== undefined && progress !== task.progress) ||
+      (type !== undefined && type !== task.type) ||
+      (rawParent !== undefined && parent !== (task.parent ?? null));
 
     const updated = await prisma.ganttTask.update({
       where: { id },
@@ -95,19 +112,23 @@ export const PUT = withApiLogging(async function PUT(req: Request, { params }: P
       },
     });
 
-    // ── Notify org owner about the Gantt task update ────────────────
-    const fullProject = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: { organization: { select: { ownerId: true } }, name: true },
-    });
-    if (fullProject?.organization?.ownerId) {
-      await dispatchNotification({
-        category: 'CLIENT_GANTCHART_UPDATE',
-        recipientIds: [fullProject.organization.ownerId],
-        title: 'Gantt task updated',
-        message: `A task was updated in project "${fullProject.name}".`,
-        link: `/gantt-chart`,
+    if (hasMeaningfulChange) {
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { name: true, clientId: true, client: { select: { companyName: true } } },
       });
+
+      if (project?.clientId) {
+        await notifyClientTeamMembers({
+          clientId: project.clientId,
+          category: 'CLIENT_GANTCHART_UPDATE',
+          title: 'Gantt task updated',
+          message: `A task was updated in project "${project.name}" for ${project.client.companyName}.`,
+          link: `/gantt-chart`,
+        }).catch((error) => {
+          console.error('[GANTT_TASK_PUT] notifyClientTeamMembers failed:', error);
+        });
+      }
     }
 
     return NextResponse.json({ id: updated.id });
@@ -122,8 +143,8 @@ export const DELETE = withApiLogging(async function DELETE(_req: Request, { para
   try {
     const { id, projectId } = await params;
 
-    await prisma.ganttTask.delete({ 
-      where: { id, projectId } 
+    await prisma.ganttTask.delete({
+      where: { id, projectId },
     });
 
     return NextResponse.json({});

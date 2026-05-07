@@ -42,7 +42,12 @@ export const GET = withApiLogging(async function GET() {
       where = {};
     } else if (me.userType === 'CLIENT') {
       // CLIENT users: only see the ClientProfile whose userId matches their own
-      where = { userId: me.id };
+      where = {
+        OR: [
+          { userId: me.id },
+          { email: me.email },
+        ],
+      };
     } else {
       // Regular org members: only clients where they appear in ClientTeamMember
       where = { teamMembers: { some: { userId: me.id } } };
@@ -126,6 +131,10 @@ export const POST = withApiLogging(async function POST(req: Request) {
 
     // Check if a CLIENT user already exists for this email
     let clientUser = await prisma.user.findUnique({ where: { email } });
+    if (clientUser && !['CLIENT', 'CLIENT_MEMBER'].includes(clientUser.userType)) {
+      return new NextResponse('Email already belongs to another account', { status: 400 });
+    }
+
     if (!clientUser) {
       clientUser = await prisma.user.create({
         data: {
@@ -146,7 +155,7 @@ export const POST = withApiLogging(async function POST(req: Request) {
         phone,
         industry,
         engagementType: engagementType as EngagementType,
-        userId: adminUser.id,
+        userId: clientUser.id,
         organizationId: org.id,
         services: {
           create: (services || []).map((service: ServiceType) => ({ service }))

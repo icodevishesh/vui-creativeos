@@ -9,6 +9,29 @@ export interface ClientTeamNotificationInput {
   link?: string;
 }
 
+async function resolveClientPortalUserId(client: { userId: string; email: string }): Promise<string | undefined> {
+  const [userById, userByEmail] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: client.userId },
+      select: { id: true, userType: true },
+    }),
+    prisma.user.findUnique({
+      where: { email: client.email },
+      select: { id: true, userType: true },
+    }),
+  ]);
+
+  if (userById && ['CLIENT', 'CLIENT_MEMBER'].includes(userById.userType)) {
+    return userById.id;
+  }
+
+  if (userByEmail && ['CLIENT', 'CLIENT_MEMBER'].includes(userByEmail.userType)) {
+    return userByEmail.id;
+  }
+
+  return undefined;
+}
+
 export async function notifyClientTeamMembers(input: ClientTeamNotificationInput): Promise<void> {
   const [teamMembers, client] = await Promise.all([
     prisma.clientTeamMember.findMany({
@@ -17,11 +40,13 @@ export async function notifyClientTeamMembers(input: ClientTeamNotificationInput
     }),
     prisma.clientProfile.findUnique({
       where: { id: input.clientId },
-      select: { organizationId: true },
+      select: { organizationId: true, userId: true, email: true },
     }),
   ]);
 
   let ownerId: string | undefined;
+  const portalUserId = client ? await resolveClientPortalUserId(client) : undefined;
+
   if (client?.organizationId) {
     const org = await prisma.organization.findUnique({
       where: { id: client.organizationId },
@@ -32,6 +57,7 @@ export async function notifyClientTeamMembers(input: ClientTeamNotificationInput
 
   const recipientIds = [...new Set([
     ...teamMembers.map((member) => member.userId),
+    ...(portalUserId ? [portalUserId] : []),
     ...(ownerId ? [ownerId] : [])
   ])];
   if (recipientIds.length === 0) return;

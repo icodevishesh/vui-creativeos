@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 import { withApiLogging } from '@/lib/api-logging';
 
 
@@ -49,11 +49,11 @@ export const POST = withApiLogging(async function POST(req: Request, { params }:
     const progress = Math.min(1, Math.max(0, Number(rawProgress)));
     const parent = (rawParent === 0 || rawParent === '0') ? null : (rawParent || null);
 
-    const project = await prisma.project.findUnique({ 
+    const project = await prisma.project.findUnique({
       where: { id: projectId },
-      select: { clientId: true }
+      select: { clientId: true, name: true, client: { select: { companyName: true } } },
     });
-    
+
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
@@ -104,20 +104,15 @@ export const POST = withApiLogging(async function POST(req: Request, { params }:
       },
     });
 
-    // ── Notify org owner about the new Gantt task ───────────────────
-    const fullProject = await prisma.project.findUnique({
-      where: { id: projectId },
-      select: { organization: { select: { ownerId: true } }, name: true },
+    await notifyClientTeamMembers({
+      clientId: project.clientId,
+      category: 'CLIENT_GANTCHART_CREATION',
+      title: 'Gantt task added',
+      message: `Task "${text}" was added to project "${project.name}" for ${project.client.companyName}.`,
+      link: `/gantt-chart`,
+    }).catch((error) => {
+      console.error('[GANTT_TASKS_POST] notifyClientTeamMembers failed:', error);
     });
-    if (fullProject?.organization?.ownerId) {
-      await dispatchNotification({
-        category: 'CLIENT_GANTCHART_CREATION',
-        recipientIds: [fullProject.organization.ownerId],
-        title: 'Gantt task added',
-        message: `Task "${text}" was added to project "${fullProject.name}".`,
-        link: `/gantt-chart`,
-      });
-    }
 
     return NextResponse.json({ id: task.id });
   } catch (error) {

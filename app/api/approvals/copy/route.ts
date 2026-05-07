@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
+import { notifyClientForReview } from "@/lib/notifications/task-notifications";
 import { withApiLogging } from '@/lib/api-logging';
 
 
@@ -122,6 +123,12 @@ export const PATCH = withApiLogging(async function PATCH(req: NextRequest) {
                 where: { id: taskId },
                 data: { status: newTaskStatus },
             });
+
+            if (newTaskStatus === TaskStatus.CLIENT_REVIEW) {
+                notifyClientForReview(updatedTask as any).catch((error) => {
+                    console.error('[PATCH /api/approvals/copy] notifyClientForReview failed:', error);
+                });
+            }
 
             // If task just reached APPROVED, spawn designer tasks
             if (newTaskStatus === TaskStatus.APPROVED && !task.calendarCopyId) {
