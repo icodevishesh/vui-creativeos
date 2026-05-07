@@ -26,7 +26,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, setActi
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}
           className={`px-3 py-1 rounded-lg transition-all ${activeTab === tab.id
-            ? 'bg-white text-blue-600 shadow-sm'
+            ? 'bg-white text-primary shadow-sm'
             : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
             }`}
           aria-current={activeTab === tab.id ? 'page' : undefined}

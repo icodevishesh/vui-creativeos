@@ -12,8 +12,6 @@ import {
   XCircle,
   Send,
   Edit2,
-  Globe,
-  Film,
   Hash,
   Calendar,
   Clock,
@@ -22,7 +20,6 @@ import {
   ChevronUp,
   Building2,
   FolderOpen,
-  BookOpen,
   Layers,
   ThumbsUp,
   ThumbsDown,
@@ -124,7 +121,7 @@ const STATUS_STYLE: Record<string, string> = {
   DRAFT: "bg-gray-100 text-gray-500 border-gray-200",
   UNDER_REVIEW: "bg-amber-50 text-amber-600 border-amber-200",
   INTERNAL_REVIEW: "bg-amber-50 text-amber-600 border-amber-200",
-  CLIENT_REVIEW: "bg-primary/10 text-primary border-primary/30",
+  CLIENT_REVIEW: "bg-blue-500/10 text-blue-500 border-blue-200",
   APPROVED: "bg-emerald-50 text-emerald-600 border-emerald-200",
   REJECTED: "bg-rose-50 text-rose-600 border-rose-200",
   PUBLISHED: "bg-violet-50 text-violet-600 border-violet-200",
@@ -142,7 +139,7 @@ const STATUS_DOT: Record<string, string> = {
 
 const TASK_STATUS_STYLE: Record<string, string> = {
   INTERNAL_REVIEW: "bg-amber-50 text-amber-700 border-amber-200",
-  CLIENT_REVIEW: "bg-primary/10 text-primary border-primary/30",
+  CLIENT_REVIEW: "bg-blue-500/10 text-blue-500 border-blue-200",
   APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
   OPEN: "bg-gray-100 text-gray-500 border-gray-200",
 };
@@ -747,7 +744,7 @@ function CopyRow({
           <div className="flex items-center gap-1.5 shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setEditOpen(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold text-gray-600 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
             >
               <Edit2 className="w-3 h-3" />
               Edit
@@ -810,7 +807,7 @@ function CopyRow({
             {!copy.isCarousel && copy.hashtags && (
               <div>
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hashtags</p>
-                <p className="text-xs text-primary font-medium break-words">{copy.hashtags}</p>
+                <p className="text-xs text-primary font-medium wrap-break-words">{copy.hashtags}</p>
               </div>
             )}
             {copy.referenceUrl && (
@@ -853,7 +850,7 @@ function CopyRow({
 
       {/* Per-copy reject modal */}
       {rejectOpen && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-80 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <h3 className="text-base font-bold text-gray-900">Reject this copy</h3>
             <p className="text-xs text-gray-500">Provide a reason — this will be sent back to the writer for revision.</p>
@@ -1049,7 +1046,7 @@ export default function CalendarApprovalDetailPage({
 
           <button
             onClick={() => setVisualizeOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-all cursor-pointer"
           >
             <LayoutGrid className="w-4 h-4" />
             Visualize
@@ -1061,7 +1058,7 @@ export default function CalendarApprovalDetailPage({
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex items-start gap-4 min-w-0">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <BookOpen className="w-6 h-6 text-primary" />
+                <Calendar className="w-6 h-6 text-primary" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-xl font-bold text-gray-900 tracking-tight">{calendar.name}</h1>
@@ -1111,9 +1108,9 @@ export default function CalendarApprovalDetailPage({
             )}
             {/* Awaiting client approval — show status badge only, no action buttons */}
             {reviewTask && reviewTask.status === "CLIENT_REVIEW" && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg">
-                <Clock className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-primary">Awaiting Client Approval</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                <Clock className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-semibold text-blue-600">Awaiting Client Approval</span>
               </div>
             )}
           </div>
@@ -1151,7 +1148,7 @@ export default function CalendarApprovalDetailPage({
           {/* Objective */}
           {calendar.objective && (
             <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
-              <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1">
+              <p className="text-[12px] font-semibold text-primary uppercase tracking-widest mb-1">
                 Calendar Objective
               </p>
               <p className="text-sm text-primary leading-relaxed">{calendar.objective}</p>

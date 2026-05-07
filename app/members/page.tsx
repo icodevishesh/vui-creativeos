@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useState } from 'react';
-import { Users, ShieldCheck, UserPlus, Settings2 } from 'lucide-react';
+import { Users, UserPlus, Settings2 } from 'lucide-react';
 import { AddMemberForm } from './_components/AddMemberForm';
 import { AddRoleForm } from './_components/AddRoleForm';
 import { MemberList } from './_components/MemberList';
@@ -15,7 +15,7 @@ export default function MembersPage() {
   const tabs = [
     { id: 'directory', name: 'Team Directory', icon: Users },
     { id: 'add-member', name: 'Add Member', icon: UserPlus },
-    { id: 'manage-roles', name: 'Manage Roles', icon: Settings2 },
+    // { id: 'manage-roles', name: 'Manage Roles', icon: Settings2 },
   ];
 
   return (
@@ -36,6 +36,7 @@ export default function MembersPage() {
       <div className="flex items-center gap-1 bg-gray-100 p-1.5 rounded-lg w-fit">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
           return (
             <button
               key={tab.id}
@@ -45,7 +46,7 @@ export default function MembersPage() {
                 : 'text-gray-500 hover:text-gray-900'
                 }`}
             >
-              <tab.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-gray-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-gray-400'}`} />
               {tab.name}
             </button>
           );
@@ -57,7 +58,7 @@ export default function MembersPage() {
         {activeTab === 'directory' && (
           <div className="space-y-3 animate-in slide-in-from-bottom-2 duration-300">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Active Members</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Team Members</h2>
             </div>
             <MemberList />
           </div>

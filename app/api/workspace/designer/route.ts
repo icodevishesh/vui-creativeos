@@ -7,9 +7,9 @@ import { buildVersionHistory } from '@/lib/workspace/version';
 /**
  * GET /api/workspace/designer
  *
- * Returns tasks assigned to the requesting user, gated to designer roles
- * (GRAPHIC_DESIGNER). Each task includes a `versionHistory` array derived
- * from its subtasks.
+ * Returns designer workspace tasks. Admin/privileged users can see every
+ * designer task; designers only see tasks assigned to them. Each task includes
+ * a `versionHistory` array derived from its subtasks.
  */
 export async function GET() {
   try {
@@ -47,8 +47,8 @@ export async function GET() {
 
     const tasks = await prisma.task.findMany({
       where: {
-        assignedToId: user.id,
         calendarCopyId: { not: null },
+        ...(isAdmin ? {} : { assignedToId: user.id }),
         ...mediaTypeFilter,
       },
       include: {
@@ -73,7 +73,7 @@ export async function GET() {
             frames: { orderBy: { frameNumber: 'asc' } },
             status: true,
             bucket: { select: { id: true, name: true } },
-          } as any,
+          },
         },
         subTasks: {
           orderBy: { createdAt: 'asc' },

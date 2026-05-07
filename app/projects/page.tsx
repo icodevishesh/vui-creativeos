@@ -12,6 +12,7 @@ type ClientStatus = "ACTIVE" | "INACTIVE" | "PENDING";
 type ProjectStatus =
     | "PLANNING"
     | "COMPLETED";
+type ProjectStatusFilter = "ALL" | ProjectStatus;
 type EngagementType = "RETAINER" | "PROJECT_BASED";
 
 interface ClientProfile {
@@ -476,7 +477,15 @@ function NewProjectModal({ clients, preselectedClientId, onClose, onSubmit, isLo
 
 // Empty State
 
-function EmptyProjects({ onNew }: { onNew: () => void }) {
+function EmptyProjects({
+    onNew,
+    title = "No projects yet",
+    description = "Get started by creating your first project.",
+}: {
+    onNew: () => void;
+    title?: string;
+    description?: string;
+}) {
     return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
@@ -485,10 +494,8 @@ function EmptyProjects({ onNew }: { onNew: () => void }) {
                     <path d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01" />
                 </svg>
             </div>
-            <p className="text-[15px] font-medium text-gray-500 mb-1">No projects yet</p>
-            <p className="text-sm text-gray-300 mb-5">
-                Get started by creating your first project.
-            </p>
+            <p className="text-[15px] font-medium text-gray-500 mb-1">{title}</p>
+            <p className="text-sm text-gray-300 mb-5">{description}</p>
             <button
                 onClick={onNew}
                 className="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-gray-900 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
@@ -508,6 +515,7 @@ export default function ProjectsPage() {
     const queryClient = useQueryClient();
     const { user } = useAuth();
     const [selectedClientId, setSelectedClientId] = useState<string>("");
+    const [selectedStatusFilter, setSelectedStatusFilter] = useState<ProjectStatusFilter>("ALL");
     const [showModal, setShowModal] = useState(false);
     const [editingProject, setEditingProject] = useState<Project | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -621,8 +629,17 @@ export default function ProjectsPage() {
         [clients, selectedClientId]
     );
 
-    const projectCount = projects.length;
+    const filteredProjects = useMemo(
+        () =>
+            projects.filter((project) =>
+                selectedStatusFilter === "ALL" ? true : project.status === selectedStatusFilter
+            ),
+        [projects, selectedStatusFilter]
+    );
+
+    const projectCount = filteredProjects.length;
     const isLoadingProjects = projectsLoading;
+    const hasActiveFilters = selectedClientId || selectedStatusFilter !== "ALL";
 
     // Render   
 
@@ -681,6 +698,28 @@ export default function ProjectsPage() {
                             </div>
                         )}
 
+                        {/* Status Dropdown */}
+                        <div className="relative">
+                            <select
+                                value={selectedStatusFilter}
+                                onChange={(e) => setSelectedStatusFilter(e.target.value as ProjectStatusFilter)}
+                                className="h-10 pl-2 pr-9 rounded-lg border border-gray-200 text-[10px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 transition-all bg-white appearance-none min-w-[160px]"
+                            >
+                                <option value="ALL">All statuses</option>
+                                <option value="PLANNING">Planning</option>
+                                <option value="COMPLETED">Completed</option>
+                            </select>
+                            <svg
+                                className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+
                         {/* Client badge */}
                         {selectedClient && (
                             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
@@ -705,7 +744,7 @@ export default function ProjectsPage() {
                     </div>
 
                     {/* Count */}
-                    {selectedClientId && !isLoadingProjects && (
+                    {hasActiveFilters && !isLoadingProjects && (
                         <div className="flex items-center gap-1.5 text-sm text-gray-400">
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                                 <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -725,7 +764,7 @@ export default function ProjectsPage() {
                 <div className="flex flex-col gap-2">
                     {isLoadingProjects
                         ? Array.from({ length: 6 }).map((_, i) => <ProjectRowSkeleton key={i} />)
-                        : projects.map((project) => (
+                        : filteredProjects.map((project) => (
                             <ProjectRow
                                 key={project.id}
                                 project={project}
@@ -739,8 +778,16 @@ export default function ProjectsPage() {
                 </div>
 
                 {/* ── Empty state ── */}
-                {!isLoadingProjects && projects.length === 0 && (
-                    <EmptyProjects onNew={() => setShowModal(true)} />
+                {!isLoadingProjects && filteredProjects.length === 0 && (
+                    <EmptyProjects
+                        onNew={() => setShowModal(true)}
+                        title={projects.length === 0 ? "No projects yet" : "No matching projects"}
+                        description={
+                            projects.length === 0
+                                ? "Get started by creating your first project."
+                                : "Try a different status filter to see more projects."
+                        }
+                    />
                 )}
             </div>
 

@@ -14,6 +14,29 @@ interface DocumentsTabProps {
   canEdit: boolean;
 }
 
+interface ClientDocumentRow {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  type: DocumentType;
+  uploadedAt: string;
+}
+
+interface UploadedFileData {
+  url: string;
+  size: number;
+  name: string;
+  mimeType: string;
+}
+
+interface CreateDocumentInput {
+  fileName: string;
+  type: DocumentType;
+  fileUrl: string;
+  fileSize: number;
+  mimeType: string;
+}
+
 export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabProps) {
   const queryClient = useQueryClient();
   const [isUploading, setIsUploading] = useState(false);
@@ -21,15 +44,15 @@ export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabPro
     fileName: '',
     type: 'OTHER' as DocumentType,
   });
-  const [uploadedFileData, setUploadedFileData] = useState<any>(null);
+  const [uploadedFileData, setUploadedFileData] = useState<UploadedFileData | null>(null);
 
-  const { data: documents, isLoading } = useQuery({
+  const { data: documents, isLoading } = useQuery<ClientDocumentRow[]>({
     queryKey: ['client-docs', clientId],
     queryFn: () => fetch(`/api/clients/${clientId}/documents`).then(res => res.json()),
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: CreateDocumentInput) => {
       const res = await fetch(`/api/clients/${clientId}/documents`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,6 +77,13 @@ export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabPro
       case 'CONTRACT': return <FileText className="w-4 h-4 text-emerald-500" />;
       default: return <FileJson className="w-4 h-4 text-gray-500" />;
     }
+  };
+
+  const getDownloadHref = (doc: ClientDocumentRow) => {
+    if (!doc.fileUrl) return '';
+
+    const separator = doc.fileUrl.includes('?') ? '&' : '?';
+    return `${doc.fileUrl}${separator}download=${encodeURIComponent(doc.fileName || 'document')}`;
   };
 
   if (isLoading) return (
@@ -91,7 +121,7 @@ export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabPro
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {documents?.map((doc: any) => (
+            {documents?.map((doc) => (
               <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors group">
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-2">
@@ -110,9 +140,21 @@ export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabPro
                   {new Date(doc.uploadedAt).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-2 text-right">
-                  <button className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all opacity-0 group-hover:opacity-100">
+                  <a
+                    href={getDownloadHref(doc)}
+                    download={doc.fileName}
+                    title="Download"
+                    aria-label={`Download ${doc.fileName}`}
+                    className="inline-flex p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+                    onClick={(event) => {
+                      if (!doc.fileUrl) {
+                        event.preventDefault();
+                        toast.error('Document file is missing.');
+                      }
+                    }}
+                  >
                     <Download className="w-4 h-4" />
-                  </button>
+                  </a>
                 </td>
               </tr>
             ))}
@@ -128,7 +170,7 @@ export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabPro
 
       {/* Add Document Modal */}
       {isUploading && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-lg p-8 shadow-2xl">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-2xl font-semibold text-gray-900 tracking-tight">Log Document</h3>
@@ -188,11 +230,11 @@ export function DocumentsTab({ clientId, companyName, canEdit }: DocumentsTabPro
                   type="button"
                   onClick={() => {
                     mutation.mutate({
-                      fileName: formData.fileName || uploadedFileData.name,
+                      fileName: formData.fileName || uploadedFileData?.name || '',
                       type: formData.type,
-                      fileUrl: uploadedFileData.url,
-                      fileSize: uploadedFileData.size,
-                      mimeType: uploadedFileData.mimeType
+                      fileUrl: uploadedFileData?.url || '',
+                      fileSize: uploadedFileData?.size || 0,
+                      mimeType: uploadedFileData?.mimeType || ''
                     });
                   }}
                   disabled={!uploadedFileData || mutation.isPending}

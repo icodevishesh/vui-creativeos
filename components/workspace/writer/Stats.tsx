@@ -47,8 +47,8 @@ const StatCard = ({
   return (
     <div className="flex-1 min-w-[200px] bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-xl ${bgColorClass} flex items-center justify-center`}>
-          <Icon className={`w-6 h-6 ${iconColorClass}`} />
+        <div className={`w-10 h-10 rounded-xl ${bgColorClass} flex items-center justify-center`}>
+          <Icon className={`w-5 h-5 ${iconColorClass}`} />
         </div>
         <div>
           <div className="text-2xl font-bold text-gray-900">{value}</div>
@@ -74,9 +74,9 @@ export const Stats: React.FC<StatsProps> = ({ tasks, isLoading }) => {
         label="Open Tasks"
         value={stats.openTasks}
         icon={FileText}
-        colorClass="text-primary"
-        bgColorClass="bg-primary/10"
-        iconColorClass="text-primary"
+        colorClass="text-blue-600"
+        bgColorClass="bg-blue-50"
+        iconColorClass="text-blue-600"
         isLoading={isLoading}
       />
       <StatCard

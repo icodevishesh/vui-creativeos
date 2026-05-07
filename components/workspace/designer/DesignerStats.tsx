@@ -45,8 +45,8 @@ const StatCard = ({
   return (
     <div className="flex-1 min-w-[200px] bg-white border border-gray-100 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-xl ${bgColorClass} flex items-center justify-center`}>
-          <Icon className={`w-6 h-6 ${iconColorClass}`} />
+        <div className={`w-10 h-10 rounded-xl ${bgColorClass} flex items-center justify-center`}>
+          <Icon className={`w-5 h-5 ${iconColorClass}`} />
         </div>
         <div>
           <div className="text-2xl font-bold text-gray-900">{value}</div>

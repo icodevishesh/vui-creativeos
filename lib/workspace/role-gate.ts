@@ -4,6 +4,7 @@ import { MemberRole } from '@prisma/client';
 export const WRITER_ROLES: MemberRole[] = [
   MemberRole.COPYWRITER,
   MemberRole.CONTENT_WRITER,
+  MemberRole.ADMIN,
 ];
 
 // Roles permitted to access the Designer workspace
@@ -11,6 +12,7 @@ export const DESIGNER_ROLES: MemberRole[] = [
   MemberRole.GRAPHIC_DESIGNER,
   MemberRole.VIDEO_EDITOR,
   MemberRole.CREATIVE_LEAD,
+  MemberRole.ADMIN,
 ];
 
 // Roles with admin-level privileges (TEAM_LEAD and ACCOUNT_MANAGER have same rights

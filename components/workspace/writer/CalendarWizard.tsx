@@ -119,13 +119,13 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                     <ArrowLeft size={16} />
                     Back to Tasks
                 </button>
-                <div className="h-4 w-[1px] bg-gray-300" />
+                <div className="h-4 w-1px bg-gray-300" />
                 <div className="flex items-center gap-2 text-sm">
                     <span className="font-bold text-gray-900">{calendarName.trim() || taskTitle || 'New Calendar'}</span>
                     {steps.map((s, i) => (
                         <React.Fragment key={s.id}>
                             <span className="text-gray-400">→</span>
-                            <span className={`font-medium ${step === s.id ? 'text-blue-600' : 'text-gray-400'}`}>
+                            <span className={`font-medium ${step === s.id ? 'text-primary' : 'text-gray-400'}`}>
                                 {s.label}
                             </span>
                         </React.Fragment>

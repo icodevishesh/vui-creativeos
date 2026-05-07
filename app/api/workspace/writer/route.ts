@@ -7,9 +7,9 @@ import { buildVersionHistory } from '@/lib/workspace/version';
 /**
  * GET /api/workspace/writer
  *
- * Returns tasks assigned to the requesting user, gated to writer roles
- * (COPYWRITER, CONTENT_WRITER). Each task includes a `versionHistory`
- * array derived from its subtasks.
+ * Returns writer workspace tasks. Admin/privileged users can see every writer
+ * task; writers only see tasks assigned to them. Each task includes a
+ * `versionHistory` array derived from its subtasks.
  */
 export async function GET() {
   try {
@@ -28,10 +28,16 @@ export async function GET() {
       );
     }
 
+    const where = {
+      OR: [
+        { calendarCopyId: null },
+        { calendarCopyId: { isSet: false } },
+      ],
+      ...(isAdmin ? {} : { assignedToId: user.id }),
+    };
+
     const tasks = await prisma.task.findMany({
-      where: {
-        assignedToId: user.id,
-      },
+      where,
       include: {
         project: { select: { id: true, name: true } },
         client: {

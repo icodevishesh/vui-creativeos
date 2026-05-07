@@ -39,7 +39,7 @@ function generatePassword(): string {
   const pool    = upper + lower + digits;
 
   // Guarantee at least one from each required group
-  let pwd = [
+  const pwd = [
     upper[Math.floor(Math.random() * upper.length)],
     lower[Math.floor(Math.random() * lower.length)],
     digits[Math.floor(Math.random() * digits.length)],
@@ -97,7 +97,7 @@ export async function GET() {
   try {
     const membersCount = await prisma.organizationMember.count();
     if (membersCount === 0) {
-      return NextResponse.json({ message: 'no members yet' });
+      return NextResponse.json([]);
     }
 
     const members = await prisma.organizationMember.findMany({
@@ -228,9 +228,10 @@ export async function POST(req: Request) {
       emailSent,                    // lets the UI show a warning if email failed
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[MEMBERS_POST]', error);
-    const status = error.message?.includes('Unauthorized') ? 403 : 500;
-    return new NextResponse(error.message || 'Internal error', { status });
+    const message = error instanceof Error ? error.message : 'Internal error';
+    const status = message.includes('Unauthorized') ? 403 : 500;
+    return new NextResponse(message, { status });
   }
 }

@@ -1028,7 +1028,7 @@ export default function CalendarApprovalDetailPage({
 
           <button
             onClick={() => setVisualizeOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary/20 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 bg-blue-50 border border-blue-20 rounded-lg hover:bg-blue-50 transition-all"
           >
             <LayoutGrid className="w-4 h-4" />
             Visualize

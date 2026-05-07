@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import * as React from 'react';
-import { User, Briefcase, ChevronRight } from 'lucide-react';
+import { Briefcase, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { ClientStatus, EngagementType, ServiceType } from '@prisma/client';
 

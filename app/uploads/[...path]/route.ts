@@ -3,7 +3,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
@@ -30,12 +30,19 @@ export async function GET(
       '.svg': 'image/svg+xml',
     };
     const contentType = mimeTypes[ext] ?? 'application/octet-stream';
+    const downloadName = req.nextUrl.searchParams.get('download');
+    const headers: Record<string, string> = {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=86400',
+    };
+
+    if (downloadName) {
+      const safeDownloadName = downloadName.replace(/[\r\n"]/g, '_');
+      headers['Content-Disposition'] = `attachment; filename="${safeDownloadName}"`;
+    }
 
     return new NextResponse(new Uint8Array(data), {
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400',
-      },
+      headers,
     });
   } catch (err) {
     console.error('[GET /uploads]', err);
