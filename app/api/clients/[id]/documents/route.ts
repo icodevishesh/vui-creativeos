@@ -3,6 +3,7 @@ import { prisma } from '../../../../../lib/prisma';
 import { DocumentType } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import { saveFileToClientFolder } from '@/lib/storage/file-router';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 
 export async function GET(
   _req: NextRequest,
@@ -85,6 +86,16 @@ export async function POST(
         },
       });
 
+      await notifyClientTeamMembers({
+        clientId: id,
+        category: 'CLIENT_DOCUMENT_UPLOADED',
+        title: 'Document uploaded',
+        message: `A new document, "${file.name}", has been uploaded for ${client.companyName}.`,
+        link: `/clients/${id}/documents`,
+      }).catch((error) => {
+        console.error('[CLIENT_DOCS_POST] notifyClientTeamMembers failed:', error);
+      });
+
       return NextResponse.json(doc, { status: 201 });
     }
 
@@ -101,6 +112,16 @@ export async function POST(
         fileSize: fileSize || 0,
         mimeType: mimeType || null,
       },
+    });
+
+    await notifyClientTeamMembers({
+      clientId: id,
+      category: 'CLIENT_DOCUMENT_UPLOADED',
+      title: 'Document uploaded',
+      message: `A new document has been uploaded for ${client.companyName}.`,
+      link: `/clients/${id}/documents`,
+    }).catch((error) => {
+      console.error('[CLIENT_DOCS_POST] notifyClientTeamMembers failed:', error);
     });
 
     return NextResponse.json(doc);

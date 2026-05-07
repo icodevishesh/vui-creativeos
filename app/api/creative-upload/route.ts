@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { saveFileToClientFolder } from '@/lib/storage/file-router';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 
 /**
  * POST /api/creative-upload
@@ -45,6 +46,16 @@ export async function POST(req: NextRequest) {
       clientId: client.id,
       companyName: client.companyName,
       uploadedById: user.id,
+    });
+
+    await notifyClientTeamMembers({
+      clientId: client.id,
+      category: 'CREATIVE_UPLOADED',
+      title: 'Creative file uploaded',
+      message: `A new creative file, "${file.name}", has been uploaded for ${client.companyName}.`,
+      link: `/clients/${client.id}`,
+    }).catch((error) => {
+      console.error('[POST /api/creative-upload] notifyClientTeamMembers failed:', error);
     });
 
     return NextResponse.json(

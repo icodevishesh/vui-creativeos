@@ -33,6 +33,7 @@ import {
   RefreshCw,
   Save,
   UserCheck,
+  UserPlus,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -74,13 +75,15 @@ const PREFERENCE_GROUPS: CategoryGroup[] = [
   {
     groupLabel: 'Client & Projects',
     items: [
-      { category: 'CLIENT_ONBOARDED',         label: 'Client Onboarded',    description: 'When a new client is added to your workspace.',  icon: UserCheck, color: 'text-primary',  bg: 'bg-primary/10'  },
-      { category: 'CLIENT_PROJECT',            label: 'New Project',         description: 'When a new project is created for a client.',    icon: Folders,   color: 'text-blue-600',    bg: 'bg-blue-50'    },
-      { category: 'CLIENT_SCOPE_OF_WORK',      label: 'Scope of Work',       description: 'When the scope of work is updated.',             icon: FileText,  color: 'text-purple-600',  bg: 'bg-purple-50'  },
-      { category: 'CLIENT_DOCUMENT_UPLOADED',  label: 'Document Uploaded',   description: 'When a document is uploaded for a client.',      icon: FileText,  color: 'text-teal-600',    bg: 'bg-teal-50'    },
-      { category: 'CLIENT_MEETING_LOGS',       label: 'Meeting Logged',      description: 'When a meeting note is added.',                  icon: MessageSquare, color: 'text-cyan-600', bg: 'bg-cyan-50'  },
-    ],
-  },
+        { category: 'CLIENT_ONBOARDED',         label: 'Client Onboarded',    description: 'When a new client is added to your workspace.',  icon: UserCheck, color: 'text-primary',  bg: 'bg-primary/10'  },
+        { category: 'CLIENT_TEAM_MEMBER_ADDED', label: 'Team Member Added',   description: 'When you are added to a client team.',           icon: UserPlus,  color: 'text-emerald-600', bg: 'bg-emerald-50'  },
+        { category: 'CLIENT_PROJECT',           label: 'New Project',         description: 'When a new project is created for a client.',    icon: Folders,   color: 'text-blue-600',    bg: 'bg-blue-50'    },
+        { category: 'CLIENT_SCOPE_OF_WORK',     label: 'Scope of Work',       description: 'When the scope of work is updated.',             icon: FileText,  color: 'text-purple-600',  bg: 'bg-purple-50'  },
+        { category: 'CLIENT_DOCUMENT_UPLOADED', label: 'Document Uploaded',   description: 'When a document is uploaded for a client.',      icon: FileText,  color: 'text-teal-600',    bg: 'bg-teal-50'    },
+        { category: 'CLIENT_MEETING_LOGS',      label: 'Meeting Logged',      description: 'When a meeting note is added.',                  icon: MessageSquare, color: 'text-cyan-600', bg: 'bg-cyan-50'  },
+        { category: 'CREATIVE_UPLOADED',        label: 'Creative Uploaded',   description: 'When a creative asset or frame is uploaded.',    icon: ImageIcon,  color: 'text-fuchsia-600', bg: 'bg-fuchsia-50' },
+      ],
+    },
   {
     groupLabel: 'Gantt Chart',
     items: [

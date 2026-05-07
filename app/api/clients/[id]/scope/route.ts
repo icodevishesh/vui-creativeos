@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
 import { ServiceType } from '@prisma/client';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 
 export async function GET(
   req: Request,
@@ -52,6 +53,21 @@ export async function POST(
       });
 
       return newScope;
+    });
+
+    const client = await prisma.clientProfile.findUnique({
+      where: { id },
+      select: { companyName: true },
+    });
+
+    await notifyClientTeamMembers({
+      clientId: id,
+      category: 'CLIENT_SCOPE_OF_WORK',
+      title: 'Scope of work updated',
+      message: `The scope of work for ${client?.companyName ?? 'this client'} has been updated.`,
+      link: `/clients/${id}`,
+    }).catch((error) => {
+      console.error('[CLIENT_SCOPE_POST] notifyClientTeamMembers failed:', error);
     });
 
     return NextResponse.json(item);

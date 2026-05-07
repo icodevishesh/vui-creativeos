@@ -49,7 +49,7 @@ export async function POST(
         userRole,
       },
     });
-
+    
     return NextResponse.json(member);
   } catch (error) {
     console.error('[CLIENT_TEAM_POST]', error);

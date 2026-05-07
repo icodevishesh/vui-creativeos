@@ -2,11 +2,11 @@
  * TODO: Add to queue for notification for subtasks
  */
 
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 
 // GET /api/gantt/projects
 // Returns projects for the project selector.
@@ -45,14 +45,14 @@ export async function GET(req: NextRequest) {
         client: {
           select: {
             companyName: true,
-            industry: true
-          }
+            industry: true,
+          },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    const data = projects.map((p: any) => ({
+    const data = projects.map((p) => ({
       id: p.id,
       name: p.name,
       status: p.status,
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
 
     const client = await prisma.clientProfile.findUnique({
       where: { id: clientId },
-      select: { organizationId: true }
+      select: { organizationId: true, companyName: true },
     });
 
     if (!client) {
@@ -105,11 +105,12 @@ export async function POST(req: Request) {
       },
     });
 
-    // ── Notify org owner (ADMIN_OWNER) about the new project ───────────
+    // Notify org owner (ADMIN_OWNER) about the new project
     const orgOwner = await prisma.organization.findUnique({
       where: { id: client.organizationId },
       select: { ownerId: true },
     });
+
     if (orgOwner) {
       await dispatchNotification({
         category: 'CLIENT_PROJECT',
@@ -119,6 +120,16 @@ export async function POST(req: Request) {
         link: `/gantt-chart`,
       });
     }
+
+    await notifyClientTeamMembers({
+      clientId,
+      category: 'CLIENT_PROJECT',
+      title: 'New project created',
+      message: `Project "${name}" was created for ${client.companyName}.`,
+      link: `/gantt-chart`,
+    }).catch((error) => {
+      console.error('[GANTT_PROJECTS_POST] notifyClientTeamMembers failed:', error);
+    });
 
     return NextResponse.json(project);
   } catch (error) {

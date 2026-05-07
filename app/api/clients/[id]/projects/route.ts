@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { notifyClientTeamMembers } from "@/lib/notifications/client-notifications";
 
 export async function GET(
     _req: NextRequest,
@@ -78,6 +79,16 @@ export async function POST(req: NextRequest) {
                 client: { select: { companyName: true } },
                 createdBy: { select: { name: true } },
             },
+        });
+
+        await notifyClientTeamMembers({
+            clientId,
+            category: 'CLIENT_PROJECT',
+            title: 'New project created',
+            message: `A new project, "${name}", has been created for ${client.companyName}.`,
+            link: `/clients/${clientId}`,
+        }).catch((error) => {
+            console.error('[POST /api/clients/:id/projects] notifyClientTeamMembers failed:', error);
         });
 
         return NextResponse.json(project, { status: 201 });

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
 import { getCurrentUser } from '../../../../../lib/auth';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 
 export async function GET(
   req: Request,
@@ -43,6 +44,11 @@ export async function POST(
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
+    const client = await prisma.clientProfile.findUnique({
+      where: { id },
+      select: { companyName: true },
+    });
+
     const log = await prisma.meetingLog.create({
       data: {
         clientId: id,
@@ -51,6 +57,16 @@ export async function POST(
         notes,
         meetingDate: new Date(meetingDate),
       },
+    });
+
+    await notifyClientTeamMembers({
+      clientId: id,
+      category: 'CLIENT_MEETING_LOGS',
+      title: 'Meeting log added',
+      message: `A new meeting log has been added for ${client?.companyName ?? 'this client'}.`,
+      link: `/clients/${id}/meetings`,
+    }).catch((error) => {
+      console.error('[CLIENT_MEETINGS_POST] notifyClientTeamMembers failed:', error);
     });
 
     return NextResponse.json(log);

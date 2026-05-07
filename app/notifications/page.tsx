@@ -22,7 +22,6 @@ import Link from 'next/link';
 import {
   Bell,
   CheckCheck,
-  ChevronRight,
   Circle,
   ClipboardList,
   FileText,
@@ -31,6 +30,7 @@ import {
   MessageSquare,
   Trash2,
   UserCheck,
+  UserPlus,
   ImageIcon,
   RefreshCw,
   Settings,
@@ -74,6 +74,7 @@ const CATEGORY_META: Record<
   TASK_FEEDBACK:            { label: 'Feedback Received',   icon: MessageSquare, color: 'text-orange-600', bg: 'bg-orange-50' },
   TASK_REJECT:              { label: 'Task Rejected',       icon: ClipboardList, color: 'text-red-600',    bg: 'bg-red-50'    },
   CLIENT_ONBOARDED:         { label: 'Client Onboarded',    icon: UserCheck,     color: 'text-primary', bg: 'bg-primary/10' },
+  CLIENT_TEAM_MEMBER_ADDED: { label: 'Client Team Added',   icon: UserPlus,      color: 'text-emerald-600', bg: 'bg-emerald-50' },
   CLIENT_PROJECT:           { label: 'New Project',         icon: Folders,       color: 'text-blue-600',   bg: 'bg-blue-50'   },
   CLIENT_SCOPE_OF_WORK:     { label: 'Scope of Work',       icon: FileText,      color: 'text-purple-600', bg: 'bg-purple-50' },
   CLIENT_DOCUMENT_UPLOADED: { label: 'Document Uploaded',   icon: FileText,      color: 'text-teal-600',   bg: 'bg-teal-50'   },

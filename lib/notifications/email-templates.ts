@@ -204,6 +204,11 @@ const TEMPLATES: Record<
     html: wrap(title, message, link ? `${APP_URL}${link}` : undefined, 'View Client'),
   }),
 
+  CLIENT_TEAM_MEMBER_ADDED: ({ title, message, link }) => ({
+    subject: `👋 ${title}`,
+    html: wrap(title, message, link ? `${APP_URL}${link}` : undefined, 'View Client'),
+  }),
+
   CLIENT_PROJECT: ({ title, message, link }) => ({
     subject: `📁 ${title}`,
     html: wrap(title, message, link ? `${APP_URL}${link}` : undefined, 'View Project'),
@@ -222,6 +227,11 @@ const TEMPLATES: Record<
   CLIENT_MEETING_LOGS: ({ title, message, link }) => ({
     subject: `📅 ${title}`,
     html: wrap(title, message, link ? `${APP_URL}${link}` : undefined, 'View Meeting Notes'),
+  }),
+
+  CREATIVE_UPLOADED: ({ title, message, link }) => ({
+    subject: `🎨 ${title}`,
+    html: wrap(title, message, link ? `${APP_URL}${link}` : undefined, 'View Creative'),
   }),
 
   CLIENT_GANTCHART_CREATION: ({ title, message, link }) => ({

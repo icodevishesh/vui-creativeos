@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
 
 // PATCH /api/calendars/[id]/copies/[copyId]/frames/[frameId]
 // Designer uploads creativeUrl for a single frame; auto-advances copy when all frames uploaded
@@ -11,7 +12,7 @@ export async function PATCH(
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { copyId, frameId } = await params;
+  const { id, copyId, frameId } = await params;
 
   try {
     const { creativeUrl } = await req.json();
@@ -19,25 +20,42 @@ export async function PATCH(
       return NextResponse.json({ error: 'creativeUrl is required' }, { status: 400 });
     }
 
+    const calendar = await prisma.calendar.findUnique({
+      where: { id },
+      select: { clientId: true, name: true },
+    });
+
+    if (!calendar) {
+      return NextResponse.json({ error: 'Calendar not found' }, { status: 404 });
+    }
+
     const frame = await prisma.carouselFrame.update({
       where: { id: frameId },
       data: { creativeUrl, creativeStatus: 'UPLOADED' },
     });
 
-    // Check if ALL frames for this copy are now uploaded
     const allFrames = await prisma.carouselFrame.findMany({
       where: { copyId },
       select: { creativeStatus: true },
     });
-    const allUploaded = allFrames.every(f => f.creativeStatus === 'UPLOADED');
+    const allUploaded = allFrames.every((f) => f.creativeStatus === 'UPLOADED');
 
     if (allUploaded) {
-      // Update the copy's status to reflect all frames uploaded — designer task can then be submitted
       await prisma.calendarCopy.update({
         where: { id: copyId },
         data: { status: 'FRAMES_UPLOADED' },
       });
     }
+
+    await notifyClientTeamMembers({
+      clientId: calendar.clientId,
+      category: 'CREATIVE_UPLOADED',
+      title: 'Creative frame uploaded',
+      message: `A creative frame has been uploaded for ${calendar.name}.`,
+      link: `/portal/approvals/calendar/${id}`,
+    }).catch((error) => {
+      console.error('[PATCH frame] notifyClientTeamMembers failed:', error);
+    });
 
     return NextResponse.json({ frame, allUploaded });
   } catch (error) {

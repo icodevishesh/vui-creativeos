@@ -1,6 +1,6 @@
 /**
  * GET /api/notifications/preferences
- *   Returns the full 13-row preference matrix for the current user.
+ *   Returns the full 15-row preference matrix for the current user.
  *   Rows that don't exist yet are filled with defaults (inApp=true, email=true).
  *
  * PUT /api/notifications/preferences
@@ -29,7 +29,7 @@ export async function GET() {
 
     const prefMap = new Map(savedPrefs.map((p) => [p.category, p]));
 
-    // Return a full matrix (13 rows) — fill missing rows with defaults
+    // Return a full matrix (15 rows) — fill missing rows with defaults
     const matrix = ALL_CATEGORIES.map((category) => {
       const saved = prefMap.get(category);
       return {

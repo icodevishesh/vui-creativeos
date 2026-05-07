@@ -78,3 +78,7 @@ Designer workspace:
 
 - editor -> if copy contains video then it will be assigned to video_editor of the team (editor is for video editing not graphic deisgner)
 - desginer -> if copy contains only image and text/graphics then it will be assigned to graphic_designer
+
+## notification triger
+
+- add member in client team -> notify member
