@@ -7,6 +7,8 @@ import {
   Briefcase,
   Plus,
   X,
+  Pencil,
+  Trash2,
   ListTodo,
   DollarSign,
   RefreshCw,
@@ -22,6 +24,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { ServiceType } from '@prisma/client';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
 interface ScopeTabProps {
   clientId: string;
@@ -63,7 +66,10 @@ const SERVICE_OPTIONS = [
 export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
   const queryClient = useQueryClient();
   const [isConfirming, setIsConfirming] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingScopeId, setEditingScopeId] = useState<string | null>(null);
+  const { user } = useAuth();
+  const canDelete = user?.userType === 'ADMIN_OWNER' || (user?.roles ?? []).includes('ADMIN');
 
   // Fetch client to get defaultService and isScopeFinalized
   const { data: client, isLoading: isClientLoading } = useQuery({
@@ -95,26 +101,98 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
     }
   }, [client]);
 
+  const resetForm = () => {
+    setFormData({
+      service: '',
+      description: '',
+      budget: '',
+      details: {
+        platforms: [],
+        deliverables: {},
+        contentSplit: [],
+        currency: 'USD'
+      }
+    });
+    setEditingScopeId(null);
+  };
+
+  const openCreateForm = () => {
+    resetForm();
+    setIsConfirming(false);
+    setIsFormOpen(true);
+  };
+
+  const openEditForm = (item: any) => {
+    setEditingScopeId(item.id);
+    setFormData({
+      service: item.service || '',
+      description: item.description || '',
+      budget: item.budget?.toString?.() || '',
+      details: {
+        platforms: item.details?.platforms ?? [],
+        deliverables: item.details?.deliverables ?? {},
+        contentSplit: item.details?.contentSplit ?? [],
+        currency: item.details?.currency || 'USD'
+      }
+    });
+    setIsConfirming(false);
+    setIsFormOpen(true);
+  };
+
+  const closeForm = () => {
+    setIsFormOpen(false);
+    setIsConfirming(false);
+    setEditingScopeId(null);
+    resetForm();
+  };
+
   const mutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await fetch(`/api/clients/${clientId}/scope`, {
-        method: 'POST',
+        method: editingScopeId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(editingScopeId ? { ...data, scopeId: editingScopeId } : data),
       });
-      if (!res.ok) throw new Error('Missing fields');
+      if (!res.ok) {
+        throw new Error((await res.text()) || 'Failed to save scope');
+      }
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Scope of Work finalized!');
+      toast.success(editingScopeId ? 'Scope of Work updated!' : 'Scope of Work finalized!');
       queryClient.invalidateQueries({ queryKey: ['client-scope', clientId] });
       queryClient.invalidateQueries({ queryKey: ['client', clientId] });
       setIsConfirming(false);
-      setIsAdding(false);
+      closeForm();
     },
     onError: (err: any) => {
       toast.error(err.message || 'Something went wrong');
     }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (scopeId: string) => {
+      const res = await fetch(`/api/clients/${clientId}/scope`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scopeId }),
+      });
+      if (!res.ok) {
+        throw new Error((await res.text()) || 'Failed to delete scope item');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast.success('Scope item deleted');
+      queryClient.invalidateQueries({ queryKey: ['client-scope', clientId] });
+      queryClient.invalidateQueries({ queryKey: ['client', clientId] });
+      if (editingScopeId) {
+        closeForm();
+      }
+    },
+    onError: (err: any) => {
+      toast.error(err.message || 'Failed to delete scope item');
+    },
   });
 
   const handleTogglePlatform = (platformId: string) => {
@@ -162,7 +240,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
   const isFinalized = client?.isScopeFinalized;
   const hasScope = scope && scope.length > 0;
 
-  if (isFinalized && !isAdding && hasScope) {
+  if (isFinalized && !isFormOpen && hasScope) {
     return (
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
@@ -173,13 +251,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
           {canEdit && (
             <button
               onClick={() => {
-                setFormData({
-                  service: '',
-                  description: '',
-                  budget: '',
-                  details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
-                });
-                setIsAdding(true);
+                openCreateForm();
               }}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
             >
@@ -212,6 +284,33 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                     <p className="text-xl font-bold text-primary">
                       {item.details?.currency === 'INR' ? '₹' : '$'}{item.budget.toLocaleString()}
                     </p>
+                  </div>
+                )}
+                {(canEdit || canDelete) && (
+                  <div className="flex items-center gap-2">
+                    {canEdit && (
+                      <button
+                        onClick={() => openEditForm(item)}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all text-xs font-semibold"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        Edit
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Delete this scope item? This action cannot be undone.')) {
+                            deleteMutation.mutate(item.id);
+                          }
+                        }}
+                        disabled={deleteMutation.isPending}
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition-all text-xs font-semibold disabled:opacity-50"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Delete
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -290,7 +389,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         <div>
           <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Scope of Work</h2>
           <p className="text-sm text-gray-400 font-medium mt-1">
-            {isAdding || !isFinalized
+            {isFormOpen || !isFinalized
               ? `Define specific deliverables for your ${formData.service.replace(/_/g, ' ')} engagement.`
               : 'Detailed roadmap and confirmed deliverables for this account.'}
           </p>
@@ -298,26 +397,20 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         {canEdit && (
           <button
             onClick={() => {
-              if (isAdding) {
-                setIsAdding(false);
+              if (isFormOpen) {
+                closeForm();
               } else {
-                setFormData({
-                  service: '',
-                  description: '',
-                  budget: '',
-                  details: { platforms: [], deliverables: {}, contentSplit: [], currency: 'USD' }
-                });
-                setIsAdding(true);
+                openCreateForm();
               }
             }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg ${
-              isAdding
+              isFormOpen
                 ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-none'
                 : 'bg-primary text-white hover:bg-primary shadow-primary/20'
             }`}
           >
-            {isAdding ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-            {isAdding ? 'Cancel' : 'Add New Service'}
+            {isFormOpen ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+            {isFormOpen ? 'Cancel' : 'Add New Service'}
           </button>
         )}
       </div>
@@ -492,10 +585,16 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         {canEdit && (
           <div className="flex items-center justify-end pt-4">
             <button
-              onClick={() => setIsConfirming(true)}
+              onClick={() => {
+                if (editingScopeId) {
+                  mutation.mutate(formData);
+                } else {
+                  setIsConfirming(true);
+                }
+              }}
               className="px-8 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              Finalize Scope of Work
+              {editingScopeId ? 'Update Scope of Work' : 'Finalize Scope of Work'}
             </button>
           </div>
         )}

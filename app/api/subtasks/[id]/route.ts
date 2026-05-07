@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
 import { notifyInternalReviewers } from '@/lib/notifications/task-notifications';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * PATCH /api/subtasks/[id]
@@ -9,7 +11,7 @@ import { notifyInternalReviewers } from '@/lib/notifications/task-notifications'
  * Update a subtask status (e.g., mark revision as submitted for internal review).
  * Body: { status: string }
  */
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
   req: NextRequest,
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -48,4 +50,4 @@ export async function PATCH(
     console.error('[PATCH /api/subtasks/:id]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

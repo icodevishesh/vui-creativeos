@@ -79,7 +79,7 @@ export function formatRole(role: string | string[] | null, userType: string): st
   const roles = Array.isArray(role) ? role : (role ? [role] : []);
   if (roles.length === 0) {
     if (userType === 'ADMIN_OWNER') return 'Admin Owner';
-    if (userType === 'CLIENT') return 'Client';
+    if (userType === 'CLIENT' || userType === 'CLIENT_MEMBER') return 'Client';
     return 'Member';
   }
   return roles

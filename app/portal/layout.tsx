@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import * as React from 'react';
 import { useState } from 'react';
@@ -35,7 +35,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   });
 
   React.useEffect(() => {
-    if (!meLoading && me && me.userType !== 'CLIENT') {
+    if (!meLoading && me && !['CLIENT', 'CLIENT_MEMBER'].includes(me.userType)) {
       router.replace('/sign-in');
     }
   }, [me, meLoading, router]);
@@ -47,7 +47,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       if (!res.ok) throw new Error('Failed to fetch profile');
       return res.json();
     },
-    enabled: me?.userType === 'CLIENT',
+    enabled: me?.userType === 'CLIENT' || me?.userType === 'CLIENT_MEMBER',
   });
 
   const handleLogout = async () => {

@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { serialize } from 'cookie';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
-export async function POST(req: Request) {
+export const POST = withApiLogging(async function POST(req: Request) {
     try {
         const { email, password } = await req.json();
 
@@ -73,4 +75,4 @@ export async function POST(req: Request) {
             { status: 500 }
         );
     }
-}
+});

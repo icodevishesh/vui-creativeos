@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus, TaskPriority } from "@prisma/client";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // GET /api/tasks
 // Query params: projectId, clientId, organizationId
-export async function GET(req: NextRequest) {
+export const GET = withApiLogging(async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const projectId = searchParams.get("projectId");
@@ -68,10 +70,10 @@ export async function GET(req: NextRequest) {
             { status: 500 }
         );
     }
-}
+});
 
 // POST /api/tasks
-export async function POST(req: NextRequest) {
+export const POST = withApiLogging(async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const {
@@ -136,4 +138,4 @@ export async function POST(req: NextRequest) {
             { status: 500 }
         );
     }
-}
+});

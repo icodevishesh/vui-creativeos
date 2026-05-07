@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // PATCH /api/calendars/[id]/copies/[copyId]/frames/[frameId]
 // Designer uploads creativeUrl for a single frame; auto-advances copy when all frames uploaded
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string; copyId: string; frameId: string }> }
 ) {
@@ -62,4 +64,4 @@ export async function PATCH(
     console.error('[PATCH frame]', error);
     return NextResponse.json({ error: 'Failed to update frame' }, { status: 500 });
   }
-}
+});

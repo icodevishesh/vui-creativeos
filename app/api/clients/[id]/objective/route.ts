@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma"; // Adjust this path if your prisma client is elsewhere
+import { prisma } from "@/lib/prisma";
+import { withApiLogging } from '@/lib/api-logging';
+ // Adjust this path if your prisma client is elsewhere
 
-export async function GET(
+export const GET = withApiLogging(async function GET(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
@@ -20,9 +22,9 @@ export async function GET(
         console.error("[OBJECTIVE_GET]", error);
         return new NextResponse("Internal server error", { status: 500 });
     }
-}
+});
 
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
     req: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
@@ -41,4 +43,4 @@ export async function PATCH(
         console.error("[OBJECTIVE_PATCH]", error);
         return new NextResponse("Internal server error", { status: 500 });
     }
-}
+});

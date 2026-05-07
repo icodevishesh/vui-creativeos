@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // POST /api/clients/[id]/credentials
 // Returns the stored plain-text password for the client's portal user account.
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const POST = withApiLogging(async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -20,4 +22,4 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     console.error('[POST /api/clients/[id]/credentials]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

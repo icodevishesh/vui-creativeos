@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 type Params = { params: Promise<{ id: string }> };
 
 // PUT /api/gantt/links/:id
-export async function PUT(req: Request, { params }: Params) {
+export const PUT = withApiLogging(async function PUT(req: Request, { params }: Params) {
   try {
     const { id } = await params;
     const body = await req.json();
@@ -27,10 +29,10 @@ export async function PUT(req: Request, { params }: Params) {
     console.error('[GANTT_LINKS_PUT]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
 // DELETE /api/gantt/links/:id
-export async function DELETE(_req: Request, { params }: Params) {
+export const DELETE = withApiLogging(async function DELETE(_req: Request, { params }: Params) {
   try {
     const { id } = await params;
     await prisma.ganttLink.delete({ where: { id } });
@@ -39,4 +41,4 @@ export async function DELETE(_req: Request, { params }: Params) {
     console.error('[GANTT_LINKS_DELETE]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

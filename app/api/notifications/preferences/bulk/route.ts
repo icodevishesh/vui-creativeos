@@ -11,10 +11,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { NotificationType } from '@prisma/client';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const ALL_CATEGORIES = Object.values(NotificationType) as NotificationType[];
 
-export async function PUT(req: NextRequest) {
+export const PUT = withApiLogging(async function PUT(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -54,4 +56,4 @@ export async function PUT(req: NextRequest) {
     console.error('[PUT /api/notifications/preferences/bulk]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

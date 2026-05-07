@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { isDesigner } from '@/lib/workspace/role-gate';
 import { buildVersionHistory } from '@/lib/workspace/version';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * GET /api/workspace/designer
@@ -11,7 +13,7 @@ import { buildVersionHistory } from '@/lib/workspace/version';
  * designer task; designers only see tasks assigned to them. Each task includes
  * a `versionHistory` array derived from its subtasks.
  */
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -106,4 +108,4 @@ export async function GET() {
     console.error('[GET /api/workspace/designer]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

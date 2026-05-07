@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // ---------------------------------------------------------------------------
 // GET /api/notifications
@@ -13,7 +15,7 @@ import { getCurrentUser } from '@/lib/auth';
 //   limit  (default 20, max 50)
 //   filter (all | unread)   default: all
 // ---------------------------------------------------------------------------
-export async function GET(req: NextRequest) {
+export const GET = withApiLogging(async function GET(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -54,14 +56,14 @@ export async function GET(req: NextRequest) {
     console.error('[GET /api/notifications]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
 // ---------------------------------------------------------------------------
 // PATCH /api/notifications
 // Body: { markAllRead: true }
 //    OR { ids: string[] }
 // ---------------------------------------------------------------------------
-export async function PATCH(req: NextRequest) {
+export const PATCH = withApiLogging(async function PATCH(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -89,4 +91,4 @@ export async function PATCH(req: NextRequest) {
     console.error('[PATCH /api/notifications]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

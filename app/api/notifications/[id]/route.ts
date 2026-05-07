@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -12,7 +14,7 @@ type Params = { params: Promise<{ id: string }> };
 // PATCH /api/notifications/[id]
 // Body: { isRead: boolean }  (defaults to true)
 // ---------------------------------------------------------------------------
-export async function PATCH(req: NextRequest, { params }: Params) {
+export const PATCH = withApiLogging(async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -38,12 +40,12 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     console.error('[PATCH /api/notifications/[id]]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
 // ---------------------------------------------------------------------------
 // DELETE /api/notifications/[id]
 // ---------------------------------------------------------------------------
-export async function DELETE(_req: NextRequest, { params }: Params) {
+export const DELETE = withApiLogging(async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -62,4 +64,4 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     console.error('[DELETE /api/notifications/[id]]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from 'react';
 import { FilePlus, Calendar, Clock, Image, Hash, Globe, Trash2, Send, Plus, Loader2, AlertTriangle, X, Eye, Film, Link, Edit2, Check, Layers, User } from 'lucide-react';
@@ -257,9 +257,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
     // Carousel state
     const [frameCount, setFrameCount] = useState(3);
-    const [frames, setFrames] = useState<{ caption: string; hashtags: string }[]>(
-        Array.from({ length: 3 }, () => ({ caption: '', hashtags: '' }))
-    );
+    const [frames, setFrames] = useState<any[]>([]);
     const [activeFrame, setActiveFrame] = useState(0);
 
     const isCarouselMode = form.mediaType === 'CAROUSEL';
@@ -267,14 +265,18 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
     const handleFrameCountChange = (count: number) => {
         setFrameCount(count);
         setFrames(prev => {
-            const next = Array.from({ length: count }, (_, i) => prev[i] ?? { caption: '', hashtags: '' });
+            const currentFrames = Array.isArray(prev) ? prev : [];
+            const next = Array.from({ length: count }, (_, i) => currentFrames[i] ?? { caption: '', hashtags: '' });
             return next;
         });
         setActiveFrame(0);
     };
 
     const updateFrame = (idx: number, field: 'caption' | 'hashtags', value: string) => {
-        setFrames(prev => prev.map((f, i) => i === idx ? { ...f, [field]: value } : f));
+        setFrames(prev => {
+            if (!Array.isArray(prev)) return [];
+            return prev.map((f, i) => i === idx ? { ...f, [field]: value } : f);
+        });
     };
 
     const resetForm = () => {
@@ -567,7 +569,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                     </div>
 
                     {/* ── Carousel frame builder ─────────────────────────── */}
-                    {isCarouselMode && (
+                    {/* {isCarouselMode && (
                         <div className="border border-primary/20 rounded-xl bg-primary/40 p-4 space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -593,7 +595,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                 </div>
                             </div>
 
-                            {/* Frame tabs */}
+                           
                             <div className="flex gap-1 flex-wrap">
                                 {frames.map((_, i) => (
                                     <button
@@ -612,7 +614,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                 ))}
                             </div>
 
-                            {/* Active frame inputs */}
+                           
                             <div className="space-y-3">
                                 <div>
                                     <label className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">
@@ -655,7 +657,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                 </div>
                             </div>
                         </div>
-                    )}
+                    )} */}
 
                     {/* Platform multi-select */}
                     <div>

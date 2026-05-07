@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -51,4 +53,4 @@ export async function GET() {
       { status: 401 }
     );
   }
-}
+});

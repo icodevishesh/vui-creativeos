@@ -7,12 +7,14 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
 import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // GET /api/gantt/projects
 // Returns projects for the project selector.
 // - CLIENT users: always scoped to their own clientId (resolved from email)
 // - Internal users: optional ?clientId= filter; omit to get all projects
-export async function GET(req: NextRequest) {
+export const GET = withApiLogging(async function GET(req: NextRequest) {
   try {
     const user = await getCurrentUser();
 
@@ -70,11 +72,11 @@ export async function GET(req: NextRequest) {
     console.error('[GANTT_PROJECTS_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
 // POST /api/gantt/projects
 // Body: { name, clientId, description?, startDate?, endDate?, budget? }
-export async function POST(req: Request) {
+export const POST = withApiLogging(async function POST(req: Request) {
   try {
     const body = await req.json();
     const { name, clientId, description, startDate, endDate, budget } = body;
@@ -136,4 +138,4 @@ export async function POST(req: Request) {
     console.error('[GANTT_PROJECTS_POST]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

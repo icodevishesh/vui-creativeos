@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function POST(req: Request) {
+
+export const POST = withApiLogging(async function POST(req: Request) {
     try {
         const { name, email, password, userType } = await req.json();
 
@@ -49,4 +51,4 @@ export async function POST(req: Request) {
             { status: 500 }
         );
     }
-}
+});

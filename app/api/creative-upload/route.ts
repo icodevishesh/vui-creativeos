@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { saveFileToClientFolder } from '@/lib/storage/file-router';
 import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * POST /api/creative-upload
@@ -14,7 +16,7 @@ import { notifyClientTeamMembers } from '@/lib/notifications/client-notification
  *   file     — the file to upload
  *   clientId — ID of the target client
  */
-export async function POST(req: NextRequest) {
+export const POST = withApiLogging(async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -75,7 +77,7 @@ export async function POST(req: NextRequest) {
     console.error('[POST /api/creative-upload]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
 /**
  * GET /api/creative-upload
@@ -84,7 +86,7 @@ export async function POST(req: NextRequest) {
  * including assetName, clientId, clientName, uploadedAt, uploadedBy,
  * fileType, and fileSize.
  */
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -117,4 +119,4 @@ export async function GET() {
     console.error('[GET /api/creative-upload]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

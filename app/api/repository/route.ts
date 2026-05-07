@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * GET /api/repository
@@ -10,7 +12,7 @@ import { prisma } from '../../../lib/prisma';
  * With ?clientId=:
  *   Returns all assets for that client, ordered newest first
  */
-export async function GET(req: NextRequest) {
+export const GET = withApiLogging(async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const clientId = searchParams.get('clientId');
@@ -79,4 +81,4 @@ export async function GET(req: NextRequest) {
     console.error('[REPOSITORY_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

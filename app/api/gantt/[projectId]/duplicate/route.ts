@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 type Params = { params: Promise<{ projectId: string }> };
 
@@ -7,7 +9,7 @@ type Params = { params: Promise<{ projectId: string }> };
 // Body: { targetProjectId: string }
 // Copies all gantt tasks + links from projectId into targetProjectId.
 // Old task IDs are remapped to new IDs in all link source/target references.
-export async function POST(req: NextRequest, { params }: Params) {
+export const POST = withApiLogging(async function POST(req: NextRequest, { params }: Params) {
   try {
     const { projectId } = await params;
     const body = await req.json();
@@ -95,4 +97,4 @@ export async function POST(req: NextRequest, { params }: Params) {
     console.error('[GANTT_DUPLICATE_POST]', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
-}
+});

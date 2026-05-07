@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET() {
+
+export const GET = withApiLogging(async function GET() {
   try {
     const now = new Date();
 
@@ -44,4 +46,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});

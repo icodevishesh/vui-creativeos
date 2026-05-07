@@ -9,6 +9,8 @@ import { EngagementType, ServiceType } from '@prisma/client';
 import { ensureClientFolder } from '@/lib/storage/file-router';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 function generatePassword(): string {
   const upper = 'ABCDEFGHJKMNPQRSTUVWXYZ';
@@ -23,7 +25,7 @@ function generatePassword(): string {
   return pwd.split('').sort(() => Math.random() - 0.5).join('');
 }
 
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     const me = await getCurrentUser();
     if (!me) return new NextResponse('Unauthorized', { status: 401 });
@@ -67,9 +69,9 @@ export async function GET() {
     console.error('[API_CLIENTS_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withApiLogging(async function POST(req: Request) {
   try {
     const body = await req.json();
     const {
@@ -170,4 +172,4 @@ export async function POST(req: Request) {
     console.error('[API_CLIENTS_POST]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

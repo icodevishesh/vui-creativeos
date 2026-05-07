@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../../lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function DELETE(
+
+export const DELETE = withApiLogging(async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string; memberId: string }> }
 ) {
@@ -19,4 +21,4 @@ export async function DELETE(
     console.error('[CLIENT_TEAM_DELETE]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

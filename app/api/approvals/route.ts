@@ -5,9 +5,11 @@ import { subDays } from "date-fns";
 import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
 import { notifyClientForReview } from "@/lib/notifications/task-notifications";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // GET /api/approvals
-export async function GET(req: NextRequest) {
+export const GET = withApiLogging(async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status");
@@ -97,10 +99,10 @@ export async function GET(req: NextRequest) {
         console.error("[GET /api/approvals]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});
 
 // POST /api/approvals
-export async function POST(req: NextRequest) {
+export const POST = withApiLogging(async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const {
@@ -429,5 +431,5 @@ export async function POST(req: NextRequest) {
         console.error("[POST /api/approvals]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});
 

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function PATCH(
+
+export const PATCH = withApiLogging(async function PATCH(
     req: NextRequest,
     { params }: { params: Promise<{ projectId: string }> }
 ) {
@@ -26,4 +28,4 @@ export async function PATCH(
         console.error("[PATCH /api/projects/:projectId/status]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});

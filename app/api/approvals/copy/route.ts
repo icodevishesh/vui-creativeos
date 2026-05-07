@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * TODO: Add to queue for notification for subtasks
@@ -19,7 +21,7 @@ import { dispatchNotification } from "@/lib/notifications/dispatcher";
  *
  * Body: { copyId, taskId, action: "approve" | "reject", feedback?, reviewerId?, reviewerType?, reviewerName? }
  */
-export async function PATCH(req: NextRequest) {
+export const PATCH = withApiLogging(async function PATCH(req: NextRequest) {
     try {
         const body = await req.json();
         const { copyId, taskId, action, feedback, reviewerId, reviewerType, reviewerName } = body;
@@ -207,4 +209,4 @@ export async function PATCH(req: NextRequest) {
         console.error("[PATCH /api/approvals/copy]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});

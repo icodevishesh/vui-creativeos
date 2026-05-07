@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(
+
+export const GET = withApiLogging(async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -48,9 +50,9 @@ export async function GET(
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch calendar' }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -70,4 +72,4 @@ export async function PATCH(
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update calendar' }, { status: 500 });
   }
-}
+});

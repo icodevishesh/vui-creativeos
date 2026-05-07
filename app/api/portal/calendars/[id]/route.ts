@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -19,7 +21,7 @@ async function resolveClientId(email: string): Promise<string | null> {
 }
 
 // GET /api/portal/calendars/[id]
-export async function GET(
+export const GET = withApiLogging(async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -75,4 +77,4 @@ export async function GET(
     console.error('Error fetching calendar:', error);
     return NextResponse.json({ error: 'Failed to fetch calendar' }, { status: 500 });
   }
-}
+});

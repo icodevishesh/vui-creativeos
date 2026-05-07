@@ -20,6 +20,7 @@
  */
 
 import { notificationQueue, NotificationJobData } from './queue';
+import { prisma } from '@/lib/prisma';
 
 // Re-export so callers don't need two imports
 export type { NotificationJobData };
@@ -37,13 +38,28 @@ export interface DispatchPayload {
   link?: string;
 }
 
+async function getAdminOwnerRecipientIds(): Promise<string[]> {
+  const adminOwners = await prisma.user.findMany({
+    where: { userType: 'ADMIN_OWNER' },
+    select: { id: true },
+  });
+
+  return adminOwners.map((user) => user.id);
+}
+
 /**
  * Enqueues a notification job.
  * Non-blocking — returns as soon as Redis accepts the job.
  * Retried up to 3 times with exponential back-off by BullMQ if the worker fails.
  */
 export async function dispatchNotification(payload: DispatchPayload): Promise<void> {
-  if (payload.recipientIds.length === 0) return;
+  const adminOwnerIds = await getAdminOwnerRecipientIds();
+  const recipientIds = [...new Set([...payload.recipientIds, ...adminOwnerIds])];
 
-  await notificationQueue.add('send', payload as NotificationJobData);
+  if (recipientIds.length === 0) return;
+
+  await notificationQueue.add('send', {
+    ...payload,
+    recipientIds,
+  } as NotificationJobData);
 }

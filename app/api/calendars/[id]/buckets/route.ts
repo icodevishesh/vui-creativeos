@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function POST(
+
+export const POST = withApiLogging(async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -40,4 +42,4 @@ export async function POST(
     console.error('Bucket API Error:', error);
     return NextResponse.json({ error: 'Failed to add buckets' }, { status: 500 });
   }
-}
+});

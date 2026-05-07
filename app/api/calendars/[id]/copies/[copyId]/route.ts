@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string; copyId: string }> }
 ) {
@@ -59,6 +60,8 @@ export async function PATCH(
       where: { id: copyId },
       data: {
         ...data,
+        frames: undefined,
+        frameCount: undefined,
         // Preserve approval tracking fields if they exist
         approvedBy: data.approvedBy !== undefined ? data.approvedBy : undefined,
         approvedDate: data.approvedDate !== undefined ? data.approvedDate : undefined,
@@ -71,11 +74,12 @@ export async function PATCH(
     });
     return NextResponse.json(copy);
   } catch (error) {
+    console.error('Copy Update Error:', error);
     return NextResponse.json({ error: 'Failed to update copy' }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withApiLogging(async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string; copyId: string }> }
 ) {
@@ -93,4 +97,4 @@ export async function DELETE(
     }
     return NextResponse.json({ error: 'Failed to delete copy' }, { status: 500 });
   }
-}
+});

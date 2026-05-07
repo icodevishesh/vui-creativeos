@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -7,7 +9,7 @@ type Params = { params: Promise<{ id: string }> };
 // Handles two modes:
 //  1. Normal update — { text, start, end, duration, progress, type, parent }
 //  2. Move/reorder  — { operation: "move", mode: "before"|"after"|"child", target }
-export async function PUT(req: Request, { params }: Params) {
+export const PUT = withApiLogging(async function PUT(req: Request, { params }: Params) {
   try {
     const { id } = await params;
     const body = await req.json();
@@ -80,11 +82,11 @@ export async function PUT(req: Request, { params }: Params) {
     console.error('[GANTT_TASKS_PUT]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
 // DELETE /api/gantt/tasks/:id
 // Returns {} per RestDataProvider protocol
-export async function DELETE(_req: Request, { params }: Params) {
+export const DELETE = withApiLogging(async function DELETE(_req: Request, { params }: Params) {
   try {
     const { id } = await params;
 
@@ -95,4 +97,4 @@ export async function DELETE(_req: Request, { params }: Params) {
     console.error('[GANTT_TASKS_DELETE]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

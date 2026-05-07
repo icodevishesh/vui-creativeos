@@ -17,6 +17,7 @@ datasource db {
 enum UserType {
   ADMIN_OWNER
   CLIENT
+  CLIENT_MEMBER
   ORGANIZATION_MEMBER
 }
 
@@ -745,6 +746,39 @@ model ActivityLog {
   @@index([userId])
   @@index([entityType, entityId])
   @@index([createdAt])
+}
+
+// ============================================
+// API LOGS
+// ============================================
+
+model ApiLog {
+  id               String   @id @default(cuid()) @map("_id")
+  endpoint         String
+  method           String
+  actionType       String?
+  requestBody      Json?
+  queryParams      Json?
+  responseData     Json?
+  responseMessage  String?
+  statusCode       Int
+  userId           String?
+  userEmail        String?
+  userName         String?
+  userType         String?
+  requestTimestamp DateTime @default(now())
+  executionTimeMs  Int
+  errorDetails     String?
+  errorStack       String?
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([endpoint])
+  @@index([statusCode])
+  @@index([createdAt])
+  @@index([requestTimestamp])
+  @@index([actionType])
+  @@map("api_logs")
 }
 
 // ============================================

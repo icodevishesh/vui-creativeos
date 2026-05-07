@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { TaskStatus, TaskPriority } from "@prisma/client";
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(
+
+export const GET = withApiLogging(async function GET(
     req: Request,
     { params }: { params: Promise<{ clientId: string }> }
 ) {
@@ -43,9 +45,9 @@ export async function GET(
         console.error("[CALENDAR_GET]", error);
         return new NextResponse("Internal server error", { status: 500 });
     }
-}
+});
 
-export async function POST(
+export const POST = withApiLogging(async function POST(
     req: Request,
     { params }: { params: Promise<{ clientId: string }> }
 ) {
@@ -123,4 +125,4 @@ export async function POST(
         console.error("[CALENDAR_POST]", error);
         return new NextResponse("Internal server error", { status: 500 });
     }
-}
+});

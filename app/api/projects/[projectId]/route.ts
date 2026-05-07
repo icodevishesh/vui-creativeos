@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function DELETE(
+
+export const DELETE = withApiLogging(async function DELETE(
     _req: NextRequest,
     { params }: { params: Promise<{ projectId: string }> }
 ) {
@@ -13,9 +15,9 @@ export async function DELETE(
         console.error("[DELETE /api/projects/:projectId]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});
 
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
     req: NextRequest,
     { params }: { params: Promise<{ projectId: string }> }
 ) {
@@ -43,4 +45,4 @@ export async function PATCH(
         console.error("[PATCH /api/projects/:projectId]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});

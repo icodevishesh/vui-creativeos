@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // GET /api/projects
 // Returns all projects across all clients
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
     try {
         const projects = await prisma.project.findMany({
             orderBy: { createdAt: "desc" },
@@ -27,4 +29,4 @@ export async function GET() {
             { status: 500 }
         );
     }
-}
+});

@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(
+
+export const GET = withApiLogging(async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -20,9 +22,9 @@ export async function GET(
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch copies' }, { status: 500 });
     }
-}
+});
 
-export async function POST(
+export const POST = withApiLogging(async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -74,7 +76,7 @@ export async function POST(
 
     // ── Non-carousel copy ───────────────────────────────────────────────────
     const copy = await prisma.calendarCopy.create({
-      data: { ...data, calendarId: id, status: 'DRAFT', isCarousel: false },
+      data: { ...data, frames: undefined, frameCount: undefined, calendarId: id, status: 'DRAFT', isCarousel: false },
     });
 
     return NextResponse.json(copy);
@@ -82,4 +84,4 @@ export async function POST(
     console.error('Copy API Error:', error);
     return NextResponse.json({ error: 'Failed to add copy' }, { status: 500 });
   }
-}
+});

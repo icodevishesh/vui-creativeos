@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(req: Request) {
+
+export const GET = withApiLogging(async function GET(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -40,9 +42,9 @@ export async function GET(req: Request) {
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch calendars' }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withApiLogging(async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -81,4 +83,4 @@ export async function POST(req: Request) {
     console.error('API Error:', error);
     return NextResponse.json({ error: 'Failed to create calendar' }, { status: 500 });
   }
-}
+});

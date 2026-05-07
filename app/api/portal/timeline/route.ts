@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -19,7 +21,7 @@ async function resolveClientId(email: string): Promise<string | null> {
 }
 
 // GET /api/portal/timeline — all tasks for this client (all statuses)
-export async function GET(_req: NextRequest) {
+export const GET = withApiLogging(async function GET(_req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -70,4 +72,4 @@ export async function GET(_req: NextRequest) {
     console.error('[GET /api/portal/timeline]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

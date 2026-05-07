@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { notifyClientTeamMembers } from "@/lib/notifications/client-notifications";
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(
+
+export const GET = withApiLogging(async function GET(
     _req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
@@ -21,7 +23,7 @@ export async function GET(
         console.error("[GET /api/clients/:id/projects]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});
 
 export enum ProjectStatus {
     PLANNING = "PLANNING",
@@ -32,7 +34,7 @@ export enum ProjectStatus {
     CANCELLED = "CANCELLED",
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withApiLogging(async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { name, clientId, startDate, endDate, description, organizationId: bodyOrgId, createdById } =
@@ -99,7 +101,7 @@ export async function POST(req: NextRequest) {
             { status: 500 }
         );
     }
-}
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 

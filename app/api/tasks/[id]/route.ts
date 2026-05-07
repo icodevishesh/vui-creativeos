@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { notifyInternalReviewers } from "@/lib/notifications/task-notifications";
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // GET /api/tasks/[id]
-export async function GET(
+export const GET = withApiLogging(async function GET(
     _req: NextRequest,
     context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -39,10 +41,10 @@ export async function GET(
             { status: 500 }
         );
     }
-}
+});
 
 // PATCH /api/tasks/[id]
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
     req: NextRequest,
     context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -120,10 +122,10 @@ export async function PATCH(
             { status: 500 }
         );
     }
-}
+});
 
 // DELETE /api/tasks/[id]
-export async function DELETE(
+export const DELETE = withApiLogging(async function DELETE(
     _req: NextRequest,
     context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -140,4 +142,4 @@ export async function DELETE(
             { status: 500 }
         );
     }
-}
+});

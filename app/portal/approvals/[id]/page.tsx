@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, use } from "react";
 import { useRouter } from "next/navigation";
@@ -653,7 +653,7 @@ function CopyRow({
     setIsActing(true);
     try {
       let reviewerType = "ADMIN";
-      if (profile?.userType === "CLIENT") reviewerType = "CLIENT";
+      if (profile?.userType === "CLIENT" || profile?.userType === "CLIENT_MEMBER") reviewerType = "CLIENT";
       else if (profile?.roles?.includes("TEAM_LEAD")) reviewerType = "TEAM_LEAD";
       else if (profile?.roles?.includes("ACCOUNT_MANAGER")) reviewerType = "ACCOUNT_MANAGER";
 

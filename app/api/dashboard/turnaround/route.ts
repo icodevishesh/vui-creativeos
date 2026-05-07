@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 export interface TurnaroundDataPoint {
   week: string;
   days: number;
 }
 
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     // Get approvals reviewed in the last 6 weeks
     const sixWeeksAgo = new Date();
@@ -66,4 +68,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});

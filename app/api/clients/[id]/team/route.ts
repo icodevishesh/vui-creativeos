@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../../lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(
+
+export const GET = withApiLogging(async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -17,9 +19,9 @@ export async function GET(
     console.error('[CLIENT_TEAM_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
-export async function POST(
+export const POST = withApiLogging(async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -55,4 +57,4 @@ export async function POST(
     console.error('[CLIENT_TEAM_POST]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

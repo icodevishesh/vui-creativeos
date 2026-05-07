@@ -10,6 +10,8 @@ import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
 import { createDesignerTasksForCalendar } from '@/lib/approval-helpers';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -27,7 +29,7 @@ async function resolveClientId(email: string): Promise<string | null> {
 }
 
 // GET /api/portal/approvals?status=CLIENT_REVIEW|APPROVED  (default: CLIENT_REVIEW)
-export async function GET(req: NextRequest) {
+export const GET = withApiLogging(async function GET(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -112,10 +114,10 @@ export async function GET(req: NextRequest) {
     console.error('[GET /api/portal/approvals]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
 // POST /api/portal/approvals — approve / reject / feedback
-export async function POST(req: NextRequest) {
+export const POST = withApiLogging(async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('auth_token')?.value;
@@ -253,4 +255,4 @@ export async function POST(req: NextRequest) {
     console.error('[POST /api/portal/approvals]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

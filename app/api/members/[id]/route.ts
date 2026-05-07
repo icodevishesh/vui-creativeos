@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { MemberRole } from '@prisma/client';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const ADMIN_ROLES = ['ADMIN', 'ADMIN_OWNER'];
 
@@ -18,7 +20,7 @@ async function requireAdmin() {
   return user;
 }
 
-export async function DELETE(
+export const DELETE = withApiLogging(async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -83,9 +85,9 @@ export async function DELETE(
     console.error('[MEMBER_DELETE]', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -134,4 +136,4 @@ export async function PATCH(
     console.error('[MEMBER_PATCH]', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

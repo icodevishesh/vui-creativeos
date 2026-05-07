@@ -10,12 +10,30 @@ export interface ClientTeamNotificationInput {
 }
 
 export async function notifyClientTeamMembers(input: ClientTeamNotificationInput): Promise<void> {
-  const teamMembers = await prisma.clientTeamMember.findMany({
-    where: { clientId: input.clientId },
-    select: { userId: true },
-  });
+  const [teamMembers, client] = await Promise.all([
+    prisma.clientTeamMember.findMany({
+      where: { clientId: input.clientId },
+      select: { userId: true },
+    }),
+    prisma.clientProfile.findUnique({
+      where: { id: input.clientId },
+      select: { organizationId: true },
+    }),
+  ]);
 
-  const recipientIds = [...new Set(teamMembers.map((member) => member.userId))];
+  let ownerId: string | undefined;
+  if (client?.organizationId) {
+    const org = await prisma.organization.findUnique({
+      where: { id: client.organizationId },
+      select: { ownerId: true },
+    });
+    ownerId = org?.ownerId;
+  }
+
+  const recipientIds = [...new Set([
+    ...teamMembers.map((member) => member.userId),
+    ...(ownerId ? [ownerId] : [])
+  ])];
   if (recipientIds.length === 0) return;
 
   await dispatchNotification({

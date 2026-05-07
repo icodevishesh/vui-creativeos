@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
 import { serialize } from 'cookie';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * POST /api/auth/logout
  * Clears the auth_token cookie and invalidates the session.
  */
-export async function POST() {
+export const POST = withApiLogging(async function POST() {
   const response = NextResponse.json({ message: 'Logged out successfully' });
 
   // Expire the cookie immediately
@@ -19,4 +21,4 @@ export async function POST() {
 
   response.headers.set('Set-Cookie', cookie);
   return response;
-}
+});

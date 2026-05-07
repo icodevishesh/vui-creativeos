@@ -4,6 +4,8 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -25,7 +27,7 @@ async function resolveClientId(email: string): Promise<string | null> {
  */
 
 // POST /api/portal/calendars/[id]/copies/[copyId]/feedback
-export async function POST(
+export const POST = withApiLogging(async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; copyId: string }> }
 ) {
@@ -106,4 +108,4 @@ export async function POST(
     console.error('Error submitting feedback:', error);
     return NextResponse.json({ error: 'Failed to submit feedback' }, { status: 500 });
   }
-}
+});

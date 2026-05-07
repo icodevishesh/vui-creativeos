@@ -45,7 +45,7 @@ export default function SignIn() {
 
             toast.success('Successfully signed in!');
             await refresh();
-            router.replace(data.user?.userType === 'CLIENT' ? '/portal/dashboard' : '/dashboard');
+            router.replace(['CLIENT', 'CLIENT_MEMBER'].includes(data.user?.userType) ? '/portal/dashboard' : '/dashboard');
         } catch (error: any) {
             toast.error(error.message);
         } finally {

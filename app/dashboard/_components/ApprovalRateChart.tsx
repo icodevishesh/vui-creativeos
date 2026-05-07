@@ -24,7 +24,7 @@ interface ApiResponse {
 
 function Skeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse space-y-4">
+    <div className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
       <div className="h-4 w-28 bg-gray-100 rounded" />
       <div className="flex items-center justify-center h-[200px]">
         <div className="w-[160px] h-[160px] rounded-full bg-gray-100" />
@@ -87,7 +87,7 @@ export function ApprovalRateChart() {
       : data;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <div className="bg-white rounded-lg border border-gray-200 p-3.5">
       {/* Header */}
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-semibold text-gray-900">Approval Rate</h3>
@@ -150,16 +150,16 @@ export function ApprovalRateChart() {
 
       {/* Stat breakdown */}
       <div className="grid grid-cols-3 gap-2 mt-4">
-        <div className="bg-emerald-50 rounded-xl p-3 text-center">
-          <p className="text-xl font-bold text-emerald-600">{approved}</p>
+        <div className="bg-emerald-50 rounded-xl p-2 text-center">
+          <p className="text-[14px] font-bold text-emerald-600">{approved}</p>
           <p className="text-[10px] font-semibold text-emerald-500 uppercase tracking-wider mt-0.5">Approved</p>
         </div>
-        <div className="bg-red-50 rounded-xl p-3 text-center">
-          <p className="text-xl font-bold text-red-500">{rejected + feedback}</p>
+        <div className="bg-red-50 rounded-xl p-2 text-center">
+          <p className="text-[14px] font-bold text-red-500">{rejected + feedback}</p>
           <p className="text-[10px] font-semibold text-red-400 uppercase tracking-wider mt-0.5">Rejected</p>
         </div>
-        <div className="bg-amber-50 rounded-xl p-3 text-center">
-          <p className="text-xl font-bold text-amber-500">{inReview}</p>
+        <div className="bg-amber-50 rounded-xl p-2 text-center">
+          <p className="text-[14px] font-bold text-amber-500">{inReview}</p>
           <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider mt-0.5">In Review</p>
         </div>
       </div>

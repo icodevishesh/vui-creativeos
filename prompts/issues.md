@@ -82,3 +82,9 @@ Designer workspace:
 ## notification triger
 
 - add member in client team -> notify member
+
+Add a new userType: 'CLIENT_MEMBER'
+This type of user will be added by a client for his client's portal.
+The CLIENT_MEMBER should have all the access same as CLIENT, no changes in permission.
+
+I need to create this flow, so make a implement plan to create this flow. In which files do i need to make changes? and what changes i need to do?

@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(
+
+export const GET = withApiLogging(async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -29,9 +31,9 @@ export async function GET(
     console.error('[CLIENT_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -57,9 +59,9 @@ export async function PATCH(
     console.error('[CLIENT_PATCH]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
-export async function DELETE(
+export const DELETE = withApiLogging(async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -74,4 +76,4 @@ export async function DELETE(
     console.error('[CLIENT_DELETE]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

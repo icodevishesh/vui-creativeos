@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * GET /api/dashboard/approvals
@@ -14,7 +16,7 @@ import { TaskStatus } from '@prisma/client';
  *
  *   approvalRate = (approved / (approved + rejected + feedback)) * 100
  */
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     const [approved, rejected, inReview, feedback] = await Promise.all([
       prisma.task.count({
@@ -62,4 +64,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});

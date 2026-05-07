@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 export interface ProductivityDataPoint {
   name: string;
   tasks: number;
 }
 
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     // Get all completed/in-review tasks with their assignees
     const tasks = await prisma.task.findMany({
@@ -58,4 +60,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
+});

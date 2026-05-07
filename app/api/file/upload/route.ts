@@ -4,6 +4,8 @@ import path from 'path';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { ensureClientFolder, sanitizeFolderName } from '@/lib/storage/file-router';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * POST /api/file/upload
@@ -18,7 +20,7 @@ import { ensureClientFolder, sanitizeFolderName } from '@/lib/storage/file-route
  *   clientId   — preferred: routes to client folder + writes Asset record
  *   folderName — legacy fallback when clientId is absent
  */
-export async function POST(req: NextRequest) {
+export const POST = withApiLogging(async function POST(req: NextRequest) {
   try {
     // Authenticate first — Asset.uploadedById is non-nullable so we need the user
     const user = await getCurrentUser();
@@ -99,4 +101,4 @@ export async function POST(req: NextRequest) {
     console.error('Upload error:', error);
     return NextResponse.json({ error: 'Failed to process file' }, { status: 500 });
   }
-}
+});

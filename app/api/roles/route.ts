@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
 import { MemberRole } from '@prisma/client';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET() {
+
+export const GET = withApiLogging(async function GET() {
   try {
     // 1. Get predefined roles from Enum
     const predefinedRoles = Object.values(MemberRole);
@@ -21,9 +23,9 @@ export async function GET() {
     console.error('[ROLES_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = withApiLogging(async function POST(req: Request) {
   try {
     const body = await req.json();
     const { name, description, permissions } = body;
@@ -65,4 +67,4 @@ export async function POST(req: Request) {
     }
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});

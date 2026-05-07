@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
 import { saveFileToClientFolder } from '@/lib/storage/file-router';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * GET /api/tasks/[id]/attachments
  * Returns all TaskAttachment records for a task.
  */
-export async function GET(
+export const GET = withApiLogging(async function GET(
   _req: NextRequest,
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -24,7 +26,7 @@ export async function GET(
     console.error('[GET /api/tasks/:id/attachments]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/tasks/[id]/attachments
@@ -38,7 +40,7 @@ export async function GET(
  * Form fields:
  *   file  — one or more files (repeat the field for multiple uploads)
  */
-export async function POST(
+export const POST = withApiLogging(async function POST(
   req: NextRequest,
   context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -99,4 +101,4 @@ export async function POST(
     console.error('[POST /api/tasks/:id/attachments]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
+});

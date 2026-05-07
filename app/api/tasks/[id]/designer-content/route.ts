@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { TaskStatus } from "@prisma/client";
 import { saveFileToClientFolder } from "@/lib/storage/file-router";
 import { notifyInternalReviewers } from "@/lib/notifications/task-notifications";
+import { withApiLogging } from '@/lib/api-logging';
+
 
 /**
  * PATCH /api/tasks/[id]/designer-content
@@ -19,7 +21,7 @@ import { notifyInternalReviewers } from "@/lib/notifications/task-notifications"
  *    Saves files as TaskAttachment + Asset records, upserts DesignerContent,
  *    then sets task status to INTERNAL_REVIEW.
  */
-export async function PATCH(
+export const PATCH = withApiLogging(async function PATCH(
     req: NextRequest,
     context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -166,4 +168,4 @@ export async function PATCH(
         console.error("[PATCH /api/tasks/:id/designer-content]", err);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-}
+});

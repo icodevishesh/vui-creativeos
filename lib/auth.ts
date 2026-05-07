@@ -8,7 +8,7 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
-  userType: string;
+  userType: string; // 'ADMIN_OWNER' | 'CLIENT' | 'CLIENT_MEMBER' | 'ORGANIZATION_MEMBER'
   membership: { roles: string[]; organizationId: string } | null;
 };
 

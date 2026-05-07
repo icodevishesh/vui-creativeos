@@ -18,6 +18,8 @@ import { MemberRole, UserType } from '@prisma/client';
 import { Resend } from 'resend';
 import { buildWelcomeEmail } from '@/lib/notifications/email-templates';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const resend = new Resend(process.env.RESEND_KEY);
 const FROM_ADDRESS = process.env.RESEND_FROM ?? 'CreativeOS <noreply@creativeos.io>';
@@ -93,7 +95,7 @@ async function validateAdminAccess() {
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/members
 // ─────────────────────────────────────────────────────────────────────────────
-export async function GET() {
+export const GET = withApiLogging(async function GET() {
   try {
     const membersCount = await prisma.organizationMember.count();
     if (membersCount === 0) {
@@ -116,12 +118,12 @@ export async function GET() {
     console.error('[MEMBERS_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/members
 // ─────────────────────────────────────────────────────────────────────────────
-export async function POST(req: Request) {
+export const POST = withApiLogging(async function POST(req: Request) {
   try {
     await validateAdminAccess();
 
@@ -234,4 +236,4 @@ export async function POST(req: Request) {
     const status = message.includes('Unauthorized') ? 403 : 500;
     return new NextResponse(message, { status });
   }
-}
+});

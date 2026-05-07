@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
+import { withApiLogging } from '@/lib/api-logging';
+
 
 // POST /api/tasks/[id]/subtasks
 // Create a new subtask for a main task
-export async function POST(
+export const POST = withApiLogging(async function POST(
     req: NextRequest,
     context: { params: Promise<{ id: string }> | { id: string } }
 ) {
@@ -78,4 +80,4 @@ export async function POST(
             { status: 500 }
         );
     }
-}
+});

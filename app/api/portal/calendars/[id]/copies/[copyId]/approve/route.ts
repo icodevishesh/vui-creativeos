@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
 import { createDesignerTaskForCopy } from '@/lib/designer-task-helpers';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
@@ -22,7 +24,7 @@ async function resolveClientId(email: string): Promise<string | null> {
 }
 
 // POST /api/portal/calendars/[id]/copies/[copyId]/approve
-export async function POST(
+export const POST = withApiLogging(async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; copyId: string }> }
 ) {
@@ -97,4 +99,4 @@ export async function POST(
     console.error('Error approving copy:', error);
     return NextResponse.json({ error: 'Failed to approve copy' }, { status: 500 });
   }
-}
+});

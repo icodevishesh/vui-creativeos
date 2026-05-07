@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { withApiLogging } from '@/lib/api-logging';
+
 
 type Params = { params: Promise<{ projectId: string }> };
 
 // GET /api/gantt/[projectId]/links
-export async function GET(req: Request, { params }: Params) {
+export const GET = withApiLogging(async function GET(req: Request, { params }: Params) {
   try {
     const { projectId } = await params;
 
@@ -18,10 +20,10 @@ export async function GET(req: Request, { params }: Params) {
     console.error('[GANTT_LINKS_GET]', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
-}
+});
 
 // POST /api/gantt/[projectId]/links
-export async function POST(req: Request, { params }: Params) {
+export const POST = withApiLogging(async function POST(req: Request, { params }: Params) {
   try {
     const { projectId } = await params;
     const body = await req.json();
@@ -49,4 +51,4 @@ export async function POST(req: Request, { params }: Params) {
     console.error('[GANTT_LINKS_POST]', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
-}
+});

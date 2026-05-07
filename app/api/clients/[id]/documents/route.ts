@@ -4,8 +4,10 @@ import { DocumentType } from '@prisma/client';
 import { getCurrentUser } from '@/lib/auth';
 import { saveFileToClientFolder } from '@/lib/storage/file-router';
 import { notifyClientTeamMembers } from '@/lib/notifications/client-notifications';
+import { withApiLogging } from '@/lib/api-logging';
 
-export async function GET(
+
+export const GET = withApiLogging(async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -21,7 +23,7 @@ export async function GET(
     console.error('[CLIENT_DOCS_GET]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
 
 /**
  * POST /api/clients/[id]/documents
@@ -32,7 +34,7 @@ export async function GET(
  *   application/json   — { fileName, fileUrl, type, fileSize, mimeType } (legacy)
  *     → records pre-uploaded document metadata only
  */
-export async function POST(
+export const POST = withApiLogging(async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -129,4 +131,4 @@ export async function POST(
     console.error('[CLIENT_DOCS_POST]', error);
     return new NextResponse('Internal error', { status: 500 });
   }
-}
+});
