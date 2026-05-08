@@ -1,7 +1,6 @@
 ﻿// app/page.tsx
 'use client';
-
-import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -18,6 +17,7 @@ import {
   ArrowRight,
   CheckCircle2,
 } from 'lucide-react';
+import Logo from '@/public/creativeos-logo.jpeg';
 
 const features = [
   {
@@ -99,33 +99,35 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-2">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">VUI</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">
-                CreativeOS
-              </span>
+              <Image
+                  src={Logo}
+                  alt="Logo"
+                  width={100}
+                  height={100}
+                  priority
+                  className='h-20 w-auto'
+                />
             </Link>
 
             {/* Auth Buttons */}
             <div className="flex items-center gap-3">
               <Link
                 href="/sign-in"
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-white hover:text-[#0e563d] bg-primary rounded-lg hover:bg-primary/80 transition-colors shadow-sm"
               >
                 Sign In
               </Link>
-              <Link
+              {/* <Link
                 href="/sign-up"
                 className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary transition-colors shadow-sm"
               >
                 Sign Up
-              </Link>
+              </Link> */}
             </div>
           </div>
         </div>
@@ -147,10 +149,10 @@ export default function LandingPage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/sign-up"
-                className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-white bg-primary rounded-lg hover:bg-primary transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+                href="/sign-in"
+                className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-white bg-primary rounded-lg hover:bg-primary/80 transition-all shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
               >
-                Get Started Free
+                Get Started
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
@@ -308,43 +310,34 @@ export default function LandingPage() {
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-br from-primary to-primary rounded-2xl p-12 text-center text-white shadow-2xl">
+          <div className="bg-linear-to-br from-primary to-primary rounded-2xl p-8 text-center text-white shadow-2xl">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Ready to Transform Your Agency?
             </h2>
-            <p className="text-lg text-primary/20 mb-8 max-w-2xl mx-auto">
-              Join hundreds of creative agencies already using CreativeOS to
-              streamline their workflow and deliver better results.
+            <p className="text-lg text-white mb-8 max-w-2xl mx-auto">
+              Join CreativeOS to streamline your workflow and deliver better results.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
-                href="/sign-up"
+                href="/sign-in"
                 className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-primary bg-white rounded-lg hover:bg-gray-50 transition-all shadow-lg flex items-center justify-center gap-2"
               >
-                Start Free Trial
+                Get Started
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
-            <p className="text-sm text-primary/30 mt-6">
-              No credit card required • 14-day free trial • Cancel anytime
-            </p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-400 py-12 px-6">
+      <footer className="bg-white text-gray-900 py-6 px-6 border-t border-gray-200">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">VUI</span>
-                </div>
-                <span className="text-lg font-bold text-white">
-                  CreativeOS
-                </span>
+                <Image src={Logo} alt="Logo" width={100} height={100} className='h-18 w-auto' />
               </div>
               <p className="text-sm text-gray-500">
                 The all-in-one platform for creative agency management.
@@ -353,22 +346,22 @@ export default function LandingPage() {
 
             {/* Links */}
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">
+              <h4 className="text-sm font-semibold text-black mb-4">
                 Product
               </h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#features" className="hover:text-white transition-colors">
+                  <a href="#features" className="hover:text-gray-600 transition-colors">
                     Features
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     Pricing
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     Demo
                   </a>
                 </li>
@@ -376,22 +369,22 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">
+              <h4 className="text-sm font-semibold text-black mb-4">
                 Company
               </h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     About
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     Blog
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     Contact
                   </a>
                 </li>
@@ -399,20 +392,20 @@ export default function LandingPage() {
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">Legal</h4>
+              <h4 className="text-sm font-semibold text-black mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     Privacy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     Terms
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors">
+                  <a href="#" className="hover:text-gray-600 transition-colors">
                     Security
                   </a>
                 </li>
@@ -420,7 +413,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-sm text-center">
+          <div className="border-t border-gray-200 pt-6 text-sm text-center">
             <p>
               © 2026 VUI CreativeOS. All rights reserved.
             </p>

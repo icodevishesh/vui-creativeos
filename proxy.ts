@@ -4,7 +4,7 @@ import { jwtVerify } from 'jose';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
 // Routes that do NOT require authentication
-const PUBLIC_PATHS = ['/sign-in', '/sign-up', '/api/auth/sign-in', '/api/auth/sign-up'];
+const PUBLIC_PATHS = ['/', '/sign-in', '/sign-up', '/api/auth/sign-in', '/api/auth/sign-up'];
 
 function isPublic(pathname: string): boolean {
   // All API routes return JSON so the client handles 401s — never redirect them
