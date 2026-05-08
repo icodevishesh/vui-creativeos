@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ServiceType } from '@prisma/client';
 import {
   Briefcase,
   Plus,
@@ -10,7 +11,6 @@ import {
   Pencil,
   Trash2,
   ListTodo,
-  DollarSign,
   RefreshCw,
   CheckCircle2,
   Camera,
@@ -22,13 +22,39 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { ServiceType } from '@prisma/client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
 
 interface ScopeTabProps {
   clientId: string;
   canEdit: boolean;
+}
+
+interface ScopeDetails {
+  platforms: string[];
+  deliverables: Record<string, string | number>;
+  contentSplit: string[];
+  currency: string;
+}
+
+interface ScopeFormData {
+  service: ServiceType | '';
+  description: string;
+  budget: string;
+  details: ScopeDetails;
+}
+
+interface ScopeItem {
+  id: string;
+  service: ServiceType;
+  description?: string;
+  budget?: number | null;
+  details?: Partial<ScopeDetails> | null;
+}
+
+interface ClientScopeData {
+  isScopeFinalized?: boolean;
+  services?: { service: ServiceType }[];
 }
 
 const PLATFORMS = {
@@ -49,9 +75,9 @@ const PLATFORMS = {
   ]
 };
 
-const CONTENT_TYPES = ['Static', 'Video', 'Carousel'];
+const CONTENT_TYPES = ['Static', 'Video', 'Carousel'] as const;
 
-const SERVICE_OPTIONS = [
+const SERVICE_OPTIONS: ServiceType[] = [
   'SOCIAL_MEDIA',
   'PAID_MEDIA',
   'INFLUENCER_MARKETING',
@@ -63,57 +89,103 @@ const SERVICE_OPTIONS = [
   'WEB_DEVELOPMENT'
 ];
 
+const INITIAL_FORM_DATA: ScopeFormData = {
+  service: '',
+  description: '',
+  budget: '',
+  details: {
+    platforms: [],
+    deliverables: {},
+    contentSplit: [],
+    currency: 'USD',
+  },
+};
+
 export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
   const queryClient = useQueryClient();
   const [isConfirming, setIsConfirming] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingScopeId, setEditingScopeId] = useState<string | null>(null);
+  const [serviceError, setServiceError] = useState('');
   const { user } = useAuth();
   const canDelete = user?.userType === 'ADMIN_OWNER' || (user?.roles ?? []).includes('ADMIN');
 
-  // Fetch client to get defaultService and isScopeFinalized
-  const { data: client, isLoading: isClientLoading } = useQuery({
+  const { data: client, isLoading: isClientLoading } = useQuery<ClientScopeData>({
     queryKey: ['client', clientId],
-    queryFn: () => fetch(`/api/clients/${clientId}`).then(res => res.json()),
+    queryFn: async (): Promise<ClientScopeData> => {
+      const res = await fetch(`/api/clients/${clientId}`);
+      if (!res.ok) {
+        throw new Error('Failed to load client');
+      }
+      return res.json() as Promise<ClientScopeData>;
+    },
   });
 
-  const { data: scope, isLoading: isScopeLoading } = useQuery({
+  const { data: scope, isLoading: isScopeLoading } = useQuery<ScopeItem[]>({
     queryKey: ['client-scope', clientId],
-    queryFn: () => fetch(`/api/clients/${clientId}/scope`).then(res => res.json()),
+    queryFn: async (): Promise<ScopeItem[]> => {
+      const res = await fetch(`/api/clients/${clientId}/scope`);
+      if (!res.ok) {
+        throw new Error('Failed to load scope');
+      }
+      return res.json() as Promise<ScopeItem[]>;
+    },
   });
 
-  const [formData, setFormData] = useState<any>({
-    service: '',
-    description: '',
-    budget: '',
-    details: {
-      platforms: [],
-      deliverables: {},
-      contentSplit: [],
-      currency: 'USD'
-    }
-  });
+  const [formData, setFormData] = useState<ScopeFormData>(INITIAL_FORM_DATA);
 
-  // Set default service once client data is loaded
   React.useEffect(() => {
-    if (client?.services?.length > 0 && !formData.service) {
-      setFormData((prev: any) => ({ ...prev, service: client.services[0].service }));
+    if (!client?.services?.length || editingScopeId) {
+      return;
     }
-  }, [client]);
+
+    const takenServices = new Set((scope ?? []).map((item) => item.service));
+    const currentService = formData.service;
+
+    if (currentService && !takenServices.has(currentService)) {
+      return;
+    }
+
+    const defaultService = client.services.find((service) => !takenServices.has(service.service))?.service ?? '';
+
+    if (defaultService && defaultService !== currentService) {
+      setFormData((prev) => ({ ...prev, service: defaultService }));
+    }
+  }, [client, scope, formData.service, editingScopeId]);
+
+  const formatServiceLabel = (service: string) => service.replace(/_/g, ' ');
+
+  const isServiceDuplicate = (service: string, scopeId: string | null = editingScopeId) => {
+    if (!service) {
+      return false;
+    }
+
+    return (scope ?? []).some((item) => item.service === service && item.id !== scopeId);
+  };
+
+  const validateServiceSelection = () => {
+    if (!formData.service) {
+      const message = 'Please select a service.';
+      setServiceError(message);
+      toast.error(message);
+      return false;
+    }
+
+    if (isServiceDuplicate(formData.service)) {
+      const message = `The service "${formatServiceLabel(formData.service)}" has already been added. Each service can only be added once.`;
+      setServiceError(message);
+      toast.error(message);
+      return false;
+    }
+
+    setServiceError('');
+    return true;
+  };
 
   const resetForm = () => {
-    setFormData({
-      service: '',
-      description: '',
-      budget: '',
-      details: {
-        platforms: [],
-        deliverables: {},
-        contentSplit: [],
-        currency: 'USD'
-      }
-    });
+    setFormData(INITIAL_FORM_DATA);
     setEditingScopeId(null);
+    setServiceError('');
   };
 
   const openCreateForm = () => {
@@ -122,8 +194,9 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
     setIsFormOpen(true);
   };
 
-  const openEditForm = (item: any) => {
+  const openEditForm = (item: ScopeItem) => {
     setEditingScopeId(item.id);
+    setServiceError('');
     setFormData({
       service: item.service || '',
       description: item.description || '',
@@ -132,8 +205,8 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         platforms: item.details?.platforms ?? [],
         deliverables: item.details?.deliverables ?? {},
         contentSplit: item.details?.contentSplit ?? [],
-        currency: item.details?.currency || 'USD'
-      }
+        currency: item.details?.currency || 'USD',
+      },
     });
     setIsConfirming(false);
     setIsFormOpen(true);
@@ -143,11 +216,12 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
     setIsFormOpen(false);
     setIsConfirming(false);
     setEditingScopeId(null);
+    setServiceError('');
     resetForm();
   };
 
   const mutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: ScopeFormData) => {
       const res = await fetch(`/api/clients/${clientId}/scope`, {
         method: editingScopeId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -165,8 +239,8 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
       setIsConfirming(false);
       closeForm();
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Something went wrong');
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : 'Something went wrong');
     }
   });
 
@@ -190,55 +264,57 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         closeForm();
       }
     },
-    onError: (err: any) => {
-      toast.error(err.message || 'Failed to delete scope item');
+    onError: (err: unknown) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to delete scope item');
     },
   });
 
   const handleTogglePlatform = (platformId: string) => {
-    setFormData((prev: any) => {
+    setFormData((prev) => {
       const platforms = prev.details.platforms.includes(platformId)
-        ? prev.details.platforms.filter((p: string) => p !== platformId)
+        ? prev.details.platforms.filter((p) => p !== platformId)
         : [...prev.details.platforms, platformId];
 
       return {
         ...prev,
-        details: { ...prev.details, platforms }
+        details: { ...prev.details, platforms },
       };
     });
   };
 
   const handleDeliverableChange = (platformId: string, count: string) => {
-    setFormData((prev: any) => ({
+    setFormData((prev) => ({
       ...prev,
       details: {
         ...prev.details,
-        deliverables: { ...prev.details.deliverables, [platformId]: count }
-      }
+        deliverables: { ...prev.details.deliverables, [platformId]: count },
+      },
     }));
   };
 
   const handleToggleContentSplit = (type: string) => {
-    setFormData((prev: any) => {
+    setFormData((prev) => {
       const contentSplit = prev.details.contentSplit.includes(type)
-        ? prev.details.contentSplit.filter((t: string) => t !== type)
+        ? prev.details.contentSplit.filter((t) => t !== type)
         : [...prev.details.contentSplit, type];
 
       return {
         ...prev,
-        details: { ...prev.details, contentSplit }
+        details: { ...prev.details, contentSplit },
       };
     });
   };
 
-  if (isClientLoading || isScopeLoading) return (
-    <div className="flex justify-center p-20">
-      <RefreshCw className="w-8 h-8 text-primary animate-spin" />
-    </div>
-  );
+  if (isClientLoading || isScopeLoading) {
+    return (
+      <div className="flex justify-center p-20">
+        <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+      </div>
+    );
+  }
 
   const isFinalized = client?.isScopeFinalized;
-  const hasScope = scope && scope.length > 0;
+  const hasScope = (scope?.length ?? 0) > 0;
 
   if (isFinalized && !isFormOpen && hasScope) {
     return (
@@ -250,9 +326,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
           </div>
           {canEdit && (
             <button
-              onClick={() => {
-                openCreateForm();
-              }}
+              onClick={openCreateForm}
               className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all"
             >
               <Plus className="w-4 h-4" />
@@ -271,21 +345,24 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         </div>
 
         <div className="space-y-6">
-          {scope.map((item: any) => (
+          {scope?.map((item) => (
             <div key={item.id} className="bg-white p-8 rounded-lg border border-gray-100 shadow-sm space-y-8">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Service Type</p>
-                  <h2 className="text-xl font-semibold text-gray-900">{item.service.replace(/_/g, ' ')}</h2>
-                </div>
-                {canEdit && item.budget && (
-                  <div className="text-right">
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
-                    <p className="text-xl font-bold text-primary">
-                      {item.details?.currency === 'INR' ? '₹' : '$'}{item.budget.toLocaleString()}
-                    </p>
+                <div className='flex gap-6 items-center'>
+                  <div className='text-left'>
+                    <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Service Type</p>
+                    <h2 className="text-xl font-semibold text-gray-900">{item.service.replace(/_/g, ' ')}</h2>
                   </div>
-                )}
+                  {/* monthly budget */}
+                  {canEdit && item.budget && (
+                    <div className="border-l border-gray-200 pl-6 text-start">
+                      <p className="text-[9px] font-semibold uppercase tracking-widest text-gray-400 mb-0.5">Monthly Budget</p>
+                      <p className="text-xl font-bold text-primary">
+                      {item.details?.currency === 'INR' ? '₹' : '$'}{item.budget.toLocaleString()}
+                      </p>
+                    </div>
+              )}
+                </div>
                 {(canEdit || canDelete) && (
                   <div className="flex items-center gap-2">
                     {canEdit && (
@@ -315,16 +392,17 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-gray-50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-gray-50">
                 <div className="flex flex-col space-y-4">
                   {item.details?.platforms && item.details.platforms.length > 0 && (
                     <>
+                    
                       <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
                         <Monitor className="w-4 h-4 text-gray-400" />
                         Selected Platforms
                       </h4>
                       <div className="flex flex-wrap gap-2">
-                        {item.details.platforms.map((p: string) => (
+                        {item.details.platforms.map((p) => (
                           <span key={p} className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-lg border border-gray-100">
                             {p.replace(/_/g, ' ')}
                           </span>
@@ -333,10 +411,10 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                     </>
                   )}
                   {item.description && item.description.trim() !== '' && (
-                    <div className='mt-4'>
+                    <div className="mt-4">
                       <h4 className="text-sm font-semibold text-gray-900">Detailed Description</h4>
                       <p className="text-gray-600 text-sm leading-relaxed font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
-                        "{item.description}"
+                        &quot;{item.description}&quot;
                       </p>
                     </div>
                   )}
@@ -349,7 +427,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                       Deliverables Count
                     </h4>
                     <div className="space-y-2">
-                      {Object.entries(item.details.deliverables).map(([p, count]: any) => (
+                      {Object.entries(item.details.deliverables as Record<string, string | number>).map(([p, count]) => (
                         <div key={p} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
                           <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">{p.replace(/_/g, ' ')}</span>
                           <span className="text-xs font-bold text-primary">{count} posts / mo</span>
@@ -370,7 +448,6 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
     );
   }
 
-  // Non-editors with no finalized scope see a placeholder
   if (!canEdit && !isFinalized) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -403,7 +480,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                 openCreateForm();
               }
             }}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-lg cursor-pointer ${
               isFormOpen
                 ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-none'
                 : 'bg-primary text-white hover:bg-primary shadow-primary/20'
@@ -415,16 +492,15 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         )}
       </div>
 
-      {/* Show Services Requested during Onboarding */}
-      {!isFinalized && client?.services?.length > 0 && (
+      {!isFinalized && client?.services?.length! > 0 && (
         <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
           <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-primary" />
             Services Requested during Onboarding
           </h3>
           <div className="flex flex-wrap gap-2">
-            {client.services.map((s: any) => (
-              <span key={s.id} className="px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg border border-primary/20">
+            {client?.services?.map((s) => (
+              <span key={s.service} className="px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg border border-primary/20">
                 {s.service.replace(/_/g, ' ')}
               </span>
             ))}
@@ -433,7 +509,6 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
       )}
 
       <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm space-y-6">
-        {/* Service Selector */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-gray-700">Service Category</label>
@@ -441,15 +516,34 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
               <select
                 className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-primary text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all cursor-pointer appearance-none"
                 value={formData.service}
-                onChange={(e) => setFormData((p: any) => ({ ...p, service: e.target.value }))}
+                onChange={(e) => {
+                  const nextService = e.target.value as ServiceType;
+
+                  if (isServiceDuplicate(nextService)) {
+                    const message = `The service "${formatServiceLabel(nextService)}" has already been added. Each service can only be added once.`;
+                    setServiceError(message);
+                    toast.error(message);
+                    return;
+                  }
+
+                  setServiceError('');
+                  setFormData((prev) => ({ ...prev, service: nextService }));
+                }}
               >
                 <option value="" disabled>Select a service...</option>
                 {SERVICE_OPTIONS.map((type) => (
-                  <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+                  <option
+                    key={type}
+                    value={type}
+                    disabled={isServiceDuplicate(type) && formData.service !== type}
+                  >
+                    {formatServiceLabel(type)}
+                  </option>
                 ))}
               </select>
               <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary pointer-events-none" />
             </div>
+            {serviceError && <p className="text-xs font-medium text-red-500">{serviceError}</p>}
           </div>
           {canEdit && (
             <div className="space-y-1.5">
@@ -457,14 +551,14 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
               <div className="flex bg-gray-50 border border-gray-100 rounded-xl focus-within:ring-2 focus-within:ring-primary/10 focus-within:border-primary transition-all overflow-hidden relative">
                 <select
                   className="pl-4 pr-8 py-3 bg-gray-100 border-r border-gray-200 text-gray-700 text-sm font-bold focus:outline-none appearance-none cursor-pointer"
-                  value={formData.details?.currency || 'USD'}
-                  onChange={(e) => setFormData((p: any) => ({
-                    ...p,
-                    details: { ...p.details, currency: e.target.value }
+                  value={formData.details.currency || 'USD'}
+                  onChange={(e) => setFormData((prev) => ({
+                    ...prev,
+                    details: { ...prev.details, currency: e.target.value }
                   }))}
                 >
                   <option value="USD">$ USD</option>
-                  <option value="INR">₹ INR</option>
+                  <option value="INR">&#8377; INR</option>
                 </select>
                 <ChevronDown className="absolute left-[5.2rem] top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 <input
@@ -472,29 +566,29 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                   placeholder="5000"
                   className="w-full px-4 py-3 bg-transparent text-sm focus:outline-none font-bold"
                   value={formData.budget}
-                  onChange={(e) => setFormData((p: any) => ({ ...p, budget: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, budget: e.target.value }))}
                 />
               </div>
             </div>
           )}
         </div>
 
-        {/* Dynamic Form Content */}
         {formData.service === 'SOCIAL_MEDIA' && (
           <div className="space-y-8 pt-8 border-t border-gray-50">
             <div className="space-y-4">
               <label className="text-sm font-bold text-gray-900">Select Social Platforms</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-                {PLATFORMS.SOCIAL_MEDIA.map(platform => {
+                {PLATFORMS.SOCIAL_MEDIA.map((platform) => {
                   const isSelected = formData.details.platforms.includes(platform.id);
                   return (
                     <button
                       key={platform.id}
                       onClick={() => handleTogglePlatform(platform.id)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${isSelected
-                        ? 'border-primary bg-primary/50 text-primary'
-                        : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
-                        }`}
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/50 text-primary'
+                          : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
+                      }`}
                     >
                       <platform.icon className="w-5 h-5" />
                       <span className="text-[9px] font-bold uppercase tracking-tighter">{platform.name}</span>
@@ -529,14 +623,15 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
             <div className="space-y-4">
               <label className="text-sm font-bold text-gray-900">Content Split (Optional)</label>
               <div className="flex gap-3">
-                {CONTENT_TYPES.map(type => (
+                {CONTENT_TYPES.map((type) => (
                   <button
                     key={type}
                     onClick={() => handleToggleContentSplit(type)}
-                    className={`px-4 py-2 rounded-lg text-xs font-bold border-2 transition-all ${formData.details.contentSplit.includes(type)
-                      ? 'bg-primary border-primary text-white'
-                      : 'bg-white border-gray-100 text-gray-500 hover:border-primary/20'
-                      }`}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold border-2 transition-all ${
+                      formData.details.contentSplit.includes(type)
+                        ? 'bg-primary border-primary text-white'
+                        : 'bg-white border-gray-100 text-gray-500 hover:border-primary/20'
+                    }`}
                   >
                     {type}
                   </button>
@@ -551,16 +646,17 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
             <div className="space-y-4">
               <label className="text-sm font-bold text-gray-900">Select Ad Platforms</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {PLATFORMS.PAID_MEDIA.map(platform => {
+                {PLATFORMS.PAID_MEDIA.map((platform) => {
                   const isSelected = formData.details.platforms.includes(platform.id);
                   return (
                     <button
                       key={platform.id}
                       onClick={() => handleTogglePlatform(platform.id)}
-                      className={`flex items-center justify-between p-5 rounded-lg border-2 transition-all ${isSelected
-                        ? 'border-primary bg-primary/50 text-primary'
-                        : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
-                        }`}
+                      className={`flex items-center justify-between p-5 rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/50 text-primary'
+                          : 'border-gray-50 bg-gray-50/50 text-gray-400 hover:border-gray-100'
+                      }`}
                     >
                       <span className="font-bold text-sm">{platform.name}</span>
                       {isSelected ? <CheckCircle2 className="w-5 h-5" /> : <Plus className="w-5 h-5 opacity-50" />}
@@ -578,7 +674,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
             placeholder="Outline specific objectives, goals, and any additional notes for this service..."
             className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-xs min-h-[120px] focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary transition-all font-medium leading-relaxed"
             value={formData.description}
-            onChange={(e) => setFormData((p: any) => ({ ...p, description: e.target.value }))}
+            onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
           />
         </div>
 
@@ -586,6 +682,10 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
           <div className="flex items-center justify-end pt-4">
             <button
               onClick={() => {
+                if (!validateServiceSelection()) {
+                  return;
+                }
+
                 if (editingScopeId) {
                   mutation.mutate(formData);
                 } else {
@@ -600,7 +700,6 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         )}
       </div>
 
-      {/* Confirmation Modal */}
       <AnimatePresence>
         {isConfirming && (
           <div className="fixed inset-0 z-200 flex items-center justify-center p-4">
@@ -634,7 +733,11 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                 <div className="w-full flex flex-col gap-3 pt-4">
                   <button
                     disabled={mutation.isPending}
-                    onClick={() => mutation.mutate(formData)}
+                    onClick={() => {
+                      if (validateServiceSelection()) {
+                        mutation.mutate(formData);
+                      }
+                    }}
                     className="w-full py-4 bg-primary text-white rounded-lg font-bold hover:bg-primary transition-all shadow-lg shadow-primary/20 disabled:opacity-50"
                   >
                     {mutation.isPending ? 'Processing...' : 'Yes, Finalize Now'}

@@ -2,12 +2,14 @@
 
 import * as React from 'react';
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2, Bell, UploadCloud } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { useNotificationCount } from '@/context/NotificationContext';
+import Logo from '@/public/creativeos-logo.jpeg';
 
 const NAV_ITEMS = [
   { href: '/portal/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -60,15 +62,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div className={`flex flex-col h-full bg-white border-r border-gray-100 ${mobile ? 'w-full' : 'w-60'}`}>
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-gray-100">
+      <div className="px-6 py-2">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white text-xs font-bold">C</span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-900">CreativeOS</p>
-            <p className="text-[10px] text-gray-400 font-medium">Client Portal</p>
-          </div>
+          <Image src={Logo} alt="Logo" width={100} height={100} className="h-16 w-auto rounded-lg object-contain" />
         </div>
       </div>
 

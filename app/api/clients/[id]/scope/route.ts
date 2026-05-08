@@ -66,6 +66,17 @@ export const POST = withApiLogging(async function POST(
     }
 
     const item = await prisma.$transaction(async (tx) => {
+      const duplicateScope = await tx.scopeOfWork.findFirst({
+        where: {
+          clientId: id,
+          service: service as ServiceType,
+        },
+      });
+
+      if (duplicateScope) {
+        throw new Error(`Service "${service}" already exists in scope`);
+      }
+
       const newScope = await tx.scopeOfWork.create({
         data: {
           clientId: id,
@@ -102,6 +113,9 @@ export const POST = withApiLogging(async function POST(
     return NextResponse.json(item);
   } catch (error) {
     console.error('[CLIENT_SCOPE_POST]', error);
+    if (error instanceof Error && error.message.includes('already exists in scope')) {
+      return new NextResponse(error.message, { status: 409 });
+    }
     return new NextResponse('Internal error', { status: 500 });
   }
 });
@@ -137,10 +151,30 @@ export const PATCH = withApiLogging(async function PATCH(
       return new NextResponse('Scope item not found', { status: 404 });
     }
 
+    if (service !== undefined && !service) {
+      return new NextResponse('Missing required fields', { status: 400 });
+    }
+
+    const shouldUpdateService = service !== undefined && service !== existingScope.service;
+
+    if (shouldUpdateService) {
+      const duplicateScope = await prisma.scopeOfWork.findFirst({
+        where: {
+          clientId: id,
+          service: service as ServiceType,
+          NOT: { id: existingScope.id },
+        },
+      });
+
+      if (duplicateScope) {
+        return new NextResponse(`Service "${service}" already exists in scope`, { status: 409 });
+      }
+    }
+
     const updatedScope = await prisma.scopeOfWork.update({
       where: { id: existingScope.id },
       data: {
-        ...(service ? { service: service as ServiceType } : {}),
+        ...(shouldUpdateService ? { service: service as ServiceType } : {}),
         ...(description !== undefined ? { description: description || '' } : {}),
         ...(budget !== undefined
           ? { budget: budget === '' || budget === null ? null : parseFloat(budget) }
@@ -167,6 +201,9 @@ export const PATCH = withApiLogging(async function PATCH(
     return NextResponse.json(updatedScope);
   } catch (error) {
     console.error('[CLIENT_SCOPE_PATCH]', error);
+    if (error instanceof Error && error.message.includes('already exists in scope')) {
+      return new NextResponse(error.message, { status: 409 });
+    }
     return new NextResponse('Internal error', { status: 500 });
   }
 });

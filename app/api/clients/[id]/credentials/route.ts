@@ -18,9 +18,12 @@ export const POST = withApiLogging(async function POST(req: NextRequest, { param
           { id: client.userId },
           { email: client.email },
         ],
+        userType: {
+          in: ['CLIENT', 'CLIENT_MEMBER'],
+        },
       },
     });
-    if (!user || !['CLIENT', 'CLIENT_MEMBER'].includes(user.userType)) {
+    if (!user) {
       return NextResponse.json({ error: 'No portal account found for this client' }, { status: 404 });
     }
 

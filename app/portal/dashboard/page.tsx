@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, Clock, Building2, RefreshCw, AlertCircle, BadgeCheck } from 'lucide-react';
+import { CheckCircle2, Clock, FolderKanban, RefreshCw, AlertCircle, BadgeCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PortalDashboardPage() {
@@ -53,7 +53,7 @@ export default function PortalDashboardPage() {
   const approvedCount = (approvedTasks as any[]).length;
 
   const statusColors: Record<string, string> = {
-    ACTIVE: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+    ACTIVE: 'bg-emerald-50 text-emerald-500 border-emerald-100',
     PENDING: 'bg-amber-50 text-amber-600 border-amber-100',
     INACTIVE: 'bg-gray-100 text-gray-500 border-gray-200',
   };
@@ -75,7 +75,7 @@ export default function PortalDashboardPage() {
             <Clock className="w-5 h-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Pending Approvals</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Pending Approvals</p>
             <p className="text-2xl font-bold text-gray-900 mt-0.5">{pendingCount}</p>
           </div>
         </div>
@@ -85,17 +85,17 @@ export default function PortalDashboardPage() {
             <BadgeCheck className="w-5 h-5 text-violet-500" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Approved Works</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Approved Works</p>
             <p className="text-2xl font-bold text-gray-900 mt-0.5">{approvedCount}</p>
           </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5 flex items-center gap-4">
-          <div className="w-11 h-11 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-            <Building2 className="w-5 h-5 text-primary" />
+          <div className="w-11 h-11 bg-blue-600/10 rounded-lg flex items-center justify-center shrink-0">
+            <FolderKanban className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Projects</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Projects</p>
             <p className="text-2xl font-bold text-gray-900 mt-0.5">{profile._count?.projects ?? 0}</p>
           </div>
         </div>
@@ -105,7 +105,7 @@ export default function PortalDashboardPage() {
             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Status</p>
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Status</p>
             <span className={`mt-1 inline-block px-2.5 py-0.5 text-[11px] font-bold rounded-full border ${statusColors[profile.status] ?? statusColors.PENDING}`}>
               {profile.status}
             </span>
