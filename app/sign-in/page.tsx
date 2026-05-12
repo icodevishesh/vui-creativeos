@@ -133,7 +133,7 @@ export default function SignIn() {
                         {isLoading ? 'Signing in...' : 'Sign in'}
                     </button>
                 </form>
-
+{/* 
                 <div className="mt-6 text-center">
                     <p className="text-sm text-gray-500">
                         Don't have an account?{' '}
@@ -141,7 +141,7 @@ export default function SignIn() {
                             Sign up
                         </Link>
                     </p>
-                </div>
+                </div> */}
             </div>
         </div>
     );

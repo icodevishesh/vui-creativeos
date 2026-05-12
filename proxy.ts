@@ -4,7 +4,7 @@ import { jwtVerify } from 'jose';
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret';
 
 // Routes that do NOT require authentication
-const PUBLIC_PATHS = ['/', '/sign-in', '/sign-up', '/api/auth/sign-in', '/api/auth/sign-up'];
+const PUBLIC_PATHS = ['/', '/sign-in', '/forgot-password', '/api/auth/sign-in', '/api/auth/forgot-password'];
 
 function isPublic(pathname: string): boolean {
   // All API routes return JSON so the client handles 401s — never redirect them
@@ -14,6 +14,11 @@ function isPublic(pathname: string): boolean {
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // Always redirect /sign-up to /sign-in
+  if (pathname.startsWith('/sign-up')) {
+    return NextResponse.redirect(new URL('/sign-in', req.url));
+  }
 
   // Always allow public paths and static assets
   if (isPublic(pathname) || pathname.startsWith('/_next') || pathname.startsWith('/uploads')) {
