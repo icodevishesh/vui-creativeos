@@ -22,8 +22,8 @@ export interface EmailTemplate {
   html: string;
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://app.creativeos.io';
-const BRAND_COLOR = '#6366F1'; // indigo-500 — matches the UI palette
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://creativeos.vuilive.com/';
+const BRAND_COLOR = '#36cb98';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared HTML wrapper
