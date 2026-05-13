@@ -360,7 +360,7 @@ const validatePhone = (v: string) => {
                     key={type.id}
                     onClick={() => updateField('engagementType', type.id)}
                     className={`p-6 rounded-xl border-2 text-left transition-all ${formData.engagementType === type.id
-                      ? 'border-primary bg-primary/50 ring-4 ring-primary/5'
+                      ? 'border-primary/20 bg-primary/20'
                       : 'border-gray-100 bg-white hover:border-primary/30'
                       }`}
                   >
@@ -389,7 +389,7 @@ const validatePhone = (v: string) => {
                       key={service.id}
                       onClick={() => toggleService(service.id)}
                       className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${isActive
-                        ? 'border-primary bg-primary/50'
+                        ? 'border-primary/20 bg-primary/10'
                         : 'border-gray-100 bg-white hover:border-primary/30'
                         }`}
                     >

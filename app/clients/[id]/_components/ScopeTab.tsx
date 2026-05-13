@@ -492,21 +492,21 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
         )}
       </div>
 
-      {!isFinalized && client?.services?.length! > 0 && (
+      {/* {isFinalized && client?.services?.length! > 0 && ( */}
         <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
             <Briefcase className="w-4 h-4 text-primary" />
             Services Requested during Onboarding
           </h3>
           <div className="flex flex-wrap gap-2">
             {client?.services?.map((s) => (
-              <span key={s.service} className="px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg border border-primary/20">
+              <span key={s.service} className="px-3 py-1.5 bg-primary/10 text-[#00786f] text-[10px] font-semibold uppercase tracking-widest rounded-lg border border-primary/20">
                 {s.service.replace(/_/g, ' ')}
               </span>
             ))}
           </div>
         </div>
-      )}
+      {/* } */}
 
       <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

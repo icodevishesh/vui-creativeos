@@ -27,6 +27,7 @@ import {
   Building2,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { DesignPreviewModal } from "@/components/ApprovalsDesignPreviewDialog";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -150,7 +151,7 @@ const TASK_STATUS_BADGE: Record<string, { label: string; className: string }> = 
 
 // ─── Design Preview Modal ─────────────────────────────────────────────────────
 
-function DesignPreviewModal({
+function LegacyDesignPreviewModal({
   isOpen,
   onClose,
   task,

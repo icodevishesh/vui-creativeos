@@ -22,7 +22,7 @@ export interface EmailTemplate {
   html: string;
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://creativeos.vuilive.com/';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://creativeos.vuilive.com';
 const BRAND_COLOR = '#36cb98';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -105,7 +105,7 @@ export interface WelcomeEmailOptions {
 
 export function buildWelcomeEmail(opts: WelcomeEmailOptions): EmailTemplate {
   const { name, email, password, role, loginUrl } = opts;
-  const loginHref = loginUrl ?? `${APP_URL}/login`;
+  const loginHref = loginUrl ?? `${APP_URL}/sign-in`;
 
   const subject = `🎉 Welcome to CreativeOS, ${name}!`;
 

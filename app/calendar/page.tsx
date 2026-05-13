@@ -150,7 +150,7 @@ export default function CalendarPage() {
                         </div>
 
                         <div className="p-4 w-full">
-                            <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm h-[600px]">
+                            <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm h-600px">
                                 <div className="flex justify-between items-center mb-6">
                                     <div className="flex items-center gap-4">
                                         <div className="h-8 bg-gray-200 rounded-md w-32"></div>
@@ -162,12 +162,12 @@ export default function CalendarPage() {
                                         <div className="h-8 bg-gray-200 rounded-md w-20"></div>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-7 gap-[1px] bg-gray-100 border border-gray-100 rounded-lg overflow-hidden h-[500px]">
+                                <div className="grid grid-cols-7 gap-1px bg-gray-100 border border-gray-100 rounded-lg overflow-hidden h-500px">
                                     {Array.from({ length: 7 }).map((_, i) => (
                                         <div key={`header-${i}`} className="bg-gray-50 h-10"></div>
                                     ))}
                                     {Array.from({ length: 35 }).map((_, i) => (
-                                        <div key={`cell-${i}`} className="bg-white w-full h-full min-h-[80px]"></div>
+                                        <div key={`cell-${i}`} className="bg-white w-full h-full min-h-80px"></div>
                                     ))}
                                 </div>
                             </div>

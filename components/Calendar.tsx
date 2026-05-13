@@ -1,17 +1,24 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Globe, Film, FolderOpen, Tag } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, getDay } from 'date-fns';
 import { TaskCard } from './TaskCard';
 import { TaskStatus } from '@prisma/client';
+import { CalendarCopyPreviewDialog } from './CalendarCopyPreviewDialog';
+import { TaskPreviewDialog, type CalendarTaskPreview } from './TaskPreviewDialog';
 
 interface Task {
   id: string;
   title: string;
+  description?: string;
   status: TaskStatus;
+  priority?: string;
   startDate: Date | null;
   endDate: Date | null;
   clientId: string;
   projectId: string;
+  mediaUrls?: string[];
+  feedbacks?: string[];
+  attachments?: { id: string; fileName: string; fileUrl: string; mimeType: string | null; }[];
   assignedTo?: {
     id: string;
     name: string;
@@ -79,6 +86,8 @@ export const Calendar: React.FC<CalendarProps> = ({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedCopy, setSelectedCopy] = useState<CalendarCopy | null>(null);
+  const [selectedTask, setSelectedTask] = useState<CalendarTaskPreview | null>(null);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -227,7 +236,7 @@ export const Calendar: React.FC<CalendarProps> = ({
                 {/* Tasks */}
                 <div className="space-y-1">
                   {dayTasks.map(task => (
-                    <TaskCard key={task.id} task={task} />
+                    <TaskCard key={task.id} task={task} onClick={() => setSelectedTask(task)} />
                   ))}
                 </div>
 
@@ -237,75 +246,17 @@ export const Calendar: React.FC<CalendarProps> = ({
                     {dayCopies.map(copy => {
                       const statusStyle = COPY_STATUS_STYLES[copy.status] ?? COPY_STATUS_STYLES.DRAFT;
                       const dot = COPY_STATUS_DOT[copy.status] ?? COPY_STATUS_DOT.DRAFT;
-                      const statusLabel = copy.status === 'UNDER_REVIEW' ? 'Under Review' : (copy.status?.charAt(0) + copy.status?.slice(1).toLowerCase());
                       return (
-                        <div key={copy.id} className="relative group">
-                          <div
-                            className={`flex items-start gap-1.5 px-2 py-1.5 rounded border text-[10px] font-medium leading-tight cursor-default ${statusStyle}`}
-                          >
-                            <span className={`mt-0.5 w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
-                            <div className="min-w-0">
-                              <p className="truncate font-semibold">
-                                {copy.platform ?? 'Post'}{copy.mediaType ? ` · ${copy.mediaType}` : ''}
-                              </p>
-                              <p className="truncate text-[9px] opacity-70 mt-0.5">
-                                {copy.content.substring(0, 40)}{copy.content.length > 40 ? '…' : ''}
-                              </p>
-                              {copy.bucket && (
-                                <p className="truncate text-[9px] opacity-60">{copy.bucket.name}</p>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Hover Tooltip */}
-                          <div className="pointer-events-none absolute z-50 bottom-full left-0 mb-2 w-64 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
-                            <div className="bg-gray-900 text-white rounded-lg shadow-xl p-3 text-xs space-y-2">
-                              <p className="font-semibold text-sm leading-snug line-clamp-3">{copy.content}</p>
-                              <div className="border-t border-white/10 pt-2 space-y-1.5">
-                                <div className="flex items-center gap-2">
-                                  <Tag className="w-3 h-3 shrink-0 text-gray-400" />
-                                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${statusStyle}`}>{statusLabel}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-gray-300">
-                                  <CalendarIcon className="w-3 h-3 shrink-0 text-gray-400" />
-                                  <span>{copy.publishDate ? format(new Date(copy.publishDate), 'MMM d, yyyy') : 'No date'}</span>
-                                </div>
-                                {copy.publishTime && (
-                                  <div className="flex items-center gap-2 text-gray-300">
-                                    <Clock className="w-3 h-3 shrink-0 text-gray-400" />
-                                    <span>{copy.publishTime}</span>
-                                  </div>
-                                )}
-                                {copy.platform && (
-                                  <div className="flex items-center gap-2 text-gray-300">
-                                    <Globe className="w-3 h-3 shrink-0 text-gray-400" />
-                                    <span>{copy.platform}</span>
-                                  </div>
-                                )}
-                                {copy.mediaType && (
-                                  <div className="flex items-center gap-2 text-gray-300">
-                                    <Film className="w-3 h-3 shrink-0 text-gray-400" />
-                                    <span>{copy.mediaType}</span>
-                                  </div>
-                                )}
-                                {copy.bucket && (
-                                  <div className="flex items-center gap-2 text-gray-300">
-                                    <FolderOpen className="w-3 h-3 shrink-0 text-gray-400" />
-                                    <span className="truncate">{copy.bucket.name}</span>
-                                  </div>
-                                )}
-                                {copy.calendarName && (
-                                  <div className="flex items-start gap-2 text-gray-400 text-[10px]">
-                                    <span className="shrink-0">Calendar:</span>
-                                    <span className="truncate">{copy.calendarName}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            {/* Arrow */}
-                            <div className="w-2.5 h-2.5 bg-gray-900 rotate-45 ml-3 -mt-1.5" />
-                          </div>
-                        </div>
+                        <button
+                          key={copy.id}
+                          onClick={() => setSelectedCopy(copy)}
+                          className={`w-full flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-semibold leading-tight text-left transition-opacity hover:opacity-80 ${statusStyle}`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
+                          <span className="truncate">
+                            {copy.platform ?? 'Post'}{copy.mediaType ? ` · ${copy.mediaType}` : ''}
+                          </span>
+                        </button>
                       );
                     })}
                   </div>
@@ -315,6 +266,8 @@ export const Calendar: React.FC<CalendarProps> = ({
           })}
         </div>
       </div>
+      <CalendarCopyPreviewDialog copy={selectedCopy} onClose={() => setSelectedCopy(null)} />
+      <TaskPreviewDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
     </div>
   );
 };

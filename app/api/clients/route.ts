@@ -168,13 +168,13 @@ export const POST = withApiLogging(async function POST(req: Request) {
     await ensureClientFolder(client.id, client.companyName);
 
     // ── Notify admin that a new client has been onboarded ─────────────
-    await dispatchNotification({
+    dispatchNotification({
       category: 'CLIENT_ONBOARDED',
       recipientIds: [adminUser.id],
       title: 'New client onboarded',
       message: `"${companyName}" has been successfully added as a client.`,
       link: `/clients`,
-    });
+    }).catch((err) => console.error('[API_CLIENTS_POST] notification dispatch failed:', err));
 
     return NextResponse.json({ ...client, generatedPassword: plainPassword });
   } catch (error) {

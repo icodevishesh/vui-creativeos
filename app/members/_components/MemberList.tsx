@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Mail, Shield, Calendar, Trash2 } from 'lucide-react';
+import { Mail, Shield, Calendar, Trash2, KeyRound, Copy, RefreshCw, X, Eye, EyeOff } from 'lucide-react';
 import { MemberRole, UserType } from '@prisma/client';
 import { toast } from 'react-hot-toast';
 
@@ -24,6 +24,124 @@ interface Member {
   } | null;
 }
 
+interface CredentialsModalProps {
+  member: Member;
+  onClose: () => void;
+}
+
+function CredentialsModal({ member, onClose }: CredentialsModalProps) {
+  const [password, setPassword] = React.useState<string | null>(null);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [isResetting, setIsResetting] = React.useState(false);
+
+  const handleGenerate = async () => {
+    setIsResetting(true);
+    try {
+      const res = await fetch(`/api/members/${member.id}/reset-password`, { method: 'POST' });
+      if (!res.ok) throw new Error('Failed to reset password');
+      const data = await res.json();
+      setPassword(data.password);
+      setShowPassword(true);
+      toast.success('New password generated');
+    } catch {
+      toast.error('Failed to generate password');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard');
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-gray-50 rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 py-4 shrink-0">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">{member.user?.name}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">Team member credentials</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 transition-colors mt-0.5">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="mx-5 mb-5 bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          {/* Email row */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Email / Username</p>
+              <p className="text-sm font-medium text-gray-800">{member.user?.email}</p>
+            </div>
+            <button
+              onClick={() => copyToClipboard(member.user?.email ?? '')}
+              className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              title="Copy email"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Password row */}
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-0.5">Password</p>
+              {password ? (
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-mono font-medium text-gray-800 truncate">
+                    {showPassword ? password : '••••••••••••'}
+                  </p>
+                  <button
+                    onClick={() => setShowPassword(v => !v)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors shrink-0"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 italic">Generate a new password below</p>
+              )}
+            </div>
+            {password && (
+              <button
+                onClick={() => copyToClipboard(password)}
+                className="p-2 text-gray-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-all shrink-0"
+                title="Copy password"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Generate button */}
+        <div className="px-5 pb-5">
+          <button
+            onClick={handleGenerate}
+            disabled={isResetting}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-bold hover:opacity-90 transition-all disabled:opacity-60"
+          >
+            {isResetting ? (
+              <><RefreshCw className="w-4 h-4 animate-spin" /> Generating...</>
+            ) : (
+              <><KeyRound className="w-4 h-4" /> {password ? 'Regenerate Password' : 'Generate New Password'}</>
+            )}
+          </button>
+          {password && (
+            <p className="text-center text-xs text-amber-600 font-medium mt-2">
+              Share this password with the member — it won't be shown again after closing.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type MemberStatusFilter = 'active' | 'inactive';
 
 const STATUS_FILTERS: { value: MemberStatusFilter; label: string }[] = [
@@ -34,6 +152,7 @@ const STATUS_FILTERS: { value: MemberStatusFilter; label: string }[] = [
 export function MemberList() {
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState<MemberStatusFilter>('active');
+  const [credentialsMember, setCredentialsMember] = useState<Member | null>(null);
 
   const { data: members = [], isLoading, error } = useQuery<Member[]>({
     queryKey: ['members'],
@@ -212,6 +331,15 @@ export function MemberList() {
               </div>
               <button
                 type="button"
+                onClick={() => setCredentialsMember(member)}
+                title="View / generate credentials"
+                aria-label={`Credentials for ${member.user?.name || 'member'}`}
+                className="p-2 text-gray-300 hover:text-primary hover:bg-primary/10 rounded-lg transition-all"
+              >
+                <KeyRound className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
                 onClick={() => handleDelete(member)}
                 disabled={deleteMutation.isPending}
                 title="Delete member"
@@ -230,6 +358,13 @@ export function MemberList() {
           </div>
         )}
       </div>
+
+      {credentialsMember && (
+        <CredentialsModal
+          member={credentialsMember}
+          onClose={() => setCredentialsMember(null)}
+        />
+      )}
     </div>
   );
 }

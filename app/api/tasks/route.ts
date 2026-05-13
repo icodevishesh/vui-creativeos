@@ -29,6 +29,7 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
                 project: { select: { name: true } },
                 client: { select: { companyName: true } },
                 assignedTo: { select: { id: true, name: true } },
+                attachments: { select: { id: true, fileName: true, fileUrl: true, mimeType: true, fileSize: true, platform: true, platformType: true } },
                 _count: { select: { subTasks: true } },
                 calendar: {
                     select: {
