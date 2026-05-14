@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma, TaskStatus, TaskPriority } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { TaskStatus, TaskPriority } from "@prisma/client";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
 import { withApiLogging } from '@/lib/api-logging';
 
@@ -16,7 +16,7 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
         const assignedToId = searchParams.get("assignedToId");
         const calendarId = searchParams.get("calendarId");
 
-        const where: any = {};
+        const where: Prisma.TaskWhereInput = {};
         if (projectId) where.projectId = projectId;
         if (clientId) where.clientId = clientId;
         if (organizationId) where.organizationId = organizationId;
@@ -28,14 +28,14 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
             include: {
                 project: { select: { name: true } },
                 client: { select: { companyName: true } },
-                assignedTo: { select: { id: true, name: true } },
+                assignedTo: { select: { id: true, name: true, roles: true } },
                 attachments: { select: { id: true, fileName: true, fileUrl: true, mimeType: true, fileSize: true, platform: true, platformType: true } },
                 _count: { select: { subTasks: true } },
                 calendar: {
                     select: {
                         id: true,
                         name: true,
-                        copies: { select: { status: true } },
+                        copies: { select: { status: true } }
                     }
                 }
             },
@@ -84,6 +84,8 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
             clientId,
             organizationId,
             assignedToId,
+            category,
+            taskCategory,
             priority,
             startDate,
             endDate,
@@ -108,6 +110,7 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
                 clientId,
                 organizationId,
                 assignedToId: assignedToId || null,
+                category: category || taskCategory || null,
                 createdById,
                 startDate: startDate ? new Date(startDate) : null,
                 endDate: endDate ? new Date(endDate) : null,
@@ -116,7 +119,7 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
             include: {
                 project: { select: { name: true } },
                 client: { select: { companyName: true } },
-                assignedTo: { select: { id: true, name: true } },
+                assignedTo: { select: { id: true, name: true, roles: true } },
             },
         });
 

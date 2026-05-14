@@ -227,7 +227,7 @@ function ProjectRow({ project, onEdit, onDelete, onStatusChange, isUpdating, isD
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                         {project.client?.companyName && (
-                            <span className="text-[11px] font-medium text-primary uppercase tracking-wider">
+                            <span className="text-[11px] font-bold text-primary uppercase tracking-wider">
                                 {project.client.companyName}
                             </span>
                         )}

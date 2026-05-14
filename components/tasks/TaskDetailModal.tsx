@@ -4,26 +4,43 @@ import { useState } from "react";
 import {
   X,
   Trash2,
-  CheckCircle2,
   Clock,
-  AlertCircle,
   Plus,
   MessageSquare,
   Layout,
   User,
-  ExternalLink,
   ChevronDown,
   Loader2
 } from "lucide-react";
-import { TaskStatus, TaskPriority } from "@prisma/client";
+import { TaskStatus } from "@prisma/client";
+
+type TaskSubTask = {
+  id: string;
+  title: string;
+  status: TaskStatus;
+};
+
+type TaskDetails = {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: TaskStatus;
+  category?: string | null;
+  project?: { name: string } | null;
+  assignedTo?: { id: string; name: string } | null;
+  startDate?: string | Date | null;
+  endDate?: string | Date | null;
+  subTasks?: TaskSubTask[];
+  feedbacks?: string[];
+};
 
 interface TaskDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: any;
-  onUpdate: (id: string, data: any) => void;
+  task: TaskDetails;
+  onUpdate: (id: string, data: Record<string, unknown>) => void;
   onDelete: (id: string) => void;
-  onCreateSubTask: (taskId: string, data: any) => void;
+  onCreateSubTask: (taskId: string, data: { title: string }) => void;
   isUpdating?: boolean;
   isDeleting?: boolean;
   readOnly?: boolean;
@@ -93,12 +110,13 @@ export function TaskDetailModal({
           <div className="flex items-center gap-2">
             {!readOnly && (
               <button
+                disabled={isDeleting}
                 onClick={() => {
                   if (window.confirm("Delete this task?")) onDelete(task.id);
                 }}
-                className="p-2.5 hover:bg-red-50 text-gray-300 hover:text-red-500 rounded-xl transition-all"
+                className="p-2.5 hover:bg-red-50 text-gray-300 hover:text-red-500 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Trash2 className="w-4 h-4" />
+                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
               </button>
             )}
             <button onClick={onClose} className="p-2.5 hover:bg-gray-100 rounded-xl transition-all">
@@ -120,6 +138,13 @@ export function TaskDetailModal({
                 <User className="w-4 h-4 text-gray-400" />
                 <span className="text-gray-400">Assigned to:</span>
                 <span className="font-semibold text-gray-700">{task.assignedTo?.name || "Unassigned"}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Layout className="w-4 h-4 text-gray-400" />
+                <span className="text-gray-400">Category:</span>
+                <span className="font-semibold text-gray-700">
+                  {task.category ? task.category.replace(/_/g, ' ') : 'No category'}
+                </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Clock className="w-4 h-4 text-gray-400" />
@@ -181,7 +206,7 @@ export function TaskDetailModal({
             )}
 
             <div className="space-y-3">
-              {task.subTasks?.map((st: any) => (
+              {task.subTasks?.map((st) => (
                 <div key={st.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 transition-all">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full bg-gray-300" />

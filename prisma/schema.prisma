@@ -31,8 +31,10 @@ enum MemberRole {
   CONTENT_WRITER
   GRAPHIC_DESIGNER
   VIDEO_EDITOR
-  SOCIAL_MEDIA_MANAGER
   SEO_SPECIALIST
+  PERFORMANCE_MARKETING_SPECIALIST
+  EMAIL_MARKETING_SPECIALIST
+  WHATSAPP_MARKETING_SPECIALIST
 }
 
 model User {
@@ -406,6 +408,7 @@ model Task {
 
   assignedTo   User?   @relation("TaskAssignee", fields: [assignedToId], references: [id])
   assignedToId String?
+  category String?
 
   // Role-specific assignees
   writer        User?   @relation("TaskWriter", fields: [writerId], references: [id])

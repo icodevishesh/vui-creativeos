@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma, TaskStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { TaskStatus } from "@prisma/client";
 import { notifyInternalReviewers } from "@/lib/notifications/task-notifications";
 import { withApiLogging } from '@/lib/api-logging';
 
@@ -17,7 +17,7 @@ export const GET = withApiLogging(async function GET(
             include: {
                 project: true,
                 client: true,
-                assignedTo: { select: { id: true, name: true } },
+                assignedTo: { select: { id: true, name: true, roles: true } },
                 subTasks: {
                     orderBy: { createdAt: "desc" },
                     include: { assignedTo: { select: { id: true, name: true } } }
@@ -57,6 +57,7 @@ export const PATCH = withApiLogging(async function PATCH(
             status,
             priority,
             assignedToId,
+            category,
             startDate,
             endDate,
             feedbacks,
@@ -73,12 +74,13 @@ export const PATCH = withApiLogging(async function PATCH(
             return NextResponse.json({ error: "Task not found" }, { status: 404 });
         }
 
-        const data: any = {};
+        const data: Prisma.TaskUpdateInput = {};
         if (title) data.title = title;
         if (description !== undefined) data.description = description;
         if (status) data.status = status;
         if (priority) data.priority = priority;
-        if (assignedToId !== undefined) data.assignedToId = assignedToId || null;
+        if (assignedToId !== undefined) data.assignedTo = assignedToId ? { connect: { id: assignedToId } } : { disconnect: true };
+        if (category !== undefined) data.category = category;
         if (startDate) data.startDate = new Date(startDate);
         if (endDate) data.endDate = new Date(endDate);
         if (mediaUrls) data.mediaUrls = mediaUrls;
@@ -102,14 +104,14 @@ export const PATCH = withApiLogging(async function PATCH(
             include: {
                 project: true,
                 client: true,
-                assignedTo: { select: { id: true, name: true } },
+                assignedTo: { select: { id: true, name: true, roles: true } },
                 subTasks: true,
             },
         });
 
         // Notify internal reviewers when writer submits task for review
         if (status === TaskStatus.INTERNAL_REVIEW && currentTask.status !== TaskStatus.INTERNAL_REVIEW) {
-            notifyInternalReviewers(task as any).catch(err =>
+            notifyInternalReviewers(task as Parameters<typeof notifyInternalReviewers>[0]).catch(err =>
                 console.error('[PATCH /api/tasks/:id] notifyInternalReviewers failed:', err)
             );
         }

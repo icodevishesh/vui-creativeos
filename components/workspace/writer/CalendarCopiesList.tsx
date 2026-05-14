@@ -109,7 +109,7 @@ function SubmitPreviewModal({
     };
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-sm" onClick={onClose} />
 
             <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
@@ -131,7 +131,7 @@ function SubmitPreviewModal({
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                     {calendarObjective && (
                         <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
-                            <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-1">Calendar Objective</p>
+                            <p className="text-[10px] font-bold text-primary/60 uppercase -tracking-tight mb-1">Calendar Objective</p>
                             <p className="text-xs text-primary leading-relaxed">{calendarObjective}</p>
                         </div>
                     )}
@@ -144,7 +144,7 @@ function SubmitPreviewModal({
                             return (
                                 <div key={copy.id} className="bg-gray-50 border border-gray-100 rounded-lg p-4 space-y-3">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest w-5">#{idx + 1}</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight w-5">#{idx + 1}</span>
 
                                         {platforms.map(p => (
                                             <span key={p} className={`inline-flex items-center gap-1 text-[10px] font-bold border px-2 py-0.5 rounded-full ${PLATFORM_STYLES[p as Platform]
@@ -175,13 +175,13 @@ function SubmitPreviewModal({
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Creative Copy</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight">Creative Copy</p>
                                         <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap">{copy.content}</p>
                                     </div>
 
                                     {copy.caption && (
                                         <div className="space-y-1">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Caption</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight">Caption</p>
                                             <p className="text-xs text-gray-600 leading-relaxed italic">{copy.caption}</p>
                                         </div>
                                     )}
@@ -447,9 +447,6 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
             {/* Add New Copy Form */}
             <div className="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
-                        <FilePlus size={20} />
-                    </div>
                     <div>
                         <h2 className="text-lg font-semibold text-gray-900">Add New Copy</h2>
                         <p className="text-gray-500 text-sm">Fill in copy details for a single creative post</p>
@@ -458,27 +455,27 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Creative Copy *</label>
+                        <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Creative Copy *</label>
                         <textarea
                             value={form.content}
                             onChange={(e) => setForm({ ...form, content: e.target.value })}
                             placeholder="The main creative copy / content for this post..."
-                            className="w-full min-h-[120px] p-4 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 resize-none"
+                            className="w-full min-h-120px p-4 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 resize-none"
                         />
                     </div>
 
                     <div>
-                        <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Caption *</label>
+                        <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Caption *</label>
                         <textarea
                             value={form.caption}
                             onChange={(e) => setForm({ ...form, caption: e.target.value })}
                             placeholder="Caption that accompanies the creative..."
-                            className="w-full min-h-[100px] p-4 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 resize-none"
+                            className="w-full min-h-100px p-4 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 resize-none"
                         />
                     </div>
 
                     <div>
-                        <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Hashtags</label>
+                        <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Hashtags</label>
                         <input
                             type="text"
                             value={form.hashtags}
@@ -489,7 +486,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                     </div>
 
                     <div>
-                        <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Reference URL</label>
+                        <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Reference URL</label>
                         <div className="relative">
                             <Link size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                             <input
@@ -504,7 +501,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Publish Date *</label>
+                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Publish Date *</label>
                             <div className="relative">
                                 <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                 <input
@@ -524,7 +521,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                             )}
                         </div>
                         <div>
-                            <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Publish Time</label>
+                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Publish Time</label>
                             <div className="relative">
                                 <Clock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                                 <input
@@ -539,7 +536,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Content Bucket *</label>
+                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Content Bucket *</label>
                             <select
                                 value={form.bucketId}
                                 onChange={(e) => setForm({ ...form, bucketId: e.target.value })}
@@ -552,7 +549,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                             </select>
                         </div>
                         <div>
-                            <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">Media Type *</label>
+                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Media Type *</label>
                             <select
                                 value={form.mediaType}
                                 onChange={(e) => setForm({ ...form, mediaType: e.target.value })}
@@ -574,7 +571,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Layers className="w-4 h-4 text-primary" />
-                                    <span className="text-xs font-bold text-primary uppercase tracking-widest">Carousel Frames</span>
+                                    <span className="text-xs font-bold text-primary uppercase -tracking-tight">Carousel Frames</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs text-gray-500 font-medium">Frames:</span>
@@ -617,7 +614,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                            
                             <div className="space-y-3">
                                 <div>
-                                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">
+                                    <label className="text-[10px] font-bold text-primary uppercase -tracking-tight block mb-1">
                                         Frame {activeFrame + 1} Caption *
                                     </label>
                                     <textarea
@@ -629,7 +626,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold text-primary uppercase tracking-widest block mb-1">
+                                    <label className="text-[10px] font-bold text-primary uppercase -tracking-tight block mb-1">
                                         Frame {activeFrame + 1} Hashtags
                                     </label>
                                     <input
@@ -661,7 +658,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
                     {/* Platform multi-select */}
                     <div>
-                        <label className="text-xs tracking-widest font-medium text-gray-500 uppercase block mb-2">
+                        <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">
                             Platforms
                             {form.platforms.length > 0 && (
                                 <span className="ml-2 normal-case text-primary font-semibold">
@@ -708,7 +705,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                         /* ── Inline Edit Form ── */
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs font-bold text-primary uppercase tracking-widest">Editing Copy</span>
+                                                <span className="text-xs font-bold text-primary uppercase -tracking-tight">Editing Copy</span>
                                                 <button type="button" onClick={() => setEditingCopyId(null)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
                                             </div>
                                             <textarea
@@ -744,24 +741,24 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Publish Date</label>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight block mb-1">Publish Date</label>
                                                     <input type="date" value={editForm.publishDate} onChange={e => setEditForm({ ...editForm, publishDate: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20" />
                                                 </div>
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Publish Time</label>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight block mb-1">Publish Time</label>
                                                     <input type="time" value={editForm.publishTime} onChange={e => setEditForm({ ...editForm, publishTime: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20" />
                                                 </div>
                                             </div>
                                             <div className="grid grid-cols-2 gap-3">
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Bucket</label>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight block mb-1">Bucket</label>
                                                     <select value={editForm.bucketId} onChange={e => setEditForm({ ...editForm, bucketId: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-none">
                                                         <option value="">Select bucket</option>
                                                         {buckets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Media Type</label>
+                                                    <label className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight block mb-1">Media Type</label>
                                                     <select value={editForm.mediaType} onChange={e => setEditForm({ ...editForm, mediaType: e.target.value })} className="w-full p-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-none">
                                                         <option value="">Select type</option>
                                                         <option value="Image">Image</option>
@@ -772,7 +769,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Platforms</label>
+                                                <label className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight block mb-2">Platforms</label>
                                                 <PlatformMultiSelect
                                                     selected={editForm.platforms}
                                                     onChange={p => setEditForm({ ...editForm, platforms: p })}

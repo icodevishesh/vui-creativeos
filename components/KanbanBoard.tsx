@@ -1,6 +1,6 @@
 import React from 'react';
 import { TaskStatus, TaskPriority } from '@prisma/client';
-import { Clock, AlertCircle, CheckCircle2, Building2, User } from 'lucide-react';
+import { Clock, AlertCircle, CheckCircle2, Building2, User, Tag } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -18,7 +18,8 @@ interface Task {
   countSubTask: number;
   project: { name: string };
   client: { companyName: string };
-  assignedTo?: { id: string; name: string };
+  assignedTo?: { id: string; name: string; roles?: string[] };
+  category?: string;
   _count?: any;
 }
 
@@ -89,8 +90,30 @@ const STATUS_CONFIG = {
   },
 };
 
+const formatShortRoleLabel = (role: string) => {
+  const predefined: Record<string, string> = {
+    ADMIN: 'Admin',
+    ADMIN_OWNER: 'Admin',
+    TEAM_LEAD: 'Team Lead',
+    ACCOUNT_MANAGER: 'Account Manager',
+    COPYWRITER: 'Copy Writer',
+    CONTENT_WRITER: 'Content Writer',
+    GRAPHIC_DESIGNER: 'Graphic Designer',
+    CREATIVE_LEAD: 'Creative Lead',
+    VIDEO_EDITOR: 'Video Editor',
+    SOCIAL_MEDIA_MANAGER: 'Social Media Manager',
+    SEO_SPECIALIST: 'SEO Specialist',
+    PERFORMANCE_MARKETING_SPECIALIST: 'Performance Marketing Specialist',
+    EMAIL_MARKETING_SPECIALIST: 'Email Marketing Specialist',
+    WHATSAPP_MARKETING_SPECIALIST: 'WhatsApp Marketing Specialist',
+  };
+
+  return predefined[role] ?? role.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
 const KanbanTaskCard: React.FC<{ task: Task; onClick?: () => void }> = ({ task, onClick }) => {
   const priorityConfig = PRIORITY_CONFIG[task.priority];
+  const assigneeRole = task.assignedTo?.roles?.[0] ? formatShortRoleLabel(task.assignedTo.roles[0]) : null;
 
   return (
     <div
@@ -109,20 +132,36 @@ const KanbanTaskCard: React.FC<{ task: Task; onClick?: () => void }> = ({ task, 
       </div>
 
       {/* Bottom Row: Priority Badge */}
+      {task.priority && (
       <div className="flex items-center justify-between mb-2">
         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${priorityConfig.color}`}>
           {priorityConfig.label}
         </span>
       </div>
+      )}
+
+      {/* Category */}
+      {task.category && (
+        <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+        <Tag className="w-3 h-3 shrink-0 text-gray-400" />
+        <span className="font-normal text-gray-400">Category:</span>
+        <span className="font-medium text-gray-700 lowercase">{task.category.replaceAll("_"," ")}</span>
+      </div>
+      )}
 
       {/* Assignee */}
+      {task.assignedTo && (
       <div className="flex items-center gap-1 text-xs text-gray-500">
         <User className="w-3 h-3 shrink-0 text-gray-400" />
-        <span className="font-medium text-gray-400">Assigned to:</span>
-        <span className="font-semibold text-gray-700 truncate">
-          {task.assignedTo?.name ?? 'Unassigned'}
-        </span>
+        <span className="font-normal text-gray-400">Assigned to:</span>
+        <span className="font-medium text-gray-700 truncate">{task.assignedTo?.name ?? 'Unassigned'}</span>
       </div>
+      )}
+      {/* {assigneeRole && (
+        <div className="ml-4 text-[10px] text-blue-600 font-medium leading-tight">
+          {assigneeRole}
+        </div>
+      )} */}
     </div>
   );
 };

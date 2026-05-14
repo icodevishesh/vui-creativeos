@@ -316,7 +316,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
   const isFinalized = client?.isScopeFinalized;
   const hasScope = (scope?.length ?? 0) > 0;
 
-  if (isFinalized && !isFormOpen && hasScope) {
+  if (!isFormOpen && hasScope) {
     return (
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
@@ -334,7 +334,9 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
             </button>
           )}
         </div>
-        <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-lg flex items-center gap-4">
+
+        {/* Scope Finalized Status */}
+        {/* <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-lg flex items-center gap-4">
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white">
             <CheckCircle2 className="w-5 h-5" />
           </div>
@@ -342,7 +344,23 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
             <h3 className="text-md font-semibold text-emerald-900">Scope Finalized</h3>
             <p className="text-sm text-emerald-700 font-normal">This scope was confirmed and is now active for execution.</p>
           </div>
+        </div> */}
+
+        {/* {isFinalized && client?.services?.length! > 0 && ( */}
+        <div className="bg-white p-6 my-4 rounded-lg border border-gray-100 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-primary" />
+            Services Requested during Onboarding
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {client?.services?.map((s) => (
+              <span key={s.service} className="px-3 py-1.5 bg-primary/10 text-[#00786f] text-[10px] font-semibold uppercase tracking-widest rounded-lg border border-primary/20">
+                {s.service.replace(/_/g, ' ')}
+              </span>
+            ))}
+          </div>
         </div>
+      {/* } */}
 
         <div className="space-y-6">
           {scope?.map((item) => (
@@ -403,7 +421,7 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {item.details.platforms.map((p) => (
-                          <span key={p} className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[9px] font-black uppercase tracking-widest rounded-lg border border-gray-100">
+                          <span key={p} className="px-3 py-1.5 bg-gray-50 text-gray-700 text-[9px] font-semibold uppercase tracking-widest rounded-lg border border-gray-100">
                             {p.replace(/_/g, ' ')}
                           </span>
                         ))}
@@ -412,8 +430,8 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                   )}
                   {item.description && item.description.trim() !== '' && (
                     <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-gray-900">Detailed Description</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed font-medium bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-4">Detailed Description</h4>
+                      <p className="text-gray-600 text-sm leading-relaxed font-normal bg-gray-50 p-5 rounded-xl border border-gray-100 italic">
                         &quot;{item.description}&quot;
                       </p>
                     </div>
@@ -429,8 +447,8 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
                     <div className="space-y-2">
                       {Object.entries(item.details.deliverables as Record<string, string | number>).map(([p, count]) => (
                         <div key={p} className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl">
-                          <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">{p.replace(/_/g, ' ')}</span>
-                          <span className="text-xs font-bold text-primary">{count} posts / mo</span>
+                          <span className="text-xs font-medium text-gray-600 uppercase tracking-tight">{p.replace(/_/g, ' ')}</span>
+                          <span className="text-xs font-semibold text-primary">{count} posts / mo</span>
                         </div>
                       ))}
                     </div>
@@ -491,22 +509,6 @@ export function ScopeTab({ clientId, canEdit }: ScopeTabProps) {
           </button>
         )}
       </div>
-
-      {/* {isFinalized && client?.services?.length! > 0 && ( */}
-        <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-primary" />
-            Services Requested during Onboarding
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {client?.services?.map((s) => (
-              <span key={s.service} className="px-3 py-1.5 bg-primary/10 text-[#00786f] text-[10px] font-semibold uppercase tracking-widest rounded-lg border border-primary/20">
-                {s.service.replace(/_/g, ' ')}
-              </span>
-            ))}
-          </div>
-        </div>
-      {/* } */}
 
       <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -7,7 +7,7 @@ import {
   type MRT_ColumnDef,
 } from 'mantine-react-table';
 import { TaskStatus, TaskPriority } from "@prisma/client";
-import { Clock, AlertCircle, CheckCircle2, MoreVertical, Layout, FileText, User } from "lucide-react";
+import { Clock, AlertCircle, CheckCircle2, Layout, FileText, Trash2, type LucideIcon } from "lucide-react";
 
 interface Task {
   id: string;
@@ -24,12 +24,13 @@ interface Task {
   project: { name: string };
   client: { companyName: string };
   assignedTo?: { id: string; name: string };
+  category?: string | null;
   feedbacks: string[];
   mediaUrls?: string[];
-  _count?: any;
+  _count?: { subTasks: number };
 }
 
-const STATUS_MAP: Record<TaskStatus, { label: string; color: string; icon: any }> = {
+const STATUS_MAP: Record<TaskStatus, { label: string; color: string; icon: LucideIcon }> = {
   OPEN: { label: "Open", color: "text-green-600 bg-green-100", icon: Clock },
   OPENED: { label: "Opened", color: "text-teal-600 bg-teal-50", icon: Clock },
   IN_PROGRESS: { label: "In Progress", color: "text-blue-600 bg-blue-50", icon: Clock },
@@ -43,10 +44,11 @@ const STATUS_MAP: Record<TaskStatus, { label: string; color: string; icon: any }
 interface TaskTableProps {
   data: Task[];
   onRowClick: (task: Task) => void;
+  onDeleteTask: (task: Task) => void;
   isLoading: boolean;
 }
 
-export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
+export function TaskTable({ data, onRowClick, onDeleteTask, isLoading }: TaskTableProps) {
   const columns = useMemo<MRT_ColumnDef<Task>[]>(
     () => [
       {
@@ -102,7 +104,7 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         Cell: ({ cell }) => {
           const val = cell.getValue<string | undefined>();
           return val ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700 font-medium text-xs">
+            <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
               {val}
             </div>
           ) : (
@@ -118,11 +120,27 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         Cell: ({ cell }) => {
           const val = cell.getValue<string | undefined>();
           return val ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700 font-medium text-xs">
+            <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
               {val}
             </div>
           ) : (
             <span className="text-gray-400 text-sm italic">Unassigned</span>
+          );
+        }
+      },
+      {
+        id: 'categoryName',
+        accessorFn: (row) => row.category,
+        header: 'Category',
+        size: 150,
+        Cell: ({ cell }) => {
+          const val = cell.getValue<string | undefined>();
+          return val ? (
+            <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
+              {val.replace(/_/g, ' ')}
+            </div>
+          ) : (
+            <span className="text-gray-400 text-sm italic">No category</span>
           );
         }
       },
@@ -134,7 +152,7 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         Cell: ({ cell }) => {
           const val = cell.getValue<string | undefined>();
           return val ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700 font-medium text-xs">
+            <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
               {val}
             </div>
           ) : (
@@ -150,7 +168,7 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         Cell: ({ cell }) => {
           const val = cell.getValue<string | undefined>();
           return val ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700 font-medium text-xs">
+            <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
               {val}
             </div>
           ) : (
@@ -166,7 +184,7 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
         Cell: ({ cell }) => {
           const val = cell.getValue<string | undefined>();
           return val ? (
-            <div className="flex items-center gap-2 text-sm text-gray-700 font-medium text-xs">
+            <div className="flex items-center gap-2 text-gray-700 font-medium text-xs">
               {val}
             </div>
           ) : (
@@ -182,7 +200,7 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
           const feedbacks = cell.getValue<string[]>();
           return feedbacks && feedbacks.length > 0 ? (
             <div
-              className="flex items-center gap-2 text-xs text-gray-700 font-medium truncate max-w-[150px]"
+              className="flex items-center gap-2 text-xs text-gray-700 font-medium truncate max-w-150px"
               title={feedbacks[0]}
             >
               {feedbacks[0]}
@@ -191,9 +209,37 @@ export function TaskTable({ data, onRowClick, isLoading }: TaskTableProps) {
             <span className="text-gray-400 text-sm italic">No feedback</span>
           );
         }
+      },
+      {
+        id: 'actions',
+        header: '',
+        size: 72,
+        enableSorting: false,
+        enableColumnFilter: false,
+        Cell: ({ row }) => {
+          const task = row.original;
+          return (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm(`Delete task "${task.title}"?`)) {
+                    onDeleteTask(task);
+                  }
+                }}
+                className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all"
+                aria-label={`Delete task ${task.title}`}
+                title="Delete task"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        }
       }
     ],
-    [],
+    [onDeleteTask],
   );
 
   const table = useMantineReactTable({

@@ -14,7 +14,7 @@ export const POST = withApiLogging(async function POST(
   const { id } = await params;
 
   try {
-    const { buckets } = await req.json(); // Array of { name, description }
+    const { buckets } = await req.json() as { buckets: Array<{ name: string; description?: string }> }; // Array of { name, description }
 
     // Clear existing buckets if any (or just append)
     // For simplicity in a multi-step form, we might want to replace them if they are all submitted at once
@@ -27,7 +27,7 @@ export const POST = withApiLogging(async function POST(
     });
 
     const createdBuckets = await Promise.all(
-      buckets.map((bucket: any) =>
+      buckets.map((bucket) =>
         prisma.calendarBucket.create({
           data: {
             ...bucket,
@@ -41,5 +41,40 @@ export const POST = withApiLogging(async function POST(
   } catch (error) {
     console.error('Bucket API Error:', error);
     return NextResponse.json({ error: 'Failed to add buckets' }, { status: 500 });
+  }
+});
+
+export const DELETE = withApiLogging(async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const user = await getCurrentUser();
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+
+  try {
+    const body = await req.json().catch(() => ({} as { bucketId?: string }));
+    const bucketId = body.bucketId;
+
+    if (!bucketId) {
+      return NextResponse.json({ error: 'bucketId is required' }, { status: 400 });
+    }
+
+    const result = await prisma.calendarBucket.deleteMany({
+      where: {
+        id: bucketId,
+        calendarId: id
+      }
+    });
+
+    if (result.count === 0) {
+      return NextResponse.json({ error: 'Bucket not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Bucket Delete API Error:', error);
+    return NextResponse.json({ error: 'Failed to delete bucket' }, { status: 500 });
   }
 });

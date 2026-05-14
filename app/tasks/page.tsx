@@ -36,7 +36,8 @@ interface Task {
   countSubTask: number;
   project: { name: string };
   client: { companyName: string };
-  assignedTo?: { id: string; name: string };
+  assignedTo?: { id: string; name: string; roles?: string[] };
+  category?: string | null;
   _count?: any;
 }
 
@@ -83,6 +84,7 @@ const fetchMembers = async () => {
   return data.map((m: any) => ({
     id: m.user.id,
     name: m.user.name,
+    roles: m.roles ?? [],
   }));
 };
 
@@ -259,7 +261,7 @@ export default function TasksPage() {
             ))}
           </select>
 
-          <select
+          {/* <select
             className="pl-3 pr-8 py-2 rounded-lg border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none bg-gray-50/50 text-gray-900"
             value={selectedProjectId}
             onChange={(e) => setSelectedProjectId(e.target.value)}
@@ -268,15 +270,16 @@ export default function TasksPage() {
             {projects.map((p: any) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
-          </select>
+          </select> */}
         </div>
       </div>
 
       {/* Content */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-        <TaskTable
+      <TaskTable
           data={tasks}
           onRowClick={handleOpenDetail}
+          onDeleteTask={(task) => deleteMutation.mutate(task.id)}
           isLoading={isLoadingTasks}
         />
       </div>

@@ -12,7 +12,7 @@ import {
   UserPlus,
   Calendar,
   PenTool,
-  Layout,
+  ClipboardCheck,
   Palette,
   UploadCloud,
   Folder,
@@ -43,8 +43,6 @@ type NavSection = {
   items: NavItem[];
 };
 
-// Roles that share admin-level access (minus Clients/Onboarding for ACCOUNT_MANAGER,
-// minus Clients/Onboarding for TEAM_LEAD)
 const ADMIN_LIKE = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'];
 const CLIENTS_ROLES = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER', 'CLIENT', 'CLIENT_OWNER'];
 
@@ -63,7 +61,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
       { name: 'Projects', href: '/projects', icon: Folder, roles: ADMIN_LIKE },
       { name: 'Gantt Chart', href: '/gantt-chart', icon: ListTodo, roles: [...ADMIN_LIKE, 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'CREATIVE_LEAD', 'VIDEO_EDITOR', 'CLIENT', 'CLIENT_OWNER', 'SOCIAL_MEDIA_MANAGER', 'SEO_SPECIALIST'] },
       { name: 'Content Calendar', href: '/calendar', icon: Calendar },
-      { name: 'Task Board', href: '/tasks', icon: Layout },
+      { name: 'Task Board', href: '/tasks', icon: ClipboardCheck  },
       { name: 'Approvals', href: '/approvals', icon: CheckCircle2, roles: [...ADMIN_LIKE, 'CLIENT', 'CLIENT_OWNER'] },
       { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud },
     ],
@@ -167,7 +165,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
             <div key={section.title} className="space-y-0.5">
               {/* Section label — hidden when collapsed */}
               {!collapsed && (
-                <h3 className="px-3 mb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <h3 className="px-3 mb-1 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
                   {section.title}
                 </h3>
               )}
@@ -196,7 +194,7 @@ export function Sidebar({ mobileOpen, onMobileClose, collapsed, onToggleCollapse
                       aria-hidden="true"
                     />
                     {!collapsed && (
-                      <span className="text-[13px] font-semibold">{item.name}</span>
+                      <span className="text-[12px] font-sans">{item.name}</span>
                     )}
                   </Link>
                 );

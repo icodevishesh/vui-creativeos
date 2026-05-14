@@ -1,12 +1,37 @@
 ﻿"use client";
 
 import React, { useState, useEffect } from 'react';
-import { Target, Layers, FileText, ChevronRight, Plus, ArrowLeft, Send, Trash2, Edit2, Check, Loader2 } from 'lucide-react';
+import { Target, Layers, FileText, ChevronRight, Plus, ArrowLeft, Trash2, Edit2, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { CalendarCopiesList } from './CalendarCopiesList';
 
+/* Types */
+type BucketForm = {
+    id?: string;
+    clientKey: string;
+    name: string;
+    description: string;
+};
+
+type CalendarBucket = {
+    id: string;
+    name: string;
+    description?: string | null;
+};
+
+type CalendarCopy = Record<string, unknown>;
+
+type CalendarData = {
+    id: string;
+    name?: string | null;
+    objective?: string | null;
+    buckets?: CalendarBucket[];
+    copies?: CalendarCopy[];
+};
+
 interface CalendarWizardProps {
-    calendar: any;
-    onCalendarCreated: (calendar: any) => void;
+    calendar: CalendarData | null;
+    onCalendarCreated: (calendar: CalendarData) => void;
     onRefresh: () => void;
     onBack?: () => void;
     initialClientId?: string;
@@ -15,6 +40,7 @@ interface CalendarWizardProps {
     clientPlatforms?: string[];
 }
 
+// Main function
 export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     calendar,
     onCalendarCreated,
@@ -28,16 +54,22 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     const [step, setStep] = useState(1);
     const [calendarName, setCalendarName] = useState('');
     const [objective, setObjective] = useState('');
-    const [buckets, setBuckets] = useState([{ name: '', description: '' }]);
+    const [buckets, setBuckets] = useState<BucketForm[]>([{ clientKey: 'bucket-0', name: '', description: '' }]);
     const [isLoading, setIsLoading] = useState(false);
-    const [copies, setCopies] = useState<any[]>([]);
+    const [deletingBucketId, setDeletingBucketId] = useState<string | null>(null);
+    const [copies, setCopies] = useState<CalendarCopy[]>([]);
 
     useEffect(() => {
         if (calendar) {
             setCalendarName(calendar.name && calendar.name !== 'TechFlow' ? calendar.name : '');
             setObjective(calendar.objective || '');
             if (calendar.buckets && calendar.buckets.length > 0) {
-                setBuckets(calendar.buckets.map((b: any) => ({ name: b.name, description: b.description || '' })));
+                setBuckets(calendar.buckets.map((b) => ({
+                    id: b.id,
+                    clientKey: b.id,
+                    name: b.name,
+                    description: b.description || '',
+                })));
             }
             if (calendar.copies) {
                 setCopies(calendar.copies);
@@ -73,14 +105,20 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     };
 
     const handleNextStep2 = async () => {
+        if (!calendar?.id) {
+            toast.error('Calendar is not ready yet');
+            return;
+        }
+
         setIsLoading(true);
         try {
+            const payloadBuckets = buckets.map(({ name, description }) => ({ name, description }));
             const res = await fetch(`/api/calendars/${calendar.id}/buckets`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ buckets })
+                body: JSON.stringify({ buckets: payloadBuckets })
             });
-            const data = await res.json();
+            await res.json();
             onRefresh();
             setStep(3);
         } catch (error) {
@@ -91,13 +129,53 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     };
 
     const addBucket = () => {
-        setBuckets([...buckets, { name: '', description: '' }]);
+        setBuckets([...buckets, { clientKey: crypto.randomUUID(), name: '', description: '' }]);
     };
 
-    const updateBucket = (index: number, field: string, value: string) => {
+    const updateBucket = (index: number, field: 'name' | 'description', value: string) => {
         const newBuckets = [...buckets];
-        (newBuckets[index] as any)[field] = value;
+        newBuckets[index][field] = value;
         setBuckets(newBuckets);
+    };
+
+    const handleDeleteBucket = async (bucket: BucketForm) => {
+        if (buckets.length === 1) {
+            toast.error('Keep at least one bucket');
+            return;
+        }
+
+        if (!bucket.id) {
+            setBuckets(prev => prev.filter((item) => item.clientKey !== bucket.clientKey));
+            return;
+        }
+
+        if (!calendar?.id) {
+            toast.error('Calendar is not ready yet');
+            return;
+        }
+
+        setDeletingBucketId(bucket.id);
+        try {
+            const res = await fetch(`/api/calendars/${calendar.id}/buckets`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bucketId: bucket.id })
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => null);
+                throw new Error(data?.error || 'Failed to delete bucket');
+            }
+
+            setBuckets(prev => prev.filter((item) => item.clientKey !== bucket.clientKey));
+            toast.success('Bucket deleted');
+            onRefresh();
+        } catch (error) {
+            console.error('Error deleting bucket:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to delete bucket');
+        } finally {
+            setDeletingBucketId(null);
+        }
     };
 
     const renderStepHeader = () => {
@@ -122,7 +200,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                 <div className="h-4 w-1px bg-gray-300" />
                 <div className="flex items-center gap-2 text-sm">
                     <span className="font-bold text-gray-900">{calendarName.trim() || taskTitle || 'New Calendar'}</span>
-                    {steps.map((s, i) => (
+                    {steps.map((s) => (
                         <React.Fragment key={s.id}>
                             <span className="text-gray-400">→</span>
                             <span className={`font-medium ${step === s.id ? 'text-primary' : 'text-gray-400'}`}>
@@ -146,7 +224,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-gray-900">Step 1: Monthly Objective</h2>
-                            <p className="text-gray-500 text-sm">Define the overarching goal for this month's content</p>
+                            <p className="text-gray-500 text-sm">Define the overarching goal for this month&apos;s content</p>
                         </div>
                     </div>
 
@@ -167,7 +245,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                         value={objective}
                         onChange={(e) => setObjective(e.target.value)}
                         placeholder="e.g., Increase brand awareness through educational content and drive 20% more engagement on Instagram..."
-                        className="w-full min-h-[160px] p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-gray-700 resize-none"
+                        className="w-full min-h-160px p-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-gray-700 resize-none"
                     />
 
                     <div className="flex justify-end mt-8">
@@ -201,8 +279,19 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
                     <div className="space-y-4">
                         {buckets.map((bucket, index) => (
-                            <div key={index} className="p-6 bg-gray-50/50 border border-gray-100 rounded-lg space-y-4">
-                                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bucket {index + 1}</p>
+                            <div key={bucket.clientKey} className="p-6 bg-gray-50/50 border border-gray-100 rounded-lg space-y-4">
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bucket {index + 1}</p>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDeleteBucket(bucket)}
+                                        disabled={buckets.length === 1 || deletingBucketId === bucket.id}
+                                        className="inline-flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                    >
+                                        {deletingBucketId === bucket.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                        Delete
+                                    </button>
+                                </div>
                                 <input
                                     type="text"
                                     value={bucket.name}
@@ -214,7 +303,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                                     value={bucket.description}
                                     onChange={(e) => updateBucket(index, 'description', e.target.value)}
                                     placeholder="Brief description of this content bucket..."
-                                    className="w-full min-h-[80px] p-3 bg-white border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-100 transition-all text-sm text-gray-600 resize-none"
+                                    className="w-full min-h-80px p-3 bg-white border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-blue-100 transition-all text-sm text-gray-600 resize-none"
                                 />
                             </div>
                         ))}
@@ -248,6 +337,8 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     }
 
     if (step === 3) {
+        if (!calendar) return null;
+
         return (
             <div className="max-w-5xl space-y-6">
                 {renderStepHeader()}
@@ -260,7 +351,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
                         <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1 mt-4">Content Buckets</p>
                         <div className="mt-3 flex flex-wrap gap-2">
-                            {calendar.buckets.map((b: any, i: number) => (
+                            {calendar.buckets?.map((b, i) => (
                                 <span key={i} className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded-lg uppercase">
                                     {b.name}
                                 </span>
@@ -274,16 +365,15 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
                 <CalendarCopiesList
                     calendarId={calendar.id}
-                    buckets={calendar.buckets}
+                    buckets={calendar.buckets || []}
                     copies={copies}
                     onRefresh={onRefresh}
                     taskId={taskId}
-                    calendarObjective={calendar.objective}
+                    calendarObjective={calendar.objective || undefined}
                     clientPlatforms={clientPlatforms}
                 />
             </div>
         );
     }
-
     return null;
 };
