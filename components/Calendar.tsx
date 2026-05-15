@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, getDay } from 'date-fns';
 import { TaskCard } from './TaskCard';
 import { TaskStatus } from '@prisma/client';
-import { CalendarCopyPreviewDialog } from './CalendarCopyPreviewDialog';
+import { CalendarCopyPreviewDialog, type CalendarCopy } from './CalendarCopyPreviewDialog';
 import { TaskPreviewDialog, type CalendarTaskPreview } from './TaskPreviewDialog';
 
 interface Task {
@@ -31,28 +31,7 @@ interface Task {
   };
 }
 
-interface CalendarCopy {
-  id: string;
-  content: string;
-  caption?: string;
-  hashtags?: string;
-  publishDate?: string | Date;
-  publishTime?: string;
-  platform?: string;
-  mediaType?: string;
-  status: string; // DRAFT | UNDER_REVIEW | APPROVED
-  calendarName?: string;
-  isCarousel?: boolean;
-  frames?: Array<{
-    id: string;
-    frameNumber: number;
-    caption?: string;
-    hashtags?: string;
-  }>;
-  bucket?: { id: string; name: string } | null;
-}
-
-interface Client {
+export interface Client {
   id: string;
   companyName: string;
 }

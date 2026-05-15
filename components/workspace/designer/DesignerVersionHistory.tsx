@@ -7,10 +7,32 @@ interface Task {
   id: string;
   title: string;
   status: string;
+  description?: string;
+  endDate?: string | Date | null;
+  client?: { companyName: string } | null;
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    mimeType: string;
+  }>;
+  calendarCopy?: {
+    id: string;
+    content: string;
+    caption?: string;
+    platform?: string;
+    platforms?: string[];
+    mediaType?: string;
+    publishDate?: string;
+    publishTime?: string;
+    referenceUrl?: string;
+    status: string;
+    bucket?: { id: string; name: string } | null;
+  } | null;
+  mediaUrls?: string[] | null;
   countSubTask: number;
   feedbacks: string[];
   updatedAt: string | Date;
-  attachments?: { id: string; fileName: string; fileUrl: string; mimeType: string }[];
 }
 
 interface DesignerVersionHistoryProps {

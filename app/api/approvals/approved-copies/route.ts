@@ -44,6 +44,7 @@ type ApprovedCopyRecord = {
   approvedBy: string | null;
   approvedDate: Date | null;
   bucketId: string;
+  bucket: { id: string; name: string } | null;
   calendarId: string;
   calendar: {
     id: string;

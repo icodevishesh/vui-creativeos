@@ -3,15 +3,15 @@
 import { X, Calendar as CalendarIcon, Clock, Globe, Film, FolderOpen } from 'lucide-react';
 import { format } from 'date-fns';
 
-export interface CalendarCopyForPreview {
+export interface CalendarCopy {
   id: string;
   content: string;
-  caption?: string;
-  hashtags?: string;
-  publishDate?: string | Date;
-  publishTime?: string;
-  platform?: string;
-  mediaType?: string;
+  caption?: string | null;
+  hashtags?: string | null;
+  publishDate?: string | Date | null;
+  publishTime?: string | null;
+  platform?: string | null;
+  mediaType?: string | null;
   status: string;
   calendarName?: string;
   bucket?: { id: string; name: string } | null;
@@ -19,13 +19,13 @@ export interface CalendarCopyForPreview {
   frames?: Array<{
     id: string;
     frameNumber: number;
-    caption?: string;
-    hashtags?: string;
+    caption?: string | null;
+    hashtags?: string | null;
   }>;
 }
 
 interface CalendarCopyPreviewDialogProps {
-  copy: CalendarCopyForPreview | null;
+  copy: CalendarCopy | null;
   onClose: () => void;
 }
 

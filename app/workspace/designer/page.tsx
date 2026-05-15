@@ -36,6 +36,9 @@ type DesignerTask = {
     bucket?: { id: string; name: string } | null;
   } | null;
   mediaUrls?: string[] | null;
+  countSubTask: number;
+  feedbacks: string[];
+  updatedAt: string | Date;
 };
 
 const fetchDesignerTasks = async () => {

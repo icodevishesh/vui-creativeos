@@ -4,23 +4,12 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar as CalendarIcon, RefreshCw } from "lucide-react";
 import { Calendar } from "@/components/Calendar";
+import { type CalendarCopy } from "@/components/CalendarCopyPreviewDialog";
 
 type PortalProfile = {
   id: string;
   companyName: string;
   email: string;
-};
-
-type CalendarCopy = {
-  id: string;
-  content: string;
-  caption?: string | null;
-  hashtags?: string | null;
-  publishDate?: string | Date | null;
-  publishTime?: string | null;
-  status: string;
-  bucketId: string;
-  bucket?: { id: string; name: string } | null;
 };
 
 const fetchProfile = async (): Promise<PortalProfile> => {

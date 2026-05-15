@@ -31,11 +31,11 @@ interface Task {
   title: string;
   status: string;
   description?: string;
-  endDate?: string | Date;
+  endDate?: string | Date | null;
   client?: {
     id: string;
     companyName: string;
-  };
+  } | null;
   writerContent?: {
     content: string;
   };

@@ -99,6 +99,8 @@ export const GET = withApiLogging(async function GET() {
       const { subTasks, ...rest } = task;
       return {
         ...rest,
+        countSubTask: task._count.subTasks,
+        feedbacks: subTasks.flatMap(st => st.feedbacks || []),
         versionHistory: buildVersionHistory(subTasks),
       };
     });

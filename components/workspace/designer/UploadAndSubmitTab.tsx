@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from 'react';
 import { FileText, Upload, Send, File, X, Image as ImageIcon, Clock, Plus, Globe, Link, Layers } from 'lucide-react';
@@ -8,19 +8,26 @@ interface Task {
   id: string;
   title: string;
   description?: string;
-  client?: { companyName: string };
-  endDate?: string | Date;
+  client?: { companyName: string } | null;
+  endDate?: string | Date | null;
   status: string;
-  attachments?: any[];
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    mimeType: string;
+  }>;
   calendarCopy?: {
+    id: string;
     content: string;
     caption?: string;
+    platform?: string;
     platforms?: string[];
-    platform?: string;   // legacy fallback
     mediaType?: string;
     publishDate?: string;
     publishTime?: string;
     referenceUrl?: string;
+    status: string;
     isCarousel?: boolean;
     frameCount?: number;
     frames?: Array<{
@@ -31,8 +38,12 @@ interface Task {
       creativeUrl?: string;
       creativeStatus: string;
     }>;
-    bucket?: { name: string } | null;
+    bucket?: { id: string; name: string } | null;
   } | null;
+  mediaUrls?: string[] | null;
+  countSubTask: number;
+  feedbacks: string[];
+  updatedAt: string | Date;
 }
 
 interface UploadAndSubmitTabProps {

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from 'react';
 import {
@@ -24,10 +24,10 @@ interface Task {
   title: string;
   status: string;
   description?: string;
-  endDate?: string | Date;
+  endDate?: string | Date | null;
   client?: {
     companyName: string;
-  };
+  } | null;
   attachments?: TaskAttachment[];
   calendarCopy?: {
     id: string;
@@ -41,6 +41,9 @@ interface Task {
     status: string;
     bucket?: { id: string; name: string } | null;
   } | null;
+  countSubTask: number;
+  feedbacks: string[];
+  updatedAt: string | Date;
 }
 
 interface DesignerTaskListProps {
