@@ -26,6 +26,13 @@ interface CalendarCopyRef {
   publishTime?: string;
   status?: string;
   bucket?: { id: string; name: string } | null;
+  isCarousel?: boolean;
+  frames?: Array<{
+    id: string;
+    frameNumber: number;
+    caption?: string;
+    hashtags?: string;
+  }>;
 }
 
 export interface ApprovalTaskPreview {
@@ -213,7 +220,7 @@ export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete }: 
                     {copy.mediaType}
                   </span>
                 )}
-                {copy?.content && (
+                {copy?.content && copy.mediaType !== 'CAROUSEL' && (
                   <p className="text-md font-semibold text-gray-900 leading-relaxed whitespace-pre-wrap">
                     {copy.content}
                   </p>
@@ -221,8 +228,20 @@ export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete }: 
                 {/* <p className="font-semibold text-gray-900">{task.title}</p> */}
               </div>
 
-              {copy?.caption && (
-                <p className="text-sm text-gray-500 leading-relaxed italic">{copy.caption}</p>
+              {copy?.mediaType === 'CAROUSEL' ? (
+                <>
+                  {copy.frames?.[mediaIdx]?.caption && (
+                    <div className="space-y-1">
+                      <p className="text-md text-gray-900 leading-relaxed">
+                        {copy.frames[mediaIdx].caption}
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                copy?.caption && (
+                  <p className="text-sm text-gray-500 leading-relaxed italic">{copy.caption}</p>
+                )
               )}
 
               {copy?.hashtags && (

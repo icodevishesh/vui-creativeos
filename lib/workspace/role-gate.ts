@@ -15,12 +15,19 @@ export const DESIGNER_ROLES: MemberRole[] = [
   MemberRole.ADMIN,
 ];
 
-// Roles with admin-level privileges (TEAM_LEAD and ACCOUNT_MANAGER have same rights
-// as ADMIN except Clients/Client Onboarding pages — enforced in Sidebar & API routes)
+// Roles with admin-level privileges
 export const PRIVILEGED_ROLES: MemberRole[] = [
   MemberRole.ADMIN,
   MemberRole.TEAM_LEAD,
   MemberRole.ACCOUNT_MANAGER,
+];
+
+// Marketing specific roles with limited access
+export const MARKETING_ROLES: MemberRole[] = [
+  MemberRole.SEO_SPECIALIST,
+  MemberRole.PERFORMANCE_MARKETING_SPECIALIST,
+  MemberRole.EMAIL_MARKETING_SPECIALIST,
+  MemberRole.WHATSAPP_MARKETING_SPECIALIST,
 ];
 
 export function isWriter(roles: MemberRole | MemberRole[] | string | string[]): boolean {

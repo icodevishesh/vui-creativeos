@@ -5,7 +5,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2, Bell, UploadCloud } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, User, LogOut, Menu, X, BarChart2, Bell, UploadCloud, CalendarDays } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 import { useNotificationCount } from '@/context/NotificationContext';
@@ -13,12 +13,98 @@ import Logo from '@/public/creativeos-logo.jpeg';
 
 const NAV_ITEMS = [
   { href: '/portal/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/portal/calendar', label: 'Content Calendar', icon: CalendarDays },
   { href: '/portal/gantt', label: 'Gantt Chart', icon: BarChart2 },
   { href: '/portal/approvals', label: 'Approvals', icon: CheckCircle2 },
   { href: '/portal/creative-uploads', label: 'Creative Uploads', icon: UploadCloud },
   { href: '/portal/notifications', label: 'Notifications', icon: Bell },
   { href: '/portal/profile', label: 'My Profile', icon: User },
 ];
+
+type SidebarProfile = {
+  companyName?: string;
+  email?: string;
+};
+
+function PortalSidebar({
+  mobile = false,
+  pathname,
+  unreadCount,
+  profile,
+  onNavigate,
+  onLogout,
+}: {
+  mobile?: boolean;
+  pathname: string;
+  unreadCount: number;
+  profile?: SidebarProfile | null;
+  onNavigate: () => void;
+  onLogout: () => void;
+}) {
+  return (
+    <div className={`flex flex-col h-full bg-white border-r border-gray-100 ${mobile ? 'w-full' : 'w-60'}`}>
+      <div className="px-6 py-2">
+        <div className="flex items-center gap-3">
+          <Image src={Logo} alt="Logo" width={100} height={100} className="h-16 w-auto rounded-lg object-contain" />
+        </div>
+      </div>
+
+      <nav className="flex-1 px-4 py-4 space-y-1">
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + '/');
+          const isNotif = href === '/portal/notifications';
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onNavigate}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
+                ? 'bg-primary text-white shadow-sm shadow-primary/30'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+            >
+              <div className="relative">
+                <Icon className="w-4 h-4 shrink-0" />
+                {isNotif && unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
+              </div>
+              {label}
+              {isNotif && unreadCount > 0 && !isActive && (
+                <span className="ml-auto text-[10px] font-bold bg-red-50 text-red-500 border border-red-100 px-1.5 py-0.5 rounded-full">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="flex flex-col gap-4 py-4 px-4 border-t border-gray-100">
+        {profile && (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+              {profile.companyName?.slice(0, 2).toUpperCase() || 'CL'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-gray-900 truncate">{profile.companyName}</p>
+              <p className="text-[10px] text-gray-500 truncate">{profile.email}</p>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={onLogout}
+          className="w-full flex items-center p-2 bg-primary/10 gap-3 rounded-lg text-primary hover:text-red-600 hover:bg-red-50 transition-all"
+        >
+          <LogOut className="w-4 h-4 shrink-0" />
+          <span className="text-sm font-semibold">Sign Out</span>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -59,82 +145,17 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     router.push('/sign-in');
   };
 
-  const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className={`flex flex-col h-full bg-white border-r border-gray-100 ${mobile ? 'w-full' : 'w-60'}`}>
-      {/* Logo */}
-      <div className="px-6 py-2">
-        <div className="flex items-center gap-3">
-          <Image src={Logo} alt="Logo" width={100} height={100} className="h-16 w-auto rounded-lg object-contain" />
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-4 space-y-1">
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || pathname.startsWith(href + '/');
-          const isNotif = href === '/portal/notifications';
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${isActive
-                ? 'bg-primary text-white shadow-sm shadow-primary/30'
-                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-            >
-              <div className="relative">
-                <Icon className="w-4 h-4 shrink-0" />
-                {isNotif && unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-3.5 h-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
-                )}
-              </div>
-              {label}
-              {isNotif && unreadCount > 0 && !isActive && (
-                <span className="ml-auto text-[10px] font-bold bg-red-50 text-red-500 border border-red-100 px-1.5 py-0.5 rounded-full">
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </span>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-
-
-      <div className='flex flex-col gap-4 py-4 px-4 border-t border-gray-100'>
-        {/* Client info */}
-
-        {profile && (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
-              {profile.companyName?.slice(0, 2).toUpperCase() || 'CL'}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs font-bold text-gray-900 truncate">{profile.companyName}</p>
-              <p className="text-[10px] text-gray-500 truncate">{profile.email}</p>
-            </div>
-          </div>
-        )}
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center p-2 bg-primary/10 gap-3 rounded-lg text-primary hover:text-red-600 hover:bg-red-50 transition-all"
-        >
-          <LogOut className="w-4 h-4 shrink-0" />
-          <span className='text-sm font-semibold'>Sign Out</span>
-        </button>
-      </div>
-
-    </div>
-  );
-
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Desktop sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:w-60 z-30">
-        <Sidebar />
+        <PortalSidebar
+          pathname={pathname}
+          unreadCount={unreadCount}
+          profile={profile}
+          onNavigate={() => setMobileOpen(false)}
+          onLogout={handleLogout}
+        />
       </aside>
 
       {/* Mobile sidebar overlay */}
@@ -148,7 +169,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             >
               <X className="w-5 h-5" />
             </button>
-            <Sidebar mobile />
+            <PortalSidebar
+              mobile
+              pathname={pathname}
+              unreadCount={unreadCount}
+              profile={profile}
+              onNavigate={() => setMobileOpen(false)}
+              onLogout={handleLogout}
+            />
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, use } from "react";
 import { useRouter } from "next/navigation";
@@ -38,7 +38,6 @@ interface CarouselFrame {
   id: string;
   frameNumber: number;
   caption?: string;
-  hashtags?: string;
   creativeUrl?: string;
   creativeStatus: string;
 }
@@ -557,31 +556,32 @@ function FeedbackModal({
 
 // ─── Carousel Frame Slider ────────────────────────────────────────────────────
 
-function CarouselSlider({ frames }: { frames: CarouselFrame[] }) {
+function CarouselSlider({ frames, caption, hashtags }: { frames: CarouselFrame[], caption?: string, hashtags?: string }) {
   const [active, setActive] = useState(0);
   const frame = frames[active];
   return (
-    <div className="border border-primary/20 rounded-lg overflow-hidden">
+    <div className="border-b border-gray-200 rounded-lg overflow-hidden">
       {/* Slide */}
-      <div className="bg-primary/60 p-4 min-h-80px space-y-1">
+      <div className="bg-gray-50/80 p-4 min-h-100px space-y-1">
         {frame?.creativeUrl ? (
           <img src={frame.creativeUrl} alt={`Frame ${frame.frameNumber}`} className="w-full max-h-48 object-contain rounded" />
         ) : (
           <div className="flex items-center justify-center h-16 text-primary/40 text-xs font-bold uppercase tracking-widest">
-            {frame?.creativeStatus === 'UPLOADED' ? 'Creative uploaded' : 'Awaiting designer upload'}
+            {frame?.creativeStatus === 'UPLOADED' ? 'Creative uploaded' : 'Posts here'}
           </div>
         )}
-        <span className="text-xs font-bold text-primary">Caption</span>
-        {frame?.caption && <p className="text-xs text-primary leading-relaxed">{frame.caption}</p>}
-        <span className="text-xs font-bold text-primary">Hashtags</span>
-        {frame?.hashtags && <p className="text-[10px] font-bold text-primary/60">{frame.hashtags}</p>}
+        {frame?.caption &&
+          <p className="text-md text-black leading-relaxed">{frame.caption}</p>
+        }
+        {caption && <p className="text-xs text-gray-400 leading-relaxed">{caption}</p>}
+        {hashtags && <p className="text-[10px] font-bold text-primary/60">{hashtags}</p>}
       </div>
       {/* Nav */}
-      <div className="flex items-center justify-between px-3 py-2 bg-white border-t border-primary/10">
+      <div className="flex items-center justify-between px-3 py-2 bg-gray-50/80 border-t border-gray-200/10">
         <button
           onClick={() => setActive(p => Math.max(0, p - 1))}
           disabled={active === 0}
-          className="px-2 py-1 text-xs font-bold text-primary disabled:opacity-30 hover:text-primary transition-colors"
+          className="px-2 py-1 text-xs font-bold text-gray-700 disabled:opacity-30 hover:text-gray-900 transition-colors"
         >← Prev</button>
         <div className="flex gap-1">
           {frames.map((_, i) => (
@@ -597,11 +597,11 @@ function CarouselSlider({ frames }: { frames: CarouselFrame[] }) {
         <button
           onClick={() => setActive(p => Math.min(frames.length - 1, p + 1))}
           disabled={active === frames.length - 1}
-          className="px-2 py-1 text-xs font-bold text-primary disabled:opacity-30 hover:text-primary transition-colors"
+          className="px-2 py-1 text-xs font-bold text-gray-700 disabled:opacity-30 hover:text-gray-900 transition-colors"
         >Next →</button>
       </div>
-      <div className="px-3 py-1.5 bg-primary/40 text-center">
-        <span className="text-[10px] font-bold text-primary/60">{active + 1} / {frames.length}</span>
+      <div className="px-3 py-1.5 bg-gray-200 text-center">
+        <span className="text-[10px] font-bold text-gray-700">{active + 1} / {frames.length}</span>
       </div>
     </div>
   );
@@ -785,10 +785,10 @@ function CopyRow({
             {/* Carousel slider */}
             {copy.isCarousel && copy.frames && copy.frames.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest mb-2 flex items-center gap-1">
-                  <Layers className="w-3 h-3" /> Carousel — {copy.frameCount} frames
+                <p className="text-[10px] font-medium text-gray-700 uppercase -tracking-tight mb-2 flex items-center gap-1">
+                  <Layers className="w-3 h-3" /> Carousel — {copy.frameCount} copies
                 </p>
-                <CarouselSlider frames={copy.frames} />
+                <CarouselSlider frames={copy.frames} caption={copy.caption} hashtags={copy.hashtags} />
               </div>
             )}
 

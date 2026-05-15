@@ -42,6 +42,13 @@ interface CalendarCopy {
   mediaType?: string;
   status: string; // DRAFT | UNDER_REVIEW | APPROVED
   calendarName?: string;
+  isCarousel?: boolean;
+  frames?: Array<{
+    id: string;
+    frameNumber: number;
+    caption?: string;
+    hashtags?: string;
+  }>;
   bucket?: { id: string; name: string } | null;
 }
 

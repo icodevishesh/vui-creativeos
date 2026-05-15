@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,13 @@ interface CalendarCopyRef {
   id: string; content: string; caption?: string; hashtags?: string;
   platforms?: string[]; mediaType?: string; publishDate?: string;
   publishTime?: string; status?: string;
+  isCarousel?: boolean;
+  frames?: Array<{
+    id: string;
+    frameNumber: number;
+    caption?: string;
+    hashtags?: string;
+  }>;
   bucket?: { id: string; name: string } | null;
 }
 interface CalendarRef {
@@ -266,21 +273,41 @@ function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClos
                   </span>
                 )}
               </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Creative Copy</p>
-                <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
-                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{activeCopy.content}</p>
-                </div>
-              </div>
-              {activeCopy.caption && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Caption</p>
-                  <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
-                    <p className="text-sm text-gray-600 leading-relaxed italic">{activeCopy.caption}</p>
+              <div className="space-y-4">
+                {activeCopy.mediaType !== 'CAROUSEL' && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Creative Copy</p>
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
+                      <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{activeCopy.content}</p>
+                    </div>
                   </div>
-                </div>
-              )}
-              {activeCopy.hashtags && (
+                )}
+
+                {activeCopy.mediaType === 'CAROUSEL' && activeCopy.frames && activeCopy.frames.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Carousel Frames</p>
+                    <div className="space-y-3 pb-3">
+                      {activeCopy.frames.map((f) => (
+                        <div key={f.id} className="bg-gray-50 border border-gray-100 rounded-lg p-4 space-y-1">
+                          <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Frame {f.frameNumber}</p>
+                          <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{f.caption || 'No caption'}</p>
+                          {f.hashtags && <p className="text-[10px] text-blue-600 font-medium">{f.hashtags}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeCopy.mediaType !== 'CAROUSEL' && activeCopy.caption && (
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Caption</p>
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
+                      <p className="text-sm text-gray-600 leading-relaxed italic">{activeCopy.caption}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {activeCopy.hashtags && activeCopy.mediaType !== 'CAROUSEL' && (
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hashtags</p>
                   <p className="text-sm font-semibold text-primary wrap-break-word">{activeCopy.hashtags}</p>
@@ -681,7 +708,7 @@ export default function PortalApprovalsPage() {
                     onReject={() => setModalState({ isOpen: true, actionType: 'reject', task })}
                     onFeedback={() => setModalState({ isOpen: true, actionType: 'feedback', task })}
                     onPreview={() => setPreviewTask(task)}
-                    onPreviewCopies={() => {}}
+                    onPreviewCopies={() => setCopiesPreviewTask(task)}
                     isActioning={actionMutation.isPending}
                   />
                 ))}
@@ -724,9 +751,19 @@ export default function PortalApprovalsPage() {
                         {hasFiles && ` · ${task.attachments!.length} file${task.attachments!.length !== 1 ? 's' : ''}`}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs text-gray-400 tabular-nums">
-                      {new Date(task.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
+                    <div className="shrink-0 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewTask(task)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-all"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Preview
+                      </button>
+                      <span className="text-xs text-gray-400 tabular-nums">
+                        {new Date(task.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

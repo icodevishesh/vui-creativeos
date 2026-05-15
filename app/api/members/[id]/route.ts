@@ -5,7 +5,7 @@ import { MemberRole } from '@prisma/client';
 import { withApiLogging } from '@/lib/api-logging';
 
 
-const ADMIN_ROLES = ['ADMIN', 'ADMIN_OWNER'];
+const ADMIN_ROLES = ['ADMIN', 'ADMIN_OWNER', 'ACCOUNT_MANAGER', 'TEAM_LEAD'];
 
 async function requireAdmin() {
   const user = await getCurrentUser();

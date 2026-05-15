@@ -8,7 +8,6 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
-import { createDesignerTasksForCalendar } from '@/lib/approval-helpers';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
 import { withApiLogging } from '@/lib/api-logging';
 
@@ -62,6 +61,8 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
               select: {
                 id: true, content: true, caption: true, hashtags: true,
                 platforms: true, mediaType: true, publishDate: true, publishTime: true, status: true,
+                isCarousel: true,
+                frames: { orderBy: { frameNumber: 'asc' } },
                 bucket: { select: { id: true, name: true } },
               },
               orderBy: { publishDate: 'asc' },
@@ -95,6 +96,8 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
         select: {
           id: true, content: true, caption: true, hashtags: true,
           platforms: true, mediaType: true, publishDate: true, publishTime: true,
+          isCarousel: true,
+          frames: { orderBy: { frameNumber: 'asc' } },
           bucketId: true,
         },
       })
@@ -174,9 +177,17 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
         });
       }
 
-      // Writer task: spawn designer tasks for every calendar copy
+      // Writer task: follow-on designer/editor assignment is now manual from admin approvals.
       if (!calendarCopyId && task.calendarId) {
-        await createDesignerTasksForCalendar(task);
+        await prisma.calendarCopy.updateMany({
+          where: { calendarId: task.calendarId, status: 'CLIENT_REVIEW' },
+          data: {
+            status: 'APPROVED',
+            approvedBy: reviewerName,
+            approvedDate: new Date(),
+            approverRole: 'CLIENT',
+          },
+        });
       }
 
       // ── Notify assignee + creator about approval ──────────────────

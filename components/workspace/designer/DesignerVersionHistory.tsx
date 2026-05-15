@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { History, MessageSquare, Clock, FileText } from 'lucide-react';
+import { History, MessageSquare, Clock, FileText, Eye } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -16,6 +16,7 @@ interface Task {
 interface DesignerVersionHistoryProps {
   tasks: Task[];
   isLoading: boolean;
+  onTaskClick?: (task: Task) => void;
 }
 
 const getStatusBadge = (status: string) => {
@@ -31,7 +32,7 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-export const DesignerVersionHistory: React.FC<DesignerVersionHistoryProps> = ({ tasks, isLoading }) => {
+export const DesignerVersionHistory: React.FC<DesignerVersionHistoryProps> = ({ tasks, isLoading, onTaskClick }) => {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -55,8 +56,8 @@ export const DesignerVersionHistory: React.FC<DesignerVersionHistoryProps> = ({ 
         <div className="mx-auto w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4">
           <History className="text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">No Design History</h3>
-        <p className="text-gray-500">Tasks with revisions, approvals, or feedback will appear here.</p>
+        <h3 className="text-lg font-semibold text-gray-900">No work history yet</h3>
+        <p className="text-gray-500">Approved designs, revisions, and feedback will appear here.</p>
       </div>
     );
   }
@@ -66,22 +67,35 @@ export const DesignerVersionHistory: React.FC<DesignerVersionHistoryProps> = ({ 
       {historyTasks.map((task) => {
         const status = getStatusBadge(task.status);
         return (
-          <div key={task.id} className="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm">
-            <div className="bg-gray-50/50 px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+          <div
+            key={task.id}
+            className="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm hover:border-blue-100 transition-colors"
+          >
+            <button
+              type="button"
+              onClick={() => onTaskClick?.(task)}
+              className="w-full bg-gray-50/50 px-5 py-4 border-b border-gray-100 flex items-center justify-between text-left"
+            >
+              <div className="flex items-center gap-3 min-w-0">
                 <div className="bg-blue-600 rounded-lg flex items-center justify-center text-white px-2 py-0.5">
                   <span className="text-xs font-bold">v{task.countSubTask + 1}</span>
                 </div>
-                <h4 className="font-bold text-gray-900">{task.title}</h4>
+                <h4 className="font-bold text-gray-900 truncate">{task.title}</h4>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${status.classes}`}>
                   {status.label}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest border border-gray-200 px-2 py-0.5 rounded-md">
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest border border-gray-200 px-2 py-0.5 rounded-md">
                  <Clock size={12} />
                  {task.status === 'APPROVED' ? 'Approved' : 'Updated'} {new Date(task.updatedAt).toLocaleDateString()}
+                </div>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold rounded-md border border-gray-200 text-gray-500">
+                  <Eye size={12} />
+                  Preview
+                </span>
               </div>
-            </div>
+            </button>
 
             <div className="p-5">
               {/* Feedback History */}
@@ -98,7 +112,7 @@ export const DesignerVersionHistory: React.FC<DesignerVersionHistoryProps> = ({ 
                           <div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-white border-2 border-blue-500 z-10" />
                           <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
                              <p className="text-sm text-gray-600 leading-relaxed italic">
-                                "{feedback}"
+                                {feedback}
                              </p>
                           </div>
                        </div>

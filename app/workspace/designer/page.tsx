@@ -7,6 +7,36 @@ import { DesignerTabNavigation } from '@/components/workspace/designer/DesignerT
 import { DesignerTaskList } from '@/components/workspace/designer/DesignerTaskList';
 import { UploadAndSubmitTab } from '@/components/workspace/designer/UploadAndSubmitTab';
 import { DesignerVersionHistory } from '@/components/workspace/designer/DesignerVersionHistory';
+import { DesignPreviewModal } from '@/components/ApprovalsDesignPreviewDialog';
+
+type DesignerTask = {
+  id: string;
+  title: string;
+  status: string;
+  description?: string;
+  endDate?: string | Date | null;
+  client?: { companyName: string } | null;
+  attachments?: Array<{
+    id: string;
+    fileName: string;
+    fileUrl: string;
+    mimeType: string;
+  }>;
+  calendarCopy?: {
+    id: string;
+    content: string;
+    caption?: string;
+    platform?: string;
+    platforms?: string[];
+    mediaType?: string;
+    publishDate?: string;
+    publishTime?: string;
+    referenceUrl?: string;
+    status: string;
+    bucket?: { id: string; name: string } | null;
+  } | null;
+  mediaUrls?: string[] | null;
+};
 
 const fetchDesignerTasks = async () => {
   const res = await fetch('/api/workspace/designer');
@@ -17,14 +47,15 @@ const fetchDesignerTasks = async () => {
 export default function DesignerWorkspacePage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('tasks');
-  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [selectedTask, setSelectedTask] = useState<DesignerTask | null>(null);
+  const [previewTask, setPreviewTask] = useState<DesignerTask | null>(null);
 
-  const { data: tasks, isLoading, error } = useQuery({
+  const { data: tasks, isLoading, error } = useQuery<DesignerTask[]>({
     queryKey: ['designer-tasks'],
     queryFn: fetchDesignerTasks,
   });
 
-  const handleUploadDesign = useCallback((task: any) => {
+  const handleUploadDesign = useCallback((task: DesignerTask) => {
     setSelectedTask(task);
     setActiveTab('upload');
     // Set status to IN_PROGRESS if it's currently OPEN
@@ -44,6 +75,10 @@ export default function DesignerWorkspacePage() {
     queryClient.invalidateQueries({ queryKey: ['designer-tasks'] });
   }, [queryClient]);
 
+  const handlePreviewTask = useCallback((task: DesignerTask) => {
+    setPreviewTask(task);
+  }, []);
+
   const renderTabContent = useMemo(() => {
     switch (activeTab) {
       case 'tasks':
@@ -51,6 +86,7 @@ export default function DesignerWorkspacePage() {
           <DesignerTaskList
             tasks={tasks || []}
             isLoading={isLoading}
+            onTaskClick={handlePreviewTask}
             onUploadDesign={handleUploadDesign}
           />
         );
@@ -62,11 +98,11 @@ export default function DesignerWorkspacePage() {
           />
         );
       case 'version':
-        return <DesignerVersionHistory tasks={tasks || []} isLoading={isLoading} />;
+        return <DesignerVersionHistory tasks={tasks || []} isLoading={isLoading} onTaskClick={handlePreviewTask} />;
       default:
         return null;
     }
-  }, [activeTab, tasks, isLoading, handleUploadDesign, handleRefresh, selectedTask]);
+  }, [activeTab, tasks, isLoading, handleUploadDesign, handleRefresh, selectedTask, handlePreviewTask]);
 
   return (
     <main className="min-h-screen">
@@ -74,7 +110,7 @@ export default function DesignerWorkspacePage() {
         {/* Header */}
         <header className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900 mb-1">
-            Designer's Workspace
+            Design Workspace
           </h1>
           <p className="text-gray-400 text-sm">
             Manage your design tasks, upload assets, and track revisions
@@ -98,6 +134,12 @@ export default function DesignerWorkspacePage() {
           )}
         </div>
       </div>
+
+      <DesignPreviewModal
+        isOpen={!!previewTask}
+        onClose={() => setPreviewTask(null)}
+        task={previewTask}
+      />
     </main>
   );
 }

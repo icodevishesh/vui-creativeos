@@ -19,7 +19,12 @@ export const GET = withApiLogging(async function GET(req: Request) {
         include: {
           client: { select: { companyName: true } },
           buckets: true,
-          copies: { orderBy: { publishDate: 'asc' } },
+          copies: {
+            include: {
+              frames: { orderBy: { frameNumber: 'asc' } },
+            },
+            orderBy: { publishDate: 'asc' }
+          },
           _count: { select: { copies: true } }
         },
         orderBy: { updatedAt: 'desc' }
@@ -33,7 +38,12 @@ export const GET = withApiLogging(async function GET(req: Request) {
       include: {
         client: { select: { companyName: true } },
         buckets: true,
-        copies: { orderBy: { publishDate: 'asc' } },
+        copies: {
+          include: {
+            frames: { orderBy: { frameNumber: 'asc' } },
+          },
+          orderBy: { publishDate: 'asc' }
+        },
         _count: { select: { copies: true } }
       },
       orderBy: { updatedAt: 'desc' }

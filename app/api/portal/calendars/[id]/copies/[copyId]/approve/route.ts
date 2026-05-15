@@ -3,7 +3,6 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import { prisma } from '@/lib/prisma';
 import { TaskStatus } from '@prisma/client';
-import { createDesignerTaskForCopy } from '@/lib/designer-task-helpers';
 import { dispatchNotification } from '@/lib/notifications/dispatcher';
 import { withApiLogging } from '@/lib/api-logging';
 
@@ -79,8 +78,7 @@ export const POST = withApiLogging(async function POST(
           where: { id: relatedTask.id },
           data: { status: TaskStatus.APPROVED },
         });
-        // Create a designer task for this copy, routed by media type to the right team member
-        await createDesignerTaskForCopy(updatedCopy as any, relatedTask as any);
+        // Follow-on designer/editor assignment is now manual from admin approvals.
         // Notify the writer that their task is fully approved
         if (relatedTask.assignedToId) {
           dispatchNotification({

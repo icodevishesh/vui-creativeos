@@ -44,7 +44,14 @@ type NavSection = {
 };
 
 const ADMIN_LIKE = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'];
-const CLIENTS_ROLES = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER', 'CLIENT', 'CLIENT_OWNER'];
+// const CLIENTS_ROLES = ['ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER', 'CLIENT', 'CLIENT_OWNER'];
+const STAFF_ROLES = [
+  'ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER',
+  'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'VIDEO_EDITOR', 'CREATIVE_LEAD', 'SALESPERSON',
+  'PERFORMANCE_MARKETING_SPECIALIST',
+  'EMAIL_MARKETING_SPECIALIST',
+  'WHATSAPP_MARKETING_SPECIALIST',
+];
 
 const SIDEBAR_SECTIONS: NavSection[] = [
   {
@@ -59,11 +66,11 @@ const SIDEBAR_SECTIONS: NavSection[] = [
     title: 'PROJECTS',
     items: [
       { name: 'Projects', href: '/projects', icon: Folder, roles: ADMIN_LIKE },
-      { name: 'Gantt Chart', href: '/gantt-chart', icon: ListTodo, roles: [...ADMIN_LIKE, 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'CREATIVE_LEAD', 'VIDEO_EDITOR', 'CLIENT', 'CLIENT_OWNER', 'SOCIAL_MEDIA_MANAGER', 'SEO_SPECIALIST'] },
-      { name: 'Content Calendar', href: '/calendar', icon: Calendar },
+      { name: 'Gantt Chart', href: '/gantt-chart', icon: ListTodo, roles: [...ADMIN_LIKE, 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'CREATIVE_LEAD', 'VIDEO_EDITOR', 'CLIENT', 'CLIENT_OWNER', 'SOCIAL_MEDIA_MANAGER'] },
+      { name: 'Content Calendar', href: '/calendar', icon: Calendar, roles: STAFF_ROLES },
       { name: 'Task Board', href: '/tasks', icon: ClipboardCheck  },
       { name: 'Approvals', href: '/approvals', icon: CheckCircle2, roles: [...ADMIN_LIKE, 'CLIENT', 'CLIENT_OWNER'] },
-      { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud },
+      { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud, roles: STAFF_ROLES },
     ],
   },
   {
@@ -86,9 +93,9 @@ const SIDEBAR_SECTIONS: NavSection[] = [
   {
     title: 'OTHERS',
     items: [
-      { name: 'File Repository', href: '/file-repository', icon: Archive },
+      { name: 'File Repository', href: '/file-repository', icon: Archive, roles: STAFF_ROLES },
       { name: 'Notifications', href: '/notifications', icon: Bell },
-      { name: 'Analytics', href: '/analytics', icon: BarChart2 },
+      { name: 'Analytics', href: '/analytics', icon: BarChart2, roles: STAFF_ROLES },
     ],
   },
 ];

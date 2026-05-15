@@ -1,5 +1,0 @@
-- remove approval page and all the admin pages from member's interface
-- creative upload: map to client not showing 
-- approvals: content preview not showing
-- file repo: give download option for file downloading
-- projects: deleting a project is not working

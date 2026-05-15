@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
-import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
 import { notifyClientForReview } from "@/lib/notifications/task-notifications";
 import { withApiLogging } from '@/lib/api-logging';
@@ -130,11 +129,7 @@ export const PATCH = withApiLogging(async function PATCH(req: NextRequest) {
                 });
             }
 
-            // If task just reached APPROVED, spawn designer tasks
-            if (newTaskStatus === TaskStatus.APPROVED && !task.calendarCopyId) {
-                // TODO: check media url for task selection
-                await createDesignerTasksForCalendar(task);
-            }
+            // Follow-on designer/editor tasks are assigned manually from the approvals page.
 
             // ── Notify assignee of approval ────────────────────────────
             if (task.assignedToId) {

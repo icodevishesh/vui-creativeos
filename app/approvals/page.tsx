@@ -1,10 +1,14 @@
-﻿"use client";
+"use client";
 
-import { useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  CheckCircle2,
+  MantineReactTable,
+  useMantineReactTable,
+  type MRT_ColumnDef,
+} from "mantine-react-table";
+import {
   XCircle,
   MessageSquare,
   Clock,
@@ -25,9 +29,10 @@ import {
   ChevronDown,
   BookOpen,
   Building2,
+  UserCheck,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import { DesignPreviewModal } from "@/components/ApprovalsDesignPreviewDialog";
+import { DesignPreviewModal, type ApprovalTaskPreview } from "@/components/ApprovalsDesignPreviewDialog";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,6 +72,47 @@ interface CalendarCopyRef {
   publishTime?: string;
   status?: string;
   bucket?: { id: string; name: string } | null;
+  isCarousel?: boolean;
+  frames?: Array<{
+    id: string;
+    frameNumber: number;
+    caption?: string;
+    hashtags?: string;
+  }>;
+}
+
+interface ApprovedCopyRow extends CalendarCopyRef {
+  platforms?: string[];
+  approvedBy?: string | null;
+  approvedDate?: string | null;
+  calendarId: string;
+  calendarName?: string | null;
+  client?: { id: string; companyName: string } | null;
+  project?: { id: string; name: string } | null;
+  assignmentRole: string;
+  assignedTask?: {
+    id: string;
+    title: string;
+    assignedTo?: { id: string; name: string; roles?: string[] } | null;
+  } | null;
+}
+
+interface MemberOption {
+  id: string;
+  name: string;
+  roles: string[];
+}
+
+interface ApiMember {
+  user: { id: string; name: string };
+  roles?: string[];
+}
+
+interface ProfileUser {
+  id?: string;
+  name?: string;
+  roles?: string[];
+  userType?: string;
 }
 
 interface CalendarRef {
@@ -128,6 +174,25 @@ const fetchAllCalendarTasks = async (): Promise<ApprovalTask[]> => {
   return res.json();
 };
 
+const fetchApprovedCopies = async (mediaType?: string): Promise<ApprovedCopyRow[]> => {
+  const params = new URLSearchParams();
+  if (mediaType) params.append("mediaType", mediaType);
+  const res = await fetch(`/api/approvals/approved-copies?${params.toString()}`);
+  if (!res.ok) throw new Error("Failed to fetch approved copies");
+  return res.json();
+};
+
+const fetchMembers = async (): Promise<MemberOption[]> => {
+  const res = await fetch("/api/members");
+  if (!res.ok) throw new Error("Failed to fetch members");
+  const data = await res.json() as ApiMember[];
+  return data.map((member) => ({
+    id: member.user.id,
+    name: member.user.name,
+    roles: member.roles ?? [],
+  }));
+};
+
 const fetchProfile = async () => {
   const res = await fetch("/api/auth/me");
   if (!res.ok) throw new Error("Failed to fetch profile");
@@ -179,9 +244,9 @@ function LegacyDesignPreviewModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-gray-950/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-gray-900">{task.title}</h2>
@@ -237,7 +302,7 @@ function LegacyDesignPreviewModal({
                 {copy.hashtags && (
                   <div className="bg-white border border-gray-100 rounded-lg p-3 space-y-1.5">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hashtags</p>
-                    <p className="text-xs text-primary font-medium break-words">{copy.hashtags}</p>
+                    <p className="text-xs text-primary font-medium wrap-break-words">{copy.hashtags}</p>
                   </div>
                 )}
               </div>
@@ -361,7 +426,7 @@ function LegacyDesignPreviewModal({
 
                 {!isImage(currentFile.mimeType) && !isPdf(currentFile.mimeType) && (
                   <div className="flex flex-col items-center gap-4 text-white shrink-0">
-                    <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center">
+                    <div className="w-20 h-20 bg-white/10 rounded-lg flex items-center justify-center">
                       <FileText className="w-10 h-10 text-white/60" />
                     </div>
                     <p className="text-sm font-medium">{currentFile.fileName}</p>
@@ -428,7 +493,7 @@ function FeedbackModal({
   actionType: "reject" | "feedback";
   taskTitle: string;
   isLoading: boolean;
-  currentUser: any;
+  currentUser?: ProfileUser;
 }) {
   const [feedback, setFeedback] = useState("");
 
@@ -446,13 +511,13 @@ function FeedbackModal({
   const isReject = actionType === "reject";
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+    <div className="fixed inset-0 z-60 flex items-center justify-center">
       <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
         <div
           className={`px-6 py-4 flex items-center justify-between ${isReject
-            ? "bg-gradient-to-r from-red-500 to-rose-500"
-            : "bg-gradient-to-r from-amber-500 to-orange-500"
+            ? "bg-linear-to-r from-red-500 to-rose-500"
+            : "bg-linear-to-r from-amber-500 to-orange-500"
             }`}
         >
           <div className="flex items-center gap-3">
@@ -722,7 +787,7 @@ function ClientCalendarGroup({
   }, {});
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
       {/* Client header row */}
       <div
         className={`flex items-center gap-3 px-5 py-4 border-b border-gray-50 ${
@@ -851,9 +916,427 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+const MEDIA_TYPE_FILTERS = ["VIDEO", "REEL", "IMAGE", "CAROUSEL", "TEXT"];
+const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
+
+const formatRoleLabel = (role: string) =>
+  role.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+
+const formatDate = (value?: string | null) =>
+  value ? new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-";
+
+const toApprovedCopyPreview = (copy: ApprovedCopyRow): ApprovalTaskPreview => ({
+  id: copy.id,
+  title: copy.project?.name || copy.calendarName || "Approved design",
+  client: copy.client ? { companyName: copy.client.companyName } : null,
+  calendarCopy: {
+    id: copy.id,
+    content: copy.content,
+    caption: copy.caption,
+    hashtags: copy.hashtags,
+    platform: copy.platforms?.[0],
+    platforms: copy.platforms,
+    mediaType: copy.mediaType,
+    publishDate: copy.publishDate,
+    publishTime: copy.publishTime,
+    status: "APPROVED",
+    bucket: copy.bucket,
+    isCarousel: copy.isCarousel,
+    frames: copy.frames,
+  },
+  attachments: copy.isCarousel && copy.frames && copy.frames.length > 0
+    ? copy.frames.map((f: any) => ({
+        id: f.id,
+        fileName: `Frame ${f.frameNumber}`,
+        fileUrl: f.creativeUrl || "",
+        mimeType: "image/png",
+      }))
+    : [],
+});
+
+function AssignApprovedCopyModal({
+  copy,
+  members,
+  isLoading,
+  onClose,
+  onSubmit,
+}: {
+  copy: ApprovedCopyRow | null;
+  members: MemberOption[];
+  isLoading: boolean;
+  onClose: () => void;
+  onSubmit: (payload: {
+    copyId: string;
+    title: string;
+    assignedToId: string;
+    priority: string;
+    dueDate: string;
+    description?: string;
+  }) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [assignedToId, setAssignedToId] = useState("");
+  const [priority, setPriority] = useState("MEDIUM");
+  const [dueDate, setDueDate] = useState("");
+  const [description, setDescription] = useState("");
+
+  if (!copy) return null;
+
+  const recommendedMembers = members.filter((member) => member.roles.includes(copy.assignmentRole));
+  const otherMembers = members.filter((member) => !member.roles.includes(copy.assignmentRole));
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    onSubmit({
+      copyId: copy.id,
+      title: title.trim() || `${formatRoleLabel(copy.assignmentRole)}: ${copy.client?.companyName ?? "Approved copy"}`,
+      assignedToId,
+      priority,
+      dueDate,
+      description: description.trim() || undefined,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-80 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-xl overflow-hidden">
+        <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">Assign Approved Copy</h2>
+            <p className="text-xs text-gray-400 mt-1">
+              {copy.client?.companyName ?? "Client"} · {copy.mediaType ?? "Media"} · publish {formatDate(copy.publishDate)}
+              {copy.publishTime ? ` at ${copy.publishTime}` : ""}
+            </p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <form onSubmit={submit} className="p-6 space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Task Name</label>
+            <input
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder={`${formatRoleLabel(copy.assignmentRole)} task`}
+              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Assigned To</label>
+              <select
+                required
+                value={assignedToId}
+                onChange={(event) => setAssignedToId(event.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="">Select member</option>
+                {recommendedMembers.length > 0 && (
+                  <optgroup label={`${formatRoleLabel(copy.assignmentRole)} members`}>
+                    {recommendedMembers.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {otherMembers.length > 0 && (
+                  <optgroup label="All other members">
+                    {otherMembers.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.name} ({member.roles.map(formatRoleLabel).join(", ") || "Member"})
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Priority</label>
+              <select
+                value={priority}
+                onChange={(event) => setPriority(event.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                {PRIORITIES.map((item) => (
+                  <option key={item} value={item}>{formatRoleLabel(item)}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Due Date</label>
+              <input
+                required
+                type="date"
+                value={dueDate}
+                onChange={(event) => setDueDate(event.target.value)}
+                className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Publish Date & Time</label>
+              <div className="px-3 py-2.5 rounded-lg border border-gray-100 bg-gray-50 text-sm font-medium text-gray-700">
+                {formatDate(copy.publishDate)}{copy.publishTime ? ` · ${copy.publishTime}` : ""}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Description</label>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Add execution notes for the assignee..."
+              className="w-full px-3 py-2.5 rounded-lg border border-gray-200 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50 rounded-lg">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-black rounded-lg hover:bg-black/90 disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+              {isLoading ? "Assigning..." : "Create Task"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ApprovedCopiesTable({
+  data,
+  isLoading,
+  onPreview,
+  onAssign,
+}: {
+  data: ApprovedCopyRow[];
+  isLoading: boolean;
+  onPreview: (copy: ApprovedCopyRow) => void;
+  onAssign: (copy: ApprovedCopyRow) => void;
+}) {
+  const columns = useMemo<MRT_ColumnDef<ApprovedCopyRow>[]>(
+    () => [
+      {
+        accessorKey: "content",
+        header: "Copy",
+        size: 280,
+        Cell: ({ row }) => (
+          <div className="space-y-1 max-w-md">
+            <p className="text-xs font-semibold text-gray-900 line-clamp-2">{row.original.content}</p>
+            {row.original.caption && <p className="text-[11px] text-gray-400 line-clamp-1">{row.original.caption}</p>}
+          </div>
+        ),
+      },
+      {
+        accessorKey: "mediaType",
+        header: "Media",
+        size: 120,
+        Cell: ({ cell }) => (
+          <span className="inline-flex text-[11px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded-lg">
+            {cell.getValue<string>() || "TEXT"}
+          </span>
+        ),
+      },
+      {
+        accessorFn: (row) => row.client?.companyName,
+        id: "client",
+        header: "Client",
+        size: 160,
+      },
+      {
+        accessorFn: (row) => row.project?.name ?? row.calendarName,
+        id: "source",
+        header: "Calendar / Project",
+        size: 180,
+      },
+      {
+        accessorFn: (row) => row.publishDate ? `${formatDate(row.publishDate)}${row.publishTime ? ` ${row.publishTime}` : ""}` : "-",
+        id: "publishAt",
+        header: "Publish",
+        size: 150,
+      },
+      {
+        accessorKey: "assignmentRole",
+        header: "Recommended",
+        size: 150,
+        Cell: ({ cell }) => <span className="text-xs font-semibold text-gray-700">{formatRoleLabel(cell.getValue<string>())}</span>,
+      },
+      {
+        id: "assignment",
+        header: "Assignment",
+        size: 180,
+        Cell: ({ row }) => {
+          const task = row.original.assignedTask;
+          return task ? (
+            <div className="text-xs text-gray-600">
+              <p className="font-semibold text-gray-800 line-clamp-1">{task.title}</p>
+              <p className="text-gray-400">{task.assignedTo?.name ?? "Unassigned"}</p>
+            </div>
+          ) : (
+            <span className="text-xs text-gray-400">Not assigned</span>
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "",
+        size: 170,
+        enableSorting: false,
+        enableColumnFilter: false,
+        Cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => onPreview(row.original)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              Preview
+            </button>
+            <button
+              type="button"
+              disabled={!!row.original.assignedTask}
+              onClick={() => onAssign(row.original)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-black text-white hover:bg-black/90 disabled:bg-gray-100 disabled:text-gray-400"
+            >
+              <UserCheck className="w-3.5 h-3.5" />
+              {row.original.assignedTask ? "Assigned" : "Assign To"}
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [onAssign, onPreview],
+  );
+
+  const table = useMantineReactTable({
+    columns,
+    data,
+    enableFullScreenToggle: false,
+    enableDensityToggle: false,
+    initialState: {
+      showGlobalFilter: true,
+      pagination: { pageIndex: 0, pageSize: 10 },
+    },
+    positionGlobalFilter: "left",
+    mantinePaperProps: {
+      shadow: "sm",
+      radius: "lg",
+      withBorder: false,
+      style: { border: "1px solid #f3f4f6" },
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[...Array(4)].map((_, index) => (
+          <div key={index} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
+  return <MantineReactTable table={table} />;
+}
+
+function ApprovedTaskCard({
+  task,
+  onPreview,
+}: {
+  task: ApprovalTask;
+  onPreview: () => void;
+}) {
+  const copy = task.calendarCopy;
+  const hasFiles = (task.attachments?.length ?? 0) > 0;
+
+  return (
+    <div
+      onClick={onPreview}
+      className="w-full text-left bg-white rounded-lg border border-gray-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.05)] overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer"
+    >
+      <div className="p-6 space-y-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-0.5 min-w-0">
+            <h3 className="text-base font-medium text-gray-900 tracking-tight truncate">{task.title}</h3>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-400 flex-wrap">
+              <span>{task.client?.companyName}</span>
+              {copy?.platform && (
+                <>
+                  <span className="opacity-50">•</span>
+                  <span>{copy.platform}</span>
+                </>
+              )}
+              {copy?.publishDate && (
+                <>
+                  <span className="opacity-50">•</span>
+                  <span>
+                    {new Date(copy.publishDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </span>
+                </>
+              )}
+              <span className="opacity-50">•</span>
+              <span>Approved</span>
+            </div>
+          </div>
+          <span className="shrink-0 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg bg-emerald-50 text-emerald-700">
+            Approved
+          </span>
+        </div>
+
+        {copy && (
+          <div className="bg-gray-50 border border-gray-100 rounded-lg px-4 py-3 flex items-start gap-3">
+            <div className="w-6 h-6 rounded-md bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText className="w-3.5 h-3.5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Copy Reference</p>
+              <p className="text-xs text-gray-700 font-medium line-clamp-2 leading-relaxed">{copy.content}</p>
+              {copy.caption && (
+                <p className="text-[11px] text-gray-400 italic mt-1 line-clamp-1">{copy.caption}</p>
+              )}
+            </div>
+            {hasFiles && (
+              <span className="ml-auto shrink-0 inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-full">
+                <ImageIcon className="w-2.5 h-2.5" />
+                {task.attachments!.length} file{task.attachments!.length !== 1 ? "s" : ""}
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="ml-auto inline-flex items-center gap-2 px-5 py-2 text-xs font-medium text-primary bg-primary/10 border border-primary/20 rounded-lg shadow-sm">
+            <Eye className="w-3.5 h-3.5" />
+            Preview Design
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ApprovalsPage() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<string>("INTERNAL_REVIEW");
+  const [designView, setDesignView] = useState<"pending" | "history">("pending");
+  const [approvedCopyMediaType, setApprovedCopyMediaType] = useState("");
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -861,9 +1344,15 @@ export default function ApprovalsPage() {
     task: ApprovalTask | null;
   }>({ isOpen: false, actionType: "reject", task: null });
 
-  const [previewTask, setPreviewTask] = useState<ApprovalTask | null>(null);
+  const [previewTask, setPreviewTask] = useState<ApprovalTask | ApprovalTaskPreview | null>(null);
+  const [assignCopy, setAssignCopy] = useState<ApprovedCopyRow | null>(null);
 
   const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: fetchProfile });
+
+  const { data: members = [] } = useQuery({
+    queryKey: ["members"],
+    queryFn: fetchMembers,
+  });
 
   // All calendars (INTERNAL_REVIEW + CLIENT_REVIEW + APPROVED) — not tab-filtered
   const { data: allCalendarTasks = [], isLoading: calLoading } = useQuery({
@@ -877,8 +1366,19 @@ export default function ApprovalsPage() {
     queryFn: () => fetchApprovals(activeTab),
   });
 
+  const { data: approvedCopies = [], isLoading: approvedCopiesLoading } = useQuery({
+    queryKey: ["approved-copies"],
+    queryFn: () => fetchApprovedCopies(),
+  });
+  const filteredApprovedCopies = approvedCopyMediaType
+    ? approvedCopies.filter((copy) => copy.mediaType === approvedCopyMediaType)
+    : approvedCopies;
+
   const calendarTasks = allCalendarTasks.filter(
     (t: ApprovalTask) => t.calendarId && !t.calendarCopyId && t.calendar
+  );
+  const approvedDesignTasks = allCalendarTasks.filter(
+    (t: ApprovalTask) => t.calendarCopyId && t.status === "APPROVED"
   );
   const designTasks = tabTasks.filter((t: ApprovalTask) => !!t.calendarCopyId);
 
@@ -892,8 +1392,6 @@ export default function ApprovalsPage() {
     return acc;
   }, {});
   const clientGroups = Object.values(calendarsByClient);
-
-  const isLoading = calLoading || tabLoading;
 
   const actionMutation = useMutation({
     mutationFn: (payload: {
@@ -927,6 +1425,34 @@ export default function ApprovalsPage() {
       setModalState({ isOpen: false, actionType: "reject", task: null });
     },
     onError: () => toast.error("Something went wrong. Please try again."),
+  });
+
+  const assignCopyMutation = useMutation({
+    mutationFn: (payload: {
+      copyId: string;
+      title: string;
+      assignedToId: string;
+      priority: string;
+      dueDate: string;
+      description?: string;
+    }) =>
+      fetch("/api/approvals/approved-copies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }).then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Assignment failed");
+        return data;
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["approved-copies"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["allTasks"] });
+      setAssignCopy(null);
+      toast.success("Task created and assigned successfully!");
+    },
+    onError: (error: Error) => toast.error(error.message || "Assignment failed"),
   });
 
   const handleApprove = (task: ApprovalTask) => {
@@ -973,8 +1499,8 @@ export default function ApprovalsPage() {
       {/* Content Calendars section — always visible, not tab-filtered */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Content Calendars</p>
-          <span className="text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+          <p className="text-xs font-medium text-gray-500 uppercase -tracking-tight">Content Calendars</p>
+          <span className="text-[10px] font-medium bg-primary/10 text-[#00786f] px-2 py-0.5 rounded-full">
             {clientGroups.length} client{clientGroups.length !== 1 ? "s" : ""} · {calendarTasks.length} calendar{calendarTasks.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -999,8 +1525,8 @@ export default function ApprovalsPage() {
 
       {/* Design approvals section — tab-filtered */}
       <div className="space-y-4">
-        <div className="flex items-center gap-4">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Design Approvals</p>
+        <div className="flex items-center gap-4 flex-wrap">
+          <p className="text-xs font-medium text-gray-500 uppercase -tracking-tight">Design Approvals</p>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             const count = tab.key === "INTERNAL_REVIEW" ? internalDesignCount : clientDesignCount;
@@ -1013,7 +1539,7 @@ export default function ApprovalsPage() {
                   : "text-gray-400 hover:text-gray-600"
                   }`}
               >
-                {tab.label}
+                <span style={{ fontSize: '14px' }}>{tab.label}</span>
                 {count > 0 && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-400"}`}>
                     {count}
@@ -1022,19 +1548,51 @@ export default function ApprovalsPage() {
               </button>
             );
           })}
+          <div className="ml-auto inline-flex items-center gap-1 p-1 rounded-lg border border-gray-100 bg-white">
+            <button
+              onClick={() => setDesignView("pending")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${designView === "pending" ? "bg-gray-900 text-white" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              Pending
+            </button>
+            <button
+              onClick={() => setDesignView("history")}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${designView === "history" ? "bg-gray-900 text-white" : "text-gray-500 hover:text-gray-700"}`}
+            >
+              History
+            </button>
+          </div>
         </div>
 
-        {tabLoading ? (
+        {designView === "history" ? (
+          calLoading ? (
+            <div className="flex items-center gap-3 text-gray-400 py-6">
+              <Clock className="w-4 h-4 animate-spin" />
+              <span className="text-sm">Loading approved designs...</span>
+            </div>
+          ) : approvedDesignTasks.length === 0 ? (
+            <div className="bg-white border border-gray-100 rounded-lg p-8 text-center">
+              <p className="text-sm text-gray-400">No approved designs found.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {approvedDesignTasks.map((task) => (
+                <ApprovedTaskCard
+                  key={task.id}
+                  task={task}
+                  onPreview={() => setPreviewTask(task)}
+                />
+              ))}
+            </div>
+          )
+        ) : tabLoading ? (
           <div className="flex items-center gap-3 text-gray-400 py-6">
             <Clock className="w-4 h-4 animate-spin" />
             <span className="text-sm">Loading...</span>
           </div>
         ) : designTasks.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center mb-3">
-              <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-            </div>
-            <p className="text-sm text-gray-400">No design approvals pending.</p>
+          <div className="bg-white border border-gray-100 rounded-lg p-8 text-center">
+            <p className="text-sm text-gray-400">No designs found.</p>
           </div>
         ) : (
           <div className="flex flex-col gap-6">
@@ -1053,6 +1611,32 @@ export default function ApprovalsPage() {
         )}
       </div>
 
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <p className="text-xs font-medium text-gray-500 uppercase -tracking-tight">Approved Copies</p>
+          <span className="text-[10px] font-medium bg-primary/10 text-[#00786f] px-2 py-0.5 rounded-full">
+            {filteredApprovedCopies.length} approved cop{filteredApprovedCopies.length === 1 ? "y" : "ies"}
+          </span>
+          <select
+            value={approvedCopyMediaType}
+            onChange={(event) => setApprovedCopyMediaType(event.target.value)}
+            className="ml-auto w-full md:w-48 px-3 py-2 rounded-lg border border-gray-100 text-xs font-semibold bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+          >
+            <option value="">All media types</option>
+            {MEDIA_TYPE_FILTERS.map((type) => (
+              <option key={type} value={type}>{formatRoleLabel(type)}</option>
+            ))}
+          </select>
+        </div>
+
+        <ApprovedCopiesTable
+          data={filteredApprovedCopies}
+          isLoading={approvedCopiesLoading}
+          onPreview={(copy) => setPreviewTask(toApprovedCopyPreview(copy))}
+          onAssign={(copy) => setAssignCopy(copy)}
+        />
+      </div>
+
       {/* Feedback / Reject Modal */}
       <FeedbackModal
         isOpen={modalState.isOpen}
@@ -1069,6 +1653,14 @@ export default function ApprovalsPage() {
         isOpen={!!previewTask}
         onClose={() => setPreviewTask(null)}
         task={previewTask}
+      />
+
+      <AssignApprovedCopyModal
+        copy={assignCopy}
+        members={members}
+        isLoading={assignCopyMutation.isPending}
+        onClose={() => setAssignCopy(null)}
+        onSubmit={(payload) => assignCopyMutation.mutate(payload)}
       />
     </div>
   );

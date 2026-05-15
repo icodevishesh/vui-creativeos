@@ -15,6 +15,13 @@ export interface CalendarCopyForPreview {
   status: string;
   calendarName?: string;
   bucket?: { id: string; name: string } | null;
+  isCarousel?: boolean;
+  frames?: Array<{
+    id: string;
+    frameNumber: number;
+    caption?: string;
+    hashtags?: string;
+  }>;
 }
 
 interface CalendarCopyPreviewDialogProps {
@@ -109,9 +116,23 @@ export function CalendarCopyPreviewDialog({ copy, onClose }: CalendarCopyPreview
 
           {/* Content card */}
           <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-3">
-            <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{copy.content}</p>
+            {copy.mediaType !== 'CAROUSEL' && (
+              <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{copy.content}</p>
+            )}
 
-            {copy.caption && copy.caption !== copy.content && (
+            {copy.mediaType === 'CAROUSEL' && copy.frames && copy.frames.length > 0 && (
+              <div className="space-y-4">
+                {copy.frames.map((f) => (
+                  <div key={f.id} className="space-y-1 pb-2 border-b border-gray-200/50 last:border-0 last:pb-0">
+                    <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Frame {f.frameNumber}</p>
+                    <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{f.caption || 'No caption'}</p>
+                    {f.hashtags && <p className="text-[10px] text-blue-600 font-medium">{f.hashtags}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {copy.mediaType !== 'CAROUSEL' && copy.caption && copy.caption !== copy.content && (
               <>
                 <hr className="border-gray-200" />
                 <div>
@@ -121,7 +142,7 @@ export function CalendarCopyPreviewDialog({ copy, onClose }: CalendarCopyPreview
               </>
             )}
 
-            {copy.hashtags && (
+            {copy.mediaType !== 'CAROUSEL' && copy.hashtags && (
               <>
                 <hr className="border-gray-200" />
                 <div>

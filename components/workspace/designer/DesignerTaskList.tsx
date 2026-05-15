@@ -3,10 +3,6 @@
 import React, { useState } from 'react';
 import {
   ChevronRight,
-  Briefcase,
-  FileText,
-  Camera,
-  Mail,
   Building2,
   Clock,
   ChevronDown,
@@ -15,6 +11,13 @@ import {
   Link
 } from 'lucide-react';
 import { format } from 'date-fns';
+
+interface TaskAttachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  mimeType: string;
+}
 
 interface Task {
   id: string;
@@ -25,7 +28,7 @@ interface Task {
   client?: {
     companyName: string;
   };
-  attachments?: any[];
+  attachments?: TaskAttachment[];
   calendarCopy?: {
     id: string;
     content: string;
@@ -46,15 +49,6 @@ interface DesignerTaskListProps {
   onTaskClick?: (task: Task) => void;
   onUploadDesign?: (task: Task) => void;
 }
-
-const getTaskIcon = (title: string) => {
-  const t = title.toLowerCase();
-  if (t.includes('linkedin')) return Briefcase;
-  if (t.includes('blog')) return FileText;
-  if (t.includes('ig') || t.includes('instagram')) return Camera;
-  if (t.includes('email') || t.includes('newsletter')) return Mail;
-  return FileText;
-};
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -111,8 +105,8 @@ export const DesignerTaskList: React.FC<DesignerTaskListProps> = ({
         <div className="mx-auto w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-4">
           <Upload className="text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">No design tasks</h3>
-        <p className="text-gray-500">You're all caught up! New briefs will appear here.</p>
+        <h3 className="text-lg font-semibold text-gray-900">No tasks yet</h3>
+        <p className="text-gray-500">New briefs will appear here when they are assigned.</p>
       </div>
     );
   }
@@ -120,7 +114,6 @@ export const DesignerTaskList: React.FC<DesignerTaskListProps> = ({
   return (
     <div className="space-y-4">
       {tasks.filter(t => t.status !== 'APPROVED').map((task) => {
-        const Icon = getTaskIcon(task.title);
         const status = getStatusBadge(task.status);
         const isExpanded = expandedTaskId === task.id;
 
@@ -219,7 +212,7 @@ export const DesignerTaskList: React.FC<DesignerTaskListProps> = ({
                     <h5 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-2">Assets Provided</h5>
                     <div className="flex flex-wrap gap-2">
                       {task.attachments && task.attachments.length > 0 ? (
-                        task.attachments.map((asset: any, idx: number) => (
+                        task.attachments.map((asset, idx) => (
                           <div key={idx} className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 border border-gray-200">
                             <File size={14} />
                             {asset.fileName}

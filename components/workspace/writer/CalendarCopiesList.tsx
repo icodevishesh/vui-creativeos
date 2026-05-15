@@ -179,6 +179,20 @@ function SubmitPreviewModal({
                                         <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap">{copy.content}</p>
                                     </div>
 
+                                    {copy.isCarousel && Array.isArray(copy.frames) && copy.frames.length > 0 && (
+                                        <div className="space-y-2">
+                                            <p className="text-[10px] font-bold text-primary/60 uppercase -tracking-tight">Carousel Frames</p>
+                                            <div className="grid grid-cols-1 gap-2">
+                                                {copy.frames.map((f: any) => (
+                                                    <div key={f.id} className="flex items-start gap-2 px-3 py-2 bg-white border border-gray-100 rounded-lg">
+                                                        <span className="text-[10px] font-bold text-gray-400 w-8 shrink-0 pt-0.5">F{f.frameNumber}</span>
+                                                        <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">{f.caption}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {copy.caption && (
                                         <div className="space-y-1">
                                             <p className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight">Caption</p>
@@ -257,7 +271,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
     // Carousel state
     const [frameCount, setFrameCount] = useState(3);
-    const [frames, setFrames] = useState<any[]>([]);
+    const [frames, setFrames] = useState<any[]>(Array.from({ length: 3 }, () => ({ caption: '', hashtags: '' })));
     const [activeFrame, setActiveFrame] = useState(0);
 
     const isCarouselMode = form.mediaType === 'CAROUSEL';
@@ -314,13 +328,25 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
             mediaType: copy.mediaType || '',
             referenceUrl: copy.referenceUrl || '',
         });
+        if (copy.isCarousel) {
+            setFrameCount(copy.frameCount || copy.frames?.length || 3);
+            setFrames(copy.frames || Array.from({ length: 3 }, () => ({ caption: '', hashtags: '' })));
+            setActiveFrame(0);
+        }
     };
 
     const saveEdit = async (copyId: string) => {
         setSavingCopyId(copyId);
         try {
-            const payload = { ...editForm };
+            const payload: any = { ...editForm };
             if (payload.publishDate) payload.publishDate = new Date(payload.publishDate).toISOString();
+            if (payload.mediaType === 'CAROUSEL') {
+                payload.isCarousel = true;
+                payload.frameCount = frameCount;
+                payload.frames = frames;
+            } else {
+                payload.isCarousel = false;
+            }
             const res = await fetch(`/api/calendars/${calendarId}/copies/${copyId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -454,6 +480,117 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
+                    
+                    {/* Media type drop down */}
+                     <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Media Type *</label>
+                            <select
+                                value={form.mediaType}
+                                onChange={(e) => setForm({ ...form, mediaType: e.target.value })}
+                                className="w-full p-2 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 appearance-none"
+                            >
+                                <option value="">Select type</option>
+                                <option value="IMAGE">Image</option>
+                                <option value="VIDEO">Video</option>
+                                <option value="REEL">Reel</option>
+                                <option value="CAROUSEL">Carousel</option>
+                                <option value="Text">Text</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* ── Carousel frame builder ─────────────────────────── */}
+                    {isCarouselMode && (
+                        <div className="border border-gray-200 shadow-xs rounded-xl bg-gray-50/80 p-4 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Layers className="w-4 h-4 text-primary" />
+                                    <span className="text-xs font-medium text-primary uppercase -tracking-tight">Carousel Copies</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-500 font-medium">Copies:</span>
+                                    <div className="flex gap-1">
+                                        {[2,3,4,5,6,7,8,9,10].map(n => (
+                                            <button
+                                                key={n}
+                                                type="button"
+                                                onClick={() => handleFrameCountChange(n)}
+                                                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                                                    frameCount === n
+                                                        ? 'bg-primary text-white'
+                                                        : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
+                                                }`}
+                                            >{n}</button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                           
+                            <div className="flex gap-1 flex-wrap">
+                                {frames.map((_, i) => (
+                                    <button
+                                        key={i}
+                                        type="button"
+                                        onClick={() => setActiveFrame(i)}
+                                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                                            activeFrame === i
+                                                ? 'bg-primary text-white'
+                                                : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
+                                        }`}
+                                    >
+                                        Copy {i + 1}
+                                        {frames[i].caption.trim() && <span className="ml-1 text-emerald-400">✓</span>}
+                                    </button>
+                                ))}
+                            </div>
+
+                           
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-[10px] font-medium text-primary uppercase -tracking-tight block mb-1">
+                                        Creative Copy
+                                    </label>
+                                    <textarea
+                                        value={frames[activeFrame]?.caption ?? ''}
+                                        onChange={e => updateFrame(activeFrame, 'caption', e.target.value)}
+                                        rows={3}
+                                        placeholder={`Copy text for copy ${activeFrame + 1}...`}
+                                        className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring focus:ring-black/30"
+                                    />
+                                </div>
+                                {/* <div>
+                                    <label className="text-[10px] font-bold text-primary uppercase -tracking-tight block mb-1">
+                                        Copy {activeFrame + 1} Hashtags
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={frames[activeFrame]?.hashtags ?? ''}
+                                        onChange={e => updateFrame(activeFrame, 'hashtags', e.target.value)}
+                                        placeholder="#frame1hashtags"
+                                        className="w-full p-2 bg-white border border-primary/30 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
+                                    />
+                                </div> */}
+                                <div className="flex justify-between">
+                                    <button
+                                        type="button"
+                                        disabled={activeFrame === 0}
+                                        onClick={() => setActiveFrame(p => p - 1)}
+                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
+                                    >← Prev</button>
+                                    <span className="text-xs text-gray-400 font-medium self-center">{activeFrame + 1} / {frameCount}</span>
+                                    <button
+                                        type="button"
+                                        disabled={activeFrame === frameCount - 1}
+                                        onClick={() => setActiveFrame(p => p + 1)}
+                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
+                                    >Next →</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
                     <div>
                         <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Creative Copy *</label>
                         <textarea
@@ -548,129 +685,23 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                 ))}
                             </select>
                         </div>
+
+                        {/* Platform multi-select */}
                         <div>
-                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Media Type *</label>
-                            <select
-                                value={form.mediaType}
-                                onChange={(e) => setForm({ ...form, mediaType: e.target.value })}
-                                className="w-full p-2 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 appearance-none"
-                            >
-                                <option value="">Select type</option>
-                                <option value="IMAGE">Image</option>
-                                <option value="VIDEO">Video</option>
-                                <option value="REEL">Reel</option>
-                                <option value="CAROUSEL">Carousel</option>
-                                <option value="Text">Text</option>
-                            </select>
+                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">
+                                Platforms
+                                {form.platforms.length > 0 && (
+                                    <span className="ml-2 normal-case text-primary font-semibold">
+                                        {form.platforms.length} selected
+                                    </span>
+                                )}
+                            </label>
+                            <PlatformMultiSelect
+                                selected={form.platforms}
+                                onChange={(platforms) => setForm({ ...form, platforms })}
+                                availablePlatforms={availablePlatforms}
+                            />
                         </div>
-                    </div>
-
-                    {/* ── Carousel frame builder ─────────────────────────── */}
-                    {/* {isCarouselMode && (
-                        <div className="border border-primary/20 rounded-xl bg-primary/40 p-4 space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Layers className="w-4 h-4 text-primary" />
-                                    <span className="text-xs font-bold text-primary uppercase -tracking-tight">Carousel Frames</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-gray-500 font-medium">Frames:</span>
-                                    <div className="flex gap-1">
-                                        {[2,3,4,5,6,7,8,9,10].map(n => (
-                                            <button
-                                                key={n}
-                                                type="button"
-                                                onClick={() => handleFrameCountChange(n)}
-                                                className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                                                    frameCount === n
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
-                                                }`}
-                                            >{n}</button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                           
-                            <div className="flex gap-1 flex-wrap">
-                                {frames.map((_, i) => (
-                                    <button
-                                        key={i}
-                                        type="button"
-                                        onClick={() => setActiveFrame(i)}
-                                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                                            activeFrame === i
-                                                ? 'bg-primary text-white'
-                                                : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
-                                        }`}
-                                    >
-                                        Frame {i + 1}
-                                        {frames[i].caption.trim() && <span className="ml-1 text-emerald-400">✓</span>}
-                                    </button>
-                                ))}
-                            </div>
-
-                           
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="text-[10px] font-bold text-primary uppercase -tracking-tight block mb-1">
-                                        Frame {activeFrame + 1} Caption *
-                                    </label>
-                                    <textarea
-                                        value={frames[activeFrame]?.caption ?? ''}
-                                        onChange={e => updateFrame(activeFrame, 'caption', e.target.value)}
-                                        rows={3}
-                                        placeholder={`Copy text for Frame ${activeFrame + 1}...`}
-                                        className="w-full p-3 bg-white border border-primary/30 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-primary/20"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-bold text-primary uppercase -tracking-tight block mb-1">
-                                        Frame {activeFrame + 1} Hashtags
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={frames[activeFrame]?.hashtags ?? ''}
-                                        onChange={e => updateFrame(activeFrame, 'hashtags', e.target.value)}
-                                        placeholder="#frame1hashtags"
-                                        className="w-full p-2 bg-white border border-primary/30 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
-                                    />
-                                </div>
-                                <div className="flex justify-between">
-                                    <button
-                                        type="button"
-                                        disabled={activeFrame === 0}
-                                        onClick={() => setActiveFrame(p => p - 1)}
-                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
-                                    >← Prev</button>
-                                    <span className="text-xs text-gray-400 font-medium self-center">{activeFrame + 1} / {frameCount}</span>
-                                    <button
-                                        type="button"
-                                        disabled={activeFrame === frameCount - 1}
-                                        onClick={() => setActiveFrame(p => p + 1)}
-                                        className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
-                                    >Next →</button>
-                                </div>
-                            </div>
-                        </div>
-                    )} */}
-
-                    {/* Platform multi-select */}
-                    <div>
-                        <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">
-                            Platforms
-                            {form.platforms.length > 0 && (
-                                <span className="ml-2 normal-case text-primary font-semibold">
-                                    {form.platforms.length} selected
-                                </span>
-                            )}
-                        </label>
-                        <PlatformMultiSelect
-                            selected={form.platforms}
-                            onChange={(platforms) => setForm({ ...form, platforms })}
-                            availablePlatforms={availablePlatforms}
-                        />
                     </div>
 
                     <div className="flex justify-end">
@@ -763,11 +794,98 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                         <option value="">Select type</option>
                                                         <option value="Image">Image</option>
                                                         <option value="Video">Video</option>
-                                                        <option value="Carousel">Carousel</option>
+                                                        <option value="CAROUSEL">Carousel</option>
                                                         <option value="Text">Text</option>
                                                     </select>
                                                 </div>
                                             </div>
+
+                                            {editForm.mediaType === 'CAROUSEL' && (
+                                                <div className="border border-primary/20 rounded-xl bg-primary/40 p-4 space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2">
+                                                            <Layers className="w-4 h-4 text-primary" />
+                                                            <span className="text-xs font-bold text-primary uppercase -tracking-tight">Carousel Copies</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-xs text-gray-500 font-medium">Copies:</span>
+                                                            <div className="flex gap-1">
+                                                                {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                                                                    <button
+                                                                        key={n}
+                                                                        type="button"
+                                                                        onClick={() => handleFrameCountChange(n)}
+                                                                        className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${frameCount === n
+                                                                                ? 'bg-primary text-white'
+                                                                                : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
+                                                                            }`}
+                                                                    >{n}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-1 flex-wrap">
+                                                        {frames.map((_, i) => (
+                                                            <button
+                                                                key={i}
+                                                                type="button"
+                                                                onClick={() => setActiveFrame(i)}
+                                                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${activeFrame === i
+                                                                        ? 'bg-primary text-white'
+                                                                        : 'bg-white border border-gray-200 text-gray-500 hover:border-primary/40'
+                                                                    }`}
+                                                            >
+                                                                Frame {i + 1}
+                                                                {frames[i]?.caption?.trim() && <span className="ml-1 text-emerald-400">✓</span>}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-primary uppercase -tracking-tight block mb-1">
+                                                                Copy {activeFrame + 1} Caption *
+                                                            </label>
+                                                            <textarea
+                                                                value={frames[activeFrame]?.caption ?? ''}
+                                                                onChange={e => updateFrame(activeFrame, 'caption', e.target.value)}
+                                                                rows={3}
+                                                                placeholder={`Copy text for Frame ${activeFrame + 1}...`}
+                                                                className="w-full p-3 bg-white border border-primary/30 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-primary/20"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-primary uppercase -tracking-tight block mb-1">
+                                                                Copy {activeFrame + 1} Hashtags
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={frames[activeFrame]?.hashtags ?? ''}
+                                                                onChange={e => updateFrame(activeFrame, 'hashtags', e.target.value)}
+                                                                placeholder="#Copy1Hashtags"
+                                                                className="w-full p-2 bg-white border border-primary/30 rounded-lg text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
+                                                            />
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <button
+                                                                type="button"
+                                                                disabled={activeFrame === 0}
+                                                                onClick={() => setActiveFrame(p => p - 1)}
+                                                                className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
+                                                            >← Prev</button>
+                                                            <span className="text-xs text-gray-400 font-medium self-center">{activeFrame + 1} / {frameCount}</span>
+                                                            <button
+                                                                type="button"
+                                                                disabled={activeFrame === frameCount - 1}
+                                                                onClick={() => setActiveFrame(p => p + 1)}
+                                                                className="px-3 py-1.5 text-xs font-bold text-gray-500 rounded-lg border border-gray-200 hover:border-primary/40 disabled:opacity-30 transition-all"
+                                                            >Next →</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             <div>
                                                 <label className="text-[10px] font-bold text-gray-400 uppercase -tracking-tight block mb-2">Platforms</label>
                                                 <PlatformMultiSelect

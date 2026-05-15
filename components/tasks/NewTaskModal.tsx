@@ -103,12 +103,10 @@ export function NewTaskModal({
     new Set(clientTeamMembers.map((member) => member.userRole).filter(Boolean))
   ).sort();
   const teamMemberIds = new Set(clientTeamMembers.map((member) => member.userId));
-  const matchingOrgMembers = taskCategory
-    ? members.filter((member) =>
-        !teamMemberIds.has(member.id) &&
-        (member.roles ?? []).some((role) => role === taskCategory)
-      )
-    : [];
+  const matchingOrgMembers = members.filter((member) =>
+    !teamMemberIds.has(member.id) &&
+    (!taskCategory || (member.roles ?? []).some((role) => role === taskCategory))
+  );
   const assigneeGroups = [
     {
       label: selectedClient?.companyName ? `${selectedClient.companyName} Team` : 'Client Team',
@@ -221,7 +219,6 @@ export function NewTaskModal({
               <div className="relative">
                 <ClipboardCheck  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                 <select
-                  required
                   value={taskCategory}
                   disabled={!clientId || availableCategories.length === 0}
                   onChange={(e) => {
@@ -246,12 +243,12 @@ export function NewTaskModal({
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                 <select
                   value={assignedToId}
-                  disabled={!clientId || !taskCategory || assigneeGroups.length === 0}
+                  disabled={!clientId || assigneeGroups.length === 0}
                   onChange={(e) => setAssignedToId(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 appearance-none bg-gray-50/30 transition-all font-medium text-sm disabled:opacity-50"
                 >
                   <option value="">
-                    {!taskCategory ? "Select category first" : "Unassigned"}
+                    {assigneeGroups.length === 0 ? "No members available" : "Unassigned"}
                   </option>
                   {assigneeGroups.map((group) => (
                     <optgroup key={group.label} label={group.label}>

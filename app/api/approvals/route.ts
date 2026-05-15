@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { TaskStatus } from "@prisma/client";
-import { subDays } from "date-fns";
-import { createDesignerTasksForCalendar } from "@/lib/approval-helpers";
 import { notifyClientForReview } from "@/lib/notifications/task-notifications";
 import { dispatchNotification } from "@/lib/notifications/dispatcher";
 import { withApiLogging } from '@/lib/api-logging';
@@ -21,7 +19,10 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
             // Return all writer calendar tasks across review + approved statuses
             where.calendarId = { not: null };
             where.status = { in: [TaskStatus.INTERNAL_REVIEW, TaskStatus.CLIENT_REVIEW, TaskStatus.APPROVED] };
-        } else if (status && (status === "INTERNAL_REVIEW" || status === "CLIENT_REVIEW")) {
+        } else if (
+            status &&
+            (status === "INTERNAL_REVIEW" || status === "CLIENT_REVIEW" || status === "APPROVED")
+        ) {
             where.status = status;
         } else {
             where.status = { in: [TaskStatus.INTERNAL_REVIEW, TaskStatus.CLIENT_REVIEW] };
@@ -284,7 +285,8 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
                     });
                 }
 
-                // ── Writer task: stamp final approver on all calendar copies, then create designer tasks ──
+                // Writer task: stamp final approver on all calendar copies.
+                // Follow-on designer/editor task assignment is now manual from the approvals page.
                 if (!task.calendarCopyId && task.calendarId) {
                     await prisma.calendarCopy.updateMany({
                         where: { calendarId: task.calendarId },
@@ -294,7 +296,6 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
                             approverRole: approverRoleLabel,
                         },
                     });
-                    await createDesignerTasksForCalendar(task);
                 }
 
                 // Notify the writer/assignee that their task has been fully approved

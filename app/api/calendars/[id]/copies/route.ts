@@ -16,6 +16,10 @@ export const GET = withApiLogging(async function GET(
     try {
         const copies = await prisma.calendarCopy.findMany({
             where: { calendarId: id },
+            include: {
+                frames: { orderBy: { frameNumber: 'asc' } },
+                bucket: { select: { id: true, name: true } }
+            },
             orderBy: { createdAt: 'desc' }
         });
         return NextResponse.json(copies);

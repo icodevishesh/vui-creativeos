@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, use } from 'react';
 import { useRouter } from 'next/navigation';
@@ -123,96 +123,53 @@ function StatusBadge({ status }: { status: string }) {
 
 // ─── Carousel Slider ──────────────────────────────────────────────────────────
 
-function CarouselSlider({ frames }: { frames: CarouselFrame[] }) {
-  const [activeIdx, setActiveIdx] = useState(0);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const frame = frames[activeIdx];
-
+function CarouselSlider({ frames, caption, hashtags }: { frames: CarouselFrame[], caption?: string, hashtags?: string }) {
+  const [active, setActive] = useState(0);
+  const frame = frames[active];
   return (
-    <div>
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-      >
-        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        Carousel Frames ({frames.length})
-      </button>
-
-      {isExpanded && (
-        <div className="mt-3 bg-primary/60 border border-primary/20 rounded-xl overflow-hidden">
-          {/* Slide */}
-          <div className="p-4 space-y-2">
-            {/* Frame header */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-gray-500">Frame {frame.frameNumber}</span>
-              <StatusBadge status={frame.creativeStatus} />
-            </div>
-
-            {/* Creative image or placeholder */}
-            {frame.creativeUrl ? (
-              <img
-                src={frame.creativeUrl}
-                alt={`Frame ${frame.frameNumber}`}
-                className="w-full max-h-48 object-contain rounded"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-16 text-primary/40 text-xs font-bold uppercase tracking-widest">
-                {frame.creativeStatus === 'UPLOADED' ? 'Creative uploaded' : 'Awaiting designer upload'}
-              </div>
-            )}
-
-            {/* Caption */}
-            <span className="text-xs font-bold text-primary">Caption</span>
-            {frame.caption
-              ? <p className="text-xs text-primary leading-relaxed">{frame.caption}</p>
-              : <p className="text-xs text-primary/40 italic">No caption</p>
-            }
-
-            {/* Hashtags */}
-            <span className="text-xs font-bold text-primary">Hashtags</span>
-            {frame.hashtags
-              ? <p className="text-[10px] font-bold text-primary/60">{frame.hashtags}</p>
-              : <p className="text-[10px] text-primary/40 italic">No hashtags</p>
-            }
+    <div className="border-b border-gray-200 rounded-lg overflow-hidden">
+      {/* Slide */}
+      <div className="bg-gray-50/80 p-4 min-h-100px space-y-1">
+        {frame?.creativeUrl ? (
+          <img src={frame.creativeUrl} alt={`Frame ${frame.frameNumber}`} className="w-full max-h-48 object-contain rounded" />
+        ) : (
+          <div className="flex items-center justify-center h-16 text-primary/40 text-xs font-bold uppercase tracking-widest">
+            {frame?.creativeStatus === 'UPLOADED' ? 'Creative uploaded' : 'Posts here'}
           </div>
-
-          {/* Controls */}
-          {frames.length > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-primary/20">
-              <button
-                onClick={() => setActiveIdx((i) => Math.max(0, i - 1))}
-                disabled={activeIdx === 0}
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-primary/20 text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              {/* Dots */}
-              <div className="flex items-center gap-1.5">
-                {frames.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setActiveIdx(i)}
-                    className={`rounded-full transition-all ${
-                      i === activeIdx
-                        ? 'w-4 h-2 bg-primary'
-                        : 'w-2 h-2 bg-primary/30 hover:bg-primary/40'
-                    }`}
-                  />
-                ))}
-              </div>
-
-              <button
-                onClick={() => setActiveIdx((i) => Math.min(frames.length - 1, i + 1))}
-                disabled={activeIdx === frames.length - 1}
-                className="w-7 h-7 flex items-center justify-center rounded-full bg-white border border-primary/20 text-primary hover:bg-primary/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
+        )}
+        {frame?.caption &&
+          <p className="text-md text-black leading-relaxed">{frame.caption}</p>
+        }
+        {caption && <p className="text-xs text-gray-400 leading-relaxed">{caption}</p>}
+        {hashtags && <p className="text-[10px] font-bold text-primary/60">{hashtags}</p>}
+      </div>
+      {/* Nav */}
+      <div className="flex items-center justify-between px-3 py-2 bg-gray-50/80 border-t border-gray-200/10">
+        <button
+          onClick={() => setActive(p => Math.max(0, p - 1))}
+          disabled={active === 0}
+          className="px-2 py-1 text-xs font-bold text-gray-700 disabled:opacity-30 hover:text-gray-900 transition-colors"
+        >← Prev</button>
+        <div className="flex gap-1">
+          {frames.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i === active ? 'bg-primary' : 'bg-primary/30 hover:bg-primary/60'
+              }`}
+            />
+          ))}
         </div>
-      )}
+        <button
+          onClick={() => setActive(p => Math.min(frames.length - 1, p + 1))}
+          disabled={active === frames.length - 1}
+          className="px-2 py-1 text-xs font-bold text-gray-700 disabled:opacity-30 hover:text-gray-900 transition-colors"
+        >Next →</button>
+      </div>
+      <div className="px-3 py-1.5 bg-gray-200 text-center">
+        <span className="text-[10px] font-bold text-gray-700">{active + 1} / {frames.length}</span>
+      </div>
     </div>
   );
 }
@@ -398,7 +355,7 @@ function CopyCard({
 
         {/* Carousel Frames */}
         {copy.isCarousel && copy.frames && copy.frames.length > 0 && (
-          <CarouselSlider frames={copy.frames} />
+          <CarouselSlider frames={copy.frames} caption={copy.caption} hashtags={copy.hashtags} />
         )}
       </div>
     </div>
