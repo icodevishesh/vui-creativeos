@@ -1,6 +1,7 @@
 'use client';
 
-import { X, Calendar as CalendarIcon, Clock, Globe, Film, FolderOpen } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Calendar as CalendarIcon, Clock, Globe, Film, FolderOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 
 export interface CalendarCopy {
@@ -36,9 +37,25 @@ const STATUS_CONFIG: Record<string, { pill: string; dot: string; label: string }
 };
 
 export function CalendarCopyPreviewDialog({ copy, onClose }: CalendarCopyPreviewDialogProps) {
+  const [frameIdx, setFrameIdx] = useState(0);
+
+  useEffect(() => {
+    setFrameIdx(0);
+  }, [copy?.id]);
+
   if (!copy) return null;
 
   const st = STATUS_CONFIG[copy.status] ?? STATUS_CONFIG.DRAFT;
+
+  const prevFrame = () => {
+    if (!copy?.frames) return;
+    setFrameIdx((i) => (i - 1 + copy.frames!.length) % copy.frames!.length);
+  };
+
+  const nextFrame = () => {
+    if (!copy?.frames) return;
+    setFrameIdx((i) => (i + 1) % copy.frames!.length);
+  };
 
   return (
     <div
@@ -121,14 +138,53 @@ export function CalendarCopyPreviewDialog({ copy, onClose }: CalendarCopyPreview
             )}
 
             {copy.mediaType === 'CAROUSEL' && copy.frames && copy.frames.length > 0 && (
-              <div className="space-y-4">
-                {copy.frames.map((f) => (
-                  <div key={f.id} className="space-y-1 pb-2 border-b border-gray-200/50 last:border-0 last:pb-0">
-                    <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Frame {f.frameNumber}</p>
-                    <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{f.caption || 'No caption'}</p>
-                    {f.hashtags && <p className="text-[10px] text-blue-600 font-medium">{f.hashtags}</p>}
-                  </div>
-                ))}
+              <div className="relative bg-white border border-gray-200 rounded-xl px-12 py-8 min-h-[180px] flex flex-col justify-center">
+                <div className="mb-3">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">
+                    Copy {copy.frames[frameIdx].frameNumber}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed text-center">
+                  {copy.frames[frameIdx].caption || <span className="italic text-gray-400">No caption</span>}
+                </p>
+                {copy.frames[frameIdx].hashtags && (
+                  <p className="text-[10px] text-blue-600 font-medium mt-3 text-center">
+                    {copy.frames[frameIdx].hashtags}
+                  </p>
+                )}
+
+                {copy.frames.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevFrame}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center shadow-sm border border-gray-200 transition-colors"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-gray-600" />
+                    </button>
+                    <button
+                      onClick={nextFrame}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-50 hover:bg-gray-100 rounded-full flex items-center justify-center shadow-sm border border-gray-200 transition-colors"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-600" />
+                    </button>
+                    
+                    {/* Dots */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {copy.frames.map((_, idx) => (
+                        <span
+                          key={idx}
+                          className={`w-1.5 h-1.5 rounded-full transition-all ${
+                            idx === frameIdx ? 'bg-primary' : 'bg-gray-300'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    {/* Count */}
+                    <div className="absolute bottom-3 right-4 text-[10px] text-gray-400 font-medium">
+                      {frameIdx + 1} / {copy.frames.length}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

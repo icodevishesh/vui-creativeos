@@ -1,6 +1,7 @@
 'use client';
 
-import { X, Calendar as CalendarIcon, Clock, User, Image as ImageIcon, MessageSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Calendar as CalendarIcon, Clock, User, Image as ImageIcon, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 
 type TaskPreviewMedia = {
@@ -29,6 +30,19 @@ export interface CalendarTaskPreview {
   assignedTo?: { id: string; name: string } | null;
   project?: { name: string } | null;
   client?: { companyName: string } | null;
+  calendarCopy?: {
+    id: string;
+    mediaType?: string | null;
+    content?: string | null;
+    caption?: string | null;
+    hashtags?: string | null;
+    frames?: Array<{
+      id: string;
+      frameNumber: number;
+      caption?: string | null;
+      hashtags?: string | null;
+    }>;
+  } | null;
 }
 
 interface TaskPreviewDialogProps {
@@ -68,6 +82,12 @@ const resolveMediaUrl = (input: string) => {
 };
 
 export function TaskPreviewDialog({ task, onClose }: TaskPreviewDialogProps) {
+  const [mediaIdx, setMediaIdx] = useState(0);
+
+  useEffect(() => {
+    setMediaIdx(0);
+  }, [task?.id]);
+
   if (!task) return null;
 
   const mediaFromUrls: TaskPreviewMedia[] = (task.mediaUrls ?? []).map((url) => {
@@ -85,6 +105,9 @@ export function TaskPreviewDialog({ task, onClose }: TaskPreviewDialogProps) {
 
   const statusStyle = STATUS_STYLES[task.status] ?? STATUS_STYLES.OPEN;
   const statusLabel = STATUS_LABELS[task.status] ?? task.status;
+
+  const prev = () => setMediaIdx(i => (i - 1 + media.length) % media.length);
+  const next = () => setMediaIdx(i => (i + 1) % media.length);
 
   return (
     <div
@@ -129,13 +152,13 @@ export function TaskPreviewDialog({ task, onClose }: TaskPreviewDialogProps) {
 
             {/* Media */}
             {media.length > 0 && (
-              <div className="px-5 pt-2 space-y-2">
-                <div className="rounded-lg overflow-hidden bg-black">
-                  {media[0].isVideo ? (
-                    <video src={media[0].url} controls className="w-full aspect-square object-contain" />
+              <div className="px-5 pt-2">
+                <div className="relative rounded-lg overflow-hidden bg-black">
+                  {media[mediaIdx].isVideo ? (
+                    <video src={media[mediaIdx].url} controls className="w-full aspect-square object-contain" />
                   ) : (
                     <img
-                      src={media[0].url}
+                      src={media[mediaIdx].url}
                       alt=""
                       className="w-full aspect-square object-contain"
                       onError={(e) => {
@@ -146,27 +169,38 @@ export function TaskPreviewDialog({ task, onClose }: TaskPreviewDialogProps) {
                       }}
                     />
                   )}
-                </div>
-                {media.length > 1 && (
-                  <div className="grid grid-cols-3 gap-2 pt-1">
-                    {media.slice(1).map((item, index) => (
-                      <div key={`${item.url}-${index}`} className="rounded-lg overflow-hidden bg-black">
-                        {item.isVideo ? (
-                          <video src={item.url} controls className="w-full aspect-square object-contain" />
-                        ) : (
-                          <img src={item.url} alt="" className="w-full aspect-square object-contain"
-                            onError={(e) => {
-                              const img = e.currentTarget;
-                              if (img.dataset.fallbackApplied === 'true') return;
-                              img.dataset.fallbackApplied = 'true';
-                              img.src = '/image.png';
-                            }}
+
+                  {/* Carousel controls */}
+                  {media.length > 1 && (
+                    <>
+                      <button
+                        onClick={prev}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow"
+                      >
+                        <ChevronLeft className="w-4 h-4 text-gray-700" />
+                      </button>
+                      <button
+                        onClick={next}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 hover:bg-white rounded-full flex items-center justify-center shadow"
+                      >
+                        <ChevronRight className="w-4 h-4 text-gray-700" />
+                      </button>
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                        {media.map((_, idx) => (
+                          <span
+                            key={idx}
+                            className={`w-1.5 h-1.5 rounded-full transition-all ${
+                              idx === mediaIdx ? 'bg-white' : 'bg-white/50'
+                            }`}
                           />
-                        )}
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <div className="absolute bottom-2 right-3 text-[10px] text-white/60 font-medium">
+                        {mediaIdx + 1} / {media.length}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 
@@ -207,15 +241,57 @@ export function TaskPreviewDialog({ task, onClose }: TaskPreviewDialogProps) {
               </div>
             )} */}
 
-            {/* Description */}
+            {/* Dynamic Content / Description */}
             <div className="px-5 space-y-1 mt-4">
               <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400">
                 <MessageSquare className="w-3 h-3" />
                 Description
               </div>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">
-                {task.description?.trim() || 'No description provided.'}
-              </p>
+
+              {task.calendarCopy ? (
+                <div className="space-y-3 mt-2">
+                  {task.calendarCopy.mediaType && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                      {task.calendarCopy.mediaType}
+                    </span>
+                  )}
+                  
+                  {task.calendarCopy.content && task.calendarCopy.mediaType !== 'CAROUSEL' && (
+                    <p className="text-md font-semibold text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      {task.calendarCopy.content}
+                    </p>
+                  )}
+
+                  {task.calendarCopy.mediaType === 'CAROUSEL' ? (
+                    <>
+                      {task.calendarCopy.frames?.[mediaIdx]?.caption && (
+                        <p className="text-sm text-gray-900 leading-relaxed whitespace-pre-wrap">
+                          {task.calendarCopy.frames[mediaIdx].caption}
+                        </p>
+                      )}
+                      {task.calendarCopy.frames?.[mediaIdx]?.hashtags && (
+                        <p className="text-xs text-blue-600 font-medium">
+                          {task.calendarCopy.frames[mediaIdx].hashtags}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    task.calendarCopy.caption && (
+                      <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap italic">
+                        {task.calendarCopy.caption}
+                      </p>
+                    )
+                  )}
+
+                  {task.calendarCopy.mediaType !== 'CAROUSEL' && task.calendarCopy.hashtags && (
+                    <p className="text-xs text-blue-600 font-medium">{task.calendarCopy.hashtags}</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed mt-1">
+                  {task.description?.trim() || 'No description provided.'}
+                </p>
+              )}
             </div>
 
             {/* Feedback */}

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -76,12 +76,20 @@ const fetchProjects = async () => {
   return res.json();
 };
 
+type MemberResponse = {
+  user: {
+    id: string;
+    name: string;
+  };
+  roles?: string[];
+};
+
 const fetchMembers = async () => {
   const res = await fetch("/api/members");
   if (!res.ok) throw new Error("Failed to fetch members");
   const data = await res.json();
   // Map to a simpler structure for the form
-  return data.map((m: any) => ({
+  return data.map((m: MemberResponse) => ({
     id: m.user.id,
     name: m.user.name,
     roles: m.roles ?? [],
@@ -158,6 +166,7 @@ export default function TasksPage() {
     }).then(res => res.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["allTasks"] });
       setIsNewModalOpen(false);
       toast.success("Task created successfully!");
     }
@@ -171,6 +180,7 @@ export default function TasksPage() {
     }).then(res => res.json()),
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["allTasks"] });
       setSelectedTask(prev => prev?.id === updated.id ? { ...prev, ...updated } : prev);
       toast.success("Task updated");
     }
@@ -180,6 +190,7 @@ export default function TasksPage() {
     mutationFn: (id: string) => fetch(`/api/tasks/${id}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["allTasks"] });
       setSelectedTask(null);
       toast.success("Task deleted");
     }
@@ -197,6 +208,7 @@ export default function TasksPage() {
         fetch(`/api/tasks/${selectedTask.id}`).then(res => res.json()).then(data => {
           setSelectedTask(data);
           queryClient.invalidateQueries({ queryKey: ["tasks"] });
+          queryClient.invalidateQueries({ queryKey: ["allTasks"] });
           toast.success("Subtask added");
         });
       }

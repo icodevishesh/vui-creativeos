@@ -185,7 +185,7 @@ function SubmitPreviewModal({
                                             <div className="grid grid-cols-1 gap-2">
                                                 {copy.frames.map((f: any) => (
                                                     <div key={f.id} className="flex items-start gap-2 px-3 py-2 bg-white border border-gray-100 rounded-lg">
-                                                        <span className="text-[10px] font-bold text-gray-400 w-8 shrink-0 pt-0.5">F{f.frameNumber}</span>
+                                                        <span className="text-[10px] font-bold text-gray-400 w-12 shrink-0 pt-0.5">Copy {f.frameNumber}</span>
                                                         <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">{f.caption}</p>
                                                     </div>
                                                 ))}
@@ -373,7 +373,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!form.content || !form.bucketId) {
+        if ((!isCarouselMode && !form.content) || !form.bucketId) {
             toast.error('Please fill in required fields');
             return;
         }
@@ -591,15 +591,17 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                         </div>
                     )}
                     
-                    <div>
-                        <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Creative Copy *</label>
-                        <textarea
-                            value={form.content}
-                            onChange={(e) => setForm({ ...form, content: e.target.value })}
-                            placeholder="The main creative copy / content for this post..."
-                            className="w-full min-h-120px p-4 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 resize-none"
-                        />
-                    </div>
+                    {!isCarouselMode && (
+                        <div>
+                            <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Creative Copy *</label>
+                            <textarea
+                                value={form.content}
+                                onChange={(e) => setForm({ ...form, content: e.target.value })}
+                                placeholder="The main creative copy / content for this post..."
+                                className="w-full min-h-120px p-4 bg-gray-50 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all text-sm text-gray-700 resize-none"
+                            />
+                        </div>
+                    )}
 
                     <div>
                         <label className="text-xs -tracking-tight font-medium text-gray-500 uppercase block mb-2">Caption *</label>
@@ -739,13 +741,15 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                 <span className="text-xs font-bold text-primary uppercase -tracking-tight">Editing Copy</span>
                                                 <button type="button" onClick={() => setEditingCopyId(null)} className="text-gray-400 hover:text-gray-600"><X size={14} /></button>
                                             </div>
-                                            <textarea
-                                                value={editForm.content}
-                                                onChange={e => setEditForm({ ...editForm, content: e.target.value })}
-                                                rows={3}
-                                                placeholder="Creative copy..."
-                                                className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-primary/20"
-                                            />
+                                            {editForm.mediaType !== 'CAROUSEL' && (
+                                                <textarea
+                                                    value={editForm.content}
+                                                    onChange={e => setEditForm({ ...editForm, content: e.target.value })}
+                                                    rows={3}
+                                                    placeholder="Creative copy..."
+                                                    className="w-full p-3 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 resize-none outline-none focus:ring-2 focus:ring-primary/20"
+                                                />
+                                            )}
                                             <textarea
                                                 value={editForm.caption}
                                                 onChange={e => setEditForm({ ...editForm, caption: e.target.value })}
@@ -918,7 +922,7 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                                 <div className="flex items-center gap-2 shrink-0">
                                                     {copy.isCarousel && (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-full border border-primary/20">
-                                                            <Layers className="w-2.5 h-2.5" /> {copy.frameCount}F
+                                                            <Layers className="w-2.5 h-2.5" /> {copy.frameCount} copy
                                                         </span>
                                                     )}
                                                     <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full uppercase">Draft</span>
@@ -929,9 +933,9 @@ export const CalendarCopiesList: React.FC<CalendarCopiesListProps> = ({
                                             {copy.isCarousel && Array.isArray(copy.frames) && copy.frames.length > 0 && (
                                                 <div className="mb-3 space-y-1">
                                                     {copy.frames.map((f: any) => (
-                                                        <div key={f.id} className="flex items-start gap-2 px-3 py-2 bg-primary/60 rounded-lg">
-                                                            <span className="text-[10px] font-bold text-primary/60 w-12 shrink-0 pt-0.5">F{f.frameNumber}</span>
-                                                            <p className="text-xs text-primary leading-relaxed line-clamp-2">{f.caption || <span className="italic text-primary/40">No caption</span>}</p>
+                                                        <div key={f.id} className="flex items-start gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+                                                            <span className="text-[10px] font-bold text-black w-12 shrink-0 pt-0.5">Copy {f.frameNumber}</span>
+                                                            <p className="text-xs text-black leading-relaxed line-clamp-2">{f.caption || <span className="italic text-gray-400">No caption</span>}</p>
                                                         </div>
                                                     ))}
                                                 </div>

@@ -37,6 +37,11 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
                         name: true,
                         copies: { select: { status: true } }
                     }
+                },
+                calendarCopy: {
+                    include: {
+                        frames: true
+                    }
                 }
             },
             orderBy: { createdAt: "desc" },

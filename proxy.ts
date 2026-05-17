@@ -16,9 +16,9 @@ export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Always redirect /sign-up to /sign-in
-  if (pathname.startsWith('/sign-up')) {
-    return NextResponse.redirect(new URL('/sign-in', req.url));
-  }
+  // if (pathname.startsWith('/sign-up')) {
+  //   return NextResponse.redirect(new URL('/sign-in', req.url));
+  // }
 
   // Always allow public paths and static assets
   if (isPublic(pathname) || pathname.startsWith('/_next') || pathname.startsWith('/uploads')) {

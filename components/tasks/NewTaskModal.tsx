@@ -100,7 +100,16 @@ export function NewTaskModal({
   const clientTeamMembers = selectedClient?.teamMembers ?? [];
   const filteredProjects = projects.filter((project) => !clientId || project.clientId === clientId);
   const availableCategories = Array.from(
-    new Set(clientTeamMembers.map((member) => member.userRole).filter(Boolean))
+    new Set([
+      ...clientTeamMembers.map((member) => member.userRole).filter(Boolean),
+      "COPYWRITER",
+      "GRAPHIC_DESIGNER",
+      "VIDEO_EDITOR",
+      "SEO_SPECIALIST",
+      "PERFORMANCE_MARKETING_SPECIALIST",
+      "EMAIL_MARKETING_SPECIALIST",
+      "WHATSAPP_MARKETING_SPECIALIST",
+    ])
   ).sort();
   const teamMemberIds = new Set(clientTeamMembers.map((member) => member.userId));
   const matchingOrgMembers = members.filter((member) =>
@@ -110,11 +119,13 @@ export function NewTaskModal({
   const assigneeGroups = [
     {
       label: selectedClient?.companyName ? `${selectedClient.companyName} Team` : 'Client Team',
-      options: clientTeamMembers.map((m) => ({
-        id: m.userId,
-        name: m.userName,
-        role: m.userRole,
-      })),
+      options: clientTeamMembers
+        .filter((m) => !taskCategory || m.userRole === taskCategory)
+        .map((m) => ({
+          id: m.userId,
+          name: m.userName,
+          role: m.userRole,
+        })),
     },
     {
       label: taskCategory ? `${formatRoleLabel(taskCategory)} Members` : 'Organization Members',
