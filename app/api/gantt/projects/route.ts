@@ -118,7 +118,7 @@ export const POST = withApiLogging(async function POST(req: Request) {
       },
     });
 
-    await notifyClientTeamMembers({
+    notifyClientTeamMembers({
       clientId,
       category: 'CLIENT_PROJECT',
       title: 'New project created',

@@ -119,7 +119,7 @@ export const PUT = withApiLogging(async function PUT(req: Request, { params }: P
       });
 
       if (project?.clientId) {
-        await notifyClientTeamMembers({
+        notifyClientTeamMembers({
           clientId: project.clientId,
           category: 'CLIENT_GANTCHART_UPDATE',
           title: 'Gantt task updated',

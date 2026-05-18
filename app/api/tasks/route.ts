@@ -130,13 +130,13 @@ export const POST = withApiLogging(async function POST(req: NextRequest) {
 
         // ── Notify assignee ──────────────────────────────────────────────
         if (assignedToId) {
-            await dispatchNotification({
+            dispatchNotification({
                 category: 'TASK_ASSIGNED',
                 recipientIds: [assignedToId],
                 title: 'New task assigned to you',
                 message: `You have been assigned the task "${title}".`,
                 link: `/tasks/${task.id}`,
-            });
+            }).catch((err) => console.error('[POST /api/tasks] dispatchNotification failed:', err));
         }
 
         return NextResponse.json(task, { status: 201 });

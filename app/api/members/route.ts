@@ -215,12 +215,14 @@ export const POST = withApiLogging(async function POST(req: Request) {
     // ── 2. In-app "Welcome" notification (async via BullMQ) ───────────────
     // Uses TASK_ASSIGNED category as a general-purpose "you have a new role"
     // notification — appears in the member's notification bell immediately.
-    await dispatchNotification({
+    dispatchNotification({
       category:     'TASK_ASSIGNED',
       recipientIds: [newUser.id],
       title:        `Welcome to CreativeOS, ${name}! 🎉`,
       message:      `Your account has been created with the role: ${roleDisplay}. Check your email for login credentials.`,
       link:         '/dashboard',
+    }).catch(error => {
+      console.error('[MEMBERS_POST] dispatchNotification failed:', error);
     });
 
     // ── Response — return plain password so admin can share it if email failed

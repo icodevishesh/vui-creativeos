@@ -104,7 +104,7 @@ export const POST = withApiLogging(async function POST(req: Request, { params }:
       },
     });
 
-    await notifyClientTeamMembers({
+    notifyClientTeamMembers({
       clientId: project.clientId,
       category: 'CLIENT_GANTCHART_CREATION',
       title: 'Gantt task added',
