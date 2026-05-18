@@ -65,12 +65,18 @@ const SIDEBAR_SECTIONS: NavSection[] = [
   {
     title: 'PROJECTS',
     items: [
+      // projects
       { name: 'Projects', href: '/projects', icon: Folder, roles: ADMIN_LIKE },
-      { name: 'Gantt Chart', href: '/gantt-chart', icon: ListTodo, roles: [...ADMIN_LIKE, 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'CREATIVE_LEAD', 'VIDEO_EDITOR', 'CLIENT', 'CLIENT_OWNER', 'SOCIAL_MEDIA_MANAGER'] },
+      // Gantt chart
+      { name: 'Gantt Chart', href: '/gantt-chart', icon: ListTodo, roles: [...ADMIN_LIKE, 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'CREATIVE_LEAD', 'VIDEO_EDITOR', 'CLIENT', 'CLIENT_OWNER', 'PERFORMANCE_MARKETING_SPECIALIST', 'EMAIL_MARKETING_SPECIALIST', 'WHATSAPP_MARKETING_SPECIALIST', 'SEO_SPECIALIST'] },
+      // Content calendar
       { name: 'Content Calendar', href: '/calendar', icon: Calendar, roles: STAFF_ROLES },
-      { name: 'Task Board', href: '/tasks', icon: ClipboardCheck  },
+      // Task board
+      { name: 'Task Board', href: '/tasks', icon: ClipboardCheck },
+      // Approvals
       { name: 'Approvals', href: '/approvals', icon: CheckCircle2, roles: [...ADMIN_LIKE, 'CLIENT', 'CLIENT_OWNER'] },
-      { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud, roles: STAFF_ROLES },
+      // Creative upload
+      { name: 'Creative Upload', href: '/creative-upload', icon: UploadCloud, roles: [...ADMIN_LIKE, 'COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'VIDEO_EDITOR', 'CREATIVE_LEAD', 'PERFORMANCE_MARKETING_SPECIALIST', 'EMAIL_MARKETING_SPECIALIST', 'WHATSAPP_MARKETING_SPECIALIST','SEO_SPECIALIST'] },
     ],
   },
   {
@@ -80,20 +86,20 @@ const SIDEBAR_SECTIONS: NavSection[] = [
         name: "Writer's Workspace",
         href: '/workspace/writer',
         icon: PenTool,
-        roles: ['COPYWRITER', 'CONTENT_WRITER', 'ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'],
+        roles: ['COPYWRITER', 'CONTENT_WRITER', 'ADMIN', 'ADMIN_OWNER'],
       },
       {
         name: "Designer's Workspace",
         href: '/workspace/designer',
         icon: Palette,
-        roles: ['GRAPHIC_DESIGNER', 'VIDEO_EDITOR', 'CREATIVE_LEAD', 'ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'],
+        roles: ['GRAPHIC_DESIGNER', 'VIDEO_EDITOR', 'CREATIVE_LEAD', 'ADMIN', 'ADMIN_OWNER'],
       },
     ],
   },
   {
     title: 'OTHERS',
     items: [
-      { name: 'File Repository', href: '/file-repository', icon: Archive, roles: STAFF_ROLES },
+      { name: 'File Repository', href: '/file-repository', icon: Archive, roles: ['COPYWRITER', 'CONTENT_WRITER', 'GRAPHIC_DESIGNER', 'VIDEO_EDITOR', 'CREATIVE_LEAD', 'PERFORMANCE_MARKETING_SPECIALIST', 'EMAIL_MARKETING_SPECIALIST', 'WHATSAPP_MARKETING_SPECIALIST','SEO_SPECIALIST', 'ADMIN', 'ADMIN_OWNER', 'TEAM_LEAD', 'ACCOUNT_MANAGER'] },
       { name: 'Notifications', href: '/notifications', icon: Bell },
       { name: 'Analytics', href: '/analytics', icon: BarChart2, roles: STAFF_ROLES },
     ],
