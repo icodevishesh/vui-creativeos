@@ -41,8 +41,14 @@ export const notificationQueue = new Queue<NotificationJobData>(
     defaultJobOptions: {
       attempts: 3,
       backoff: { type: 'exponential', delay: 2_000 },
-      removeOnComplete: { count: 200 },
-      removeOnFail: { count: 500 },
+      removeOnComplete: {
+        age: 1800, // keep completed jobs up to 30 mins (1800 seconds)
+        count: 100, // keep up to 100 completed jobs
+      },
+      removeOnFail: {
+        age: 2400, // keep failed jobs up to 40 mins (2400 seconds)
+        count: 200, // keep up to 200 failed jobs
+      },
     },
   },
 );
