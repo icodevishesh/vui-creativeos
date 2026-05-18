@@ -100,7 +100,7 @@ export const POST = withApiLogging(async function POST(
       select: { companyName: true },
     });
 
-    await notifyClientTeamMembers({
+    notifyClientTeamMembers({
       clientId: id,
       category: 'CLIENT_SCOPE_OF_WORK',
       title: 'Scope of work updated',
@@ -188,7 +188,7 @@ export const PATCH = withApiLogging(async function PATCH(
       select: { companyName: true },
     });
 
-    await notifyClientTeamMembers({
+    notifyClientTeamMembers({
       clientId: id,
       category: 'CLIENT_SCOPE_OF_WORK',
       title: 'Scope of work updated',
@@ -261,7 +261,7 @@ export const DELETE = withApiLogging(async function DELETE(
       select: { companyName: true },
     });
 
-    await notifyClientTeamMembers({
+    notifyClientTeamMembers({
       clientId: id,
       category: 'CLIENT_SCOPE_OF_WORK',
       title: 'Scope of work updated',
