@@ -18,7 +18,7 @@ const NAV_ITEMS = [
   { href: '/portal/approvals', label: 'Approvals', icon: CheckCircle2 },
   { href: '/portal/creative-uploads', label: 'Creative Uploads', icon: UploadCloud },
   { href: '/portal/notifications', label: 'Notifications', icon: Bell },
-  { href: '/portal/profile', label: 'My Profile', icon: User },
+  { href: '/portal/clients', label: 'My Profile', icon: User },
 ];
 
 type SidebarProfile = {
@@ -96,7 +96,7 @@ function PortalSidebar({
         )}
         <button
           onClick={onLogout}
-          className="w-full flex items-center p-2 bg-primary/10 gap-3 rounded-lg text-primary hover:text-red-600 hover:bg-red-50 transition-all"
+          className="w-full flex items-center p-2 bg-red-200/20 gap-3 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-100/50 transition-all"
         >
           <LogOut className="w-4 h-4 shrink-0" />
           <span className="text-sm font-semibold">Sign Out</span>

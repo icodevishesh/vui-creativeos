@@ -100,10 +100,6 @@ export const PATCH = withApiLogging(async function PATCH(
     const { id } = await params;
     const body = await req.json();
 
-    if (typeof body.isActive !== 'boolean') {
-      return NextResponse.json({ error: 'isActive must be a boolean' }, { status: 400 });
-    }
-
     const member = await prisma.organizationMember.findUnique({
       where: { id },
       select: { id: true, userId: true },
@@ -113,25 +109,74 @@ export const PATCH = withApiLogging(async function PATCH(
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 
-    if (member.userId === user.id && !body.isActive) {
-      return NextResponse.json({ error: 'You cannot mark your own member account inactive' }, { status: 400 });
+    // ── Status update ──────────────────────────────────────────────────────
+    if (typeof body.isActive === 'boolean') {
+      if (member.userId === user.id && !body.isActive) {
+        return NextResponse.json({ error: 'You cannot mark your own member account inactive' }, { status: 400 });
+      }
+
+      const updatedMember = await prisma.organizationMember.update({
+        where: { id },
+        data: { isActive: body.isActive },
+        include: {
+          user: { select: { id: true, name: true, email: true, userType: true } },
+          customRole: true,
+        },
+      });
+
+      return NextResponse.json({ ...updatedMember, roles: updatedMember.roles as MemberRole[] });
     }
 
-    const updatedMember = await prisma.organizationMember.update({
-      where: { id },
-      data: { isActive: body.isActive },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, userType: true },
-        },
-        customRole: true,
-      },
-    });
+    // ── Roles update ───────────────────────────────────────────────────────
+    if (body.roles !== undefined || body.customRoleId !== undefined) {
+      const rolesArray: MemberRole[] = [];
 
-    return NextResponse.json({
-      ...updatedMember,
-      roles: updatedMember.roles as MemberRole[],
-    });
+      if (body.roles !== undefined) {
+        if (!Array.isArray(body.roles)) {
+          return NextResponse.json({ error: 'roles must be an array' }, { status: 400 });
+        }
+        if (body.roles.length > 2) {
+          return NextResponse.json({ error: 'A member can have at most 2 roles' }, { status: 400 });
+        }
+        const validRoles = Object.values(MemberRole);
+        for (const r of body.roles) {
+          if (!validRoles.includes(r as MemberRole)) {
+            return NextResponse.json({ error: `Invalid role: ${r}` }, { status: 400 });
+          }
+          rolesArray.push(r as MemberRole);
+        }
+      }
+
+      const customRoleId: string | null =
+        body.customRoleId === undefined ? undefined :
+        body.customRoleId === '' ? null :
+        body.customRoleId;
+
+      const updateData: Record<string, unknown> = {};
+      if (body.roles !== undefined) updateData.roles = rolesArray;
+      if (customRoleId !== undefined) updateData.customRoleId = customRoleId;
+
+      const updatedMember = await prisma.organizationMember.update({
+        where: { id },
+        data: updateData,
+        include: {
+          user: { select: { id: true, name: true, email: true, userType: true } },
+          customRole: true,
+        },
+      });
+
+      // Keep user.roles in sync
+      if (body.roles !== undefined) {
+        await prisma.user.update({
+          where: { id: member.userId },
+          data: { roles: rolesArray },
+        });
+      }
+
+      return NextResponse.json({ ...updatedMember, roles: updatedMember.roles as MemberRole[] });
+    }
+
+    return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
   } catch (error) {
     console.error('[MEMBER_PATCH]', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

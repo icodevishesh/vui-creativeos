@@ -40,18 +40,36 @@ export const PATCH = withApiLogging(async function PATCH(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { onboardingNotes, requirementNotes, competitors, status, industry, socialLinks } = body;
+    const {
+      companyName,
+      contactPerson,
+      email,
+      phone,
+      industry,
+      engagementType,
+      status,
+      onboardingNotes,
+      requirementNotes,
+      competitors,
+      socialLinks,
+    } = body;
 
     const client = await prisma.clientProfile.update({
       where: { id },
       data: {
-        onboardingNotes,
-        requirementNotes,
-        competitors,
-        status,
-        industry,
-        socialLinks,
+        ...(companyName    !== undefined && { companyName }),
+        ...(contactPerson  !== undefined && { contactPerson }),
+        ...(email          !== undefined && { email }),
+        ...(phone          !== undefined && { phone }),
+        ...(industry       !== undefined && { industry }),
+        ...(engagementType !== undefined && { engagementType }),
+        ...(status         !== undefined && { status }),
+        ...(onboardingNotes  !== undefined && { onboardingNotes }),
+        ...(requirementNotes !== undefined && { requirementNotes }),
+        ...(competitors    !== undefined && { competitors }),
+        ...(socialLinks    !== undefined && { socialLinks }),
       },
+      include: { services: true },
     });
 
     return NextResponse.json(client);

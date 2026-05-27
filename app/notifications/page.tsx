@@ -303,12 +303,12 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+    <div className="max-w-7xl mx-auto py-2 px-4 space-y-6">
 
       {/* ── Page header ───────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Notifications</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Notifications</h1>
           <p className="text-sm text-gray-400 mt-0.5">
             {unread > 0 ? `${unread} unread message${unread !== 1 ? 's' : ''}` : 'You\'re all caught up'}
           </p>

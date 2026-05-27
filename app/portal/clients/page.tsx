@@ -9,15 +9,9 @@ import { useAuth } from '@/context/AuthContext';
 export default function ClientsPage() {
   const { user } = useAuth();
 
-  const roles = user?.roles ?? [];
-
   const canCreate =
     user?.userType === 'ADMIN_OWNER' ||
-    roles.includes('ADMIN') ||
-    roles.includes('TEAM_LEAD') ||
-    roles.includes('SALESPERSON') ||
-    // Account manager can only onboard if they also hold the salesperson role
-    (roles.includes('ACCOUNT_MANAGER') && roles.includes('SALESPERSON'));
+    (user?.roles ?? []).some((r) => ['ADMIN', 'ACCOUNT_MANAGER', 'TEAM_LEAD'].includes(r));
 
   return (
     <div className="space-y-6 tracking-tight">

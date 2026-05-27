@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'react-hot-toast';
 import {
   Search,
   Folder,
@@ -12,12 +13,14 @@ import {
   FileText,
   File as FileIcon,
   Download,
+  Trash2,
   ChevronRight,
   ArrowLeft,
   Loader2,
   LayoutGrid,
   List,
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -88,6 +91,36 @@ export default function FileRepositoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'name' | 'size'>('date');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const canDelete =
+    user?.userType === 'ADMIN_OWNER' ||
+    (user?.roles ?? []).some((r) =>
+      ['ADMIN', 'ACCOUNT_MANAGER'].includes(r)
+    );
+
+  const deleteMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      const res = await fetch(`/api/repository/${fileId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Failed to delete file' }));
+        throw new Error(err.error || 'Failed to delete file');
+      }
+    },
+    onSuccess: () => {
+      toast.success('File deleted');
+      queryClient.invalidateQueries({ queryKey: ['repository-root'] });
+      queryClient.invalidateQueries({ queryKey: ['repository-client', selectedClient?.id] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const handleDelete = (fileId: string, fileName: string) => {
+    if (!window.confirm(`Delete "${fileName}"? This cannot be undone.`)) return;
+    deleteMutation.mutate(fileId);
+  };
 
   const { data: rootData, isLoading: rootLoading, error: rootError } = useQuery({
     queryKey: ['repository-root'],
@@ -248,18 +281,19 @@ export default function FileRepositoryPage() {
         ) : viewMode === 'list' ? (
           <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
             {/* Header row */}
-            <div className="grid grid-cols-[minmax(0,1fr)_80px_100px_140px_44px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
+            <div className="grid grid-cols-[minmax(0,1fr)_80px_100px_140px_44px_44px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Name</span>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Type</span>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Size</span>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Uploaded</span>
+              <span />
               <span />
             </div>
 
             {processedFiles.map((file, i) => (
               <div
                 key={file.id}
-                className={`group grid grid-cols-[minmax(0,1fr)_80px_100px_140px_44px] gap-4 px-5 py-3.5 items-center hover:bg-primary/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
+                className={`group grid grid-cols-[minmax(0,1fr)_80px_100px_140px_44px_44px] gap-4 px-5 py-3.5 items-center hover:bg-gray-200/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${fileIconBg(file.mimeType)}`}>
@@ -279,10 +313,20 @@ export default function FileRepositoryPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Download"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-900 hover:text-blue-600 hover:bg-blue-600/10 transition-all opacity-0 group-hover:opacity-100"
                 >
                   <Download className="w-4 h-4" />
                 </a>
+                {canDelete ? (
+                  <button
+                    onClick={() => handleDelete(file.id, file.name)}
+                    disabled={deleteMutation.isPending}
+                    title="Delete file"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-700 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-40"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                ) : <span />}
               </div>
             ))}
           </div>
@@ -290,23 +334,37 @@ export default function FileRepositoryPage() {
           // Grid view
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {processedFiles.map((file) => (
-              <a
+              <div
                 key={file.id}
-                href={file.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-3 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/20 hover:-translate-y-0.5 transition-all text-center"
+                className="group relative bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-3 hover:shadow-xl hover:shadow-primary/10 hover:border-primary/20 hover:-translate-y-0.5 transition-all text-center"
               >
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${fileIconBg(file.mimeType)} group-hover:scale-105 transition-transform`}>
-                  <FileTypeIcon mimeType={file.mimeType} className="w-7 h-7" />
-                </div>
-                <div className="w-full min-w-0">
-                  <p className="text-xs font-semibold text-gray-800 truncate" title={file.name}>
-                    {file.name}
-                  </p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{formatFileSize(file.size)}</p>
-                </div>
-              </a>
+                <a
+                  href={file.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center gap-3 w-full"
+                >
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${fileIconBg(file.mimeType)} group-hover:scale-105 transition-transform`}>
+                    <FileTypeIcon mimeType={file.mimeType} className="w-7 h-7" />
+                  </div>
+                  <div className="w-full min-w-0">
+                    <p className="text-xs font-semibold text-gray-800 truncate" title={file.name}>
+                      {file.name}
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{formatFileSize(file.size)}</p>
+                  </div>
+                </a>
+                {canDelete && (
+                  <button
+                    onClick={() => handleDelete(file.id, file.name)}
+                    disabled={deleteMutation.isPending}
+                    title="Delete file"
+                    className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-40"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -379,19 +437,20 @@ export default function FileRepositoryPage() {
           </h2>
 
           <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-            <div className="grid grid-cols-[minmax(0,1fr)_160px_80px_100px_140px_44px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
+            <div className="grid grid-cols-[minmax(0,1fr)_160px_80px_100px_140px_44px_44px] gap-4 px-5 py-3 bg-gray-50 border-b border-gray-100">
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Name</span>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Client</span>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Type</span>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Size</span>
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Uploaded</span>
               <span />
+              <span />
             </div>
 
             {rootData!.recentFiles.map((file, i) => (
               <div
                 key={file.id}
-                className={`group grid grid-cols-[minmax(0,1fr)_160px_80px_100px_140px_44px] gap-4 px-5 py-3.5 items-center hover:bg-primary/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
+                className={`group grid grid-cols-[minmax(0,1fr)_160px_80px_100px_140px_44px_44px] gap-4 px-5 py-3.5 items-center hover:bg-primary/30 transition-colors ${i !== 0 ? 'border-t border-gray-100' : ''}`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${fileIconBg(file.mimeType)}`}>
@@ -423,10 +482,20 @@ export default function FileRepositoryPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Download"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-700 hover:text-blue-500 hover:bg-blue-500/10 transition-all opacity-0 group-hover:opacity-100"
                 >
                   <Download className="w-4 h-4" />
                 </a>
+                {canDelete ? (
+                  <button
+                    onClick={() => handleDelete(file.id, file.name)}
+                    disabled={deleteMutation.isPending}
+                    title="Delete file"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-700 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 disabled:opacity-40"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                ) : <span />}
               </div>
             ))}
           </div>

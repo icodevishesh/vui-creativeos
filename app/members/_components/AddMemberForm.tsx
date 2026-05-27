@@ -170,9 +170,9 @@ export function AddMemberForm() {
               {formData.selectedRoles.map((role) => (
                 <span
                   key={role}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-bold"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-semibold"
                 >
-                  {role.replace(/_/g, ' ')}
+                  {role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}
                   <button
                     type="button"
                     onClick={() => toggleRole(role)}
@@ -195,7 +195,8 @@ export function AddMemberForm() {
                   key={role}
                   type="button"
                   onClick={() => !isDisabled && toggleRole(role)}
-                  className={`flex items-center justify-between px-3 py-2 rounded-lg border-2 text-xs font-medium transition-all ${
+                  style={{ fontSize: '13px' }}
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg border font-medium transition-all ${
                     isSelected
                       ? 'border-primary bg-primary/10 text-primary'
                       : isDisabled
@@ -203,7 +204,7 @@ export function AddMemberForm() {
                         : 'border-gray-100 bg-white text-gray-700 hover:border-primary/30'
                   }`}
                 >
-                  {role.replace(/_/g, ' ')}
+                  {role.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}
                   {isSelected && (
                     <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
                       <Check className="w-2.5 h-2.5 text-white" />
@@ -239,7 +240,7 @@ export function AddMemberForm() {
         <button
           type="submit"
           disabled={mutation.isPending || isLoadingRoles}
-          className="w-full sm:w-64 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary shadow-lg shadow-primary/20 transition-all disabled:opacity-70"
+          className="w-full sm:w-64 flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/80 shadow-lg shadow-primary/20 transition-all disabled:opacity-70"
         >
           {mutation.isPending ? (
             <>
@@ -247,7 +248,7 @@ export function AddMemberForm() {
               Onboarding...
             </>
           ) : (
-            'Generate & Onboard'
+            'Onboard'
           )}
         </button>
       </div>

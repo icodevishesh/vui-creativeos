@@ -33,7 +33,8 @@ function generatePassword(): string {
   return pwd.sort(() => Math.random() - 0.5).join('');
 }
 
-export const POST = withApiLogging(async function POST(
+// GET /api/members/[id]/reset-password — fetch current password
+export const GET = withApiLogging(async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -47,6 +48,56 @@ export const POST = withApiLogging(async function POST(
 
     const member = await prisma.organizationMember.findUnique({
       where: { id },
+      select: {
+        id: true,
+        user: { select: { email: true, name: true, password: true } },
+      },
+    });
+
+    if (!member) {
+      return NextResponse.json({ error: 'Member not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      email: member.user?.email,
+      name: member.user?.name,
+      password: member.user?.password ?? null,
+    });
+  } catch (error) {
+    console.error('[MEMBER_GET_PASSWORD]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+});
+
+export const POST = withApiLogging(async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const admin = await requireAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Accept an optional manual password from the request body
+    let manualPassword: string | undefined;
+    try {
+      const body = await req.json();
+      if (typeof body?.password === 'string' && body.password.trim().length > 0) {
+        manualPassword = body.password.trim();
+      }
+    } catch {
+      // No body or non-JSON body — fall through to auto-generate
+    }
+
+    if (manualPassword !== undefined && manualPassword.length < 8) {
+      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
+    }
+
+    const member = await prisma.organizationMember.findUnique({
+      where: { id },
       select: { id: true, userId: true, user: { select: { id: true, email: true, name: true } } },
     });
 
@@ -54,7 +105,7 @@ export const POST = withApiLogging(async function POST(
       return NextResponse.json({ error: 'Member not found' }, { status: 404 });
     }
 
-    const newPassword = generatePassword();
+    const newPassword = manualPassword ?? generatePassword();
 
     await prisma.user.update({
       where: { id: member.userId },
