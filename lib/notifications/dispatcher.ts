@@ -53,13 +53,17 @@ async function getAdminOwnerRecipientIds(): Promise<string[]> {
  * Retried up to 3 times with exponential back-off by BullMQ if the worker fails.
  */
 export async function dispatchNotification(payload: DispatchPayload): Promise<void> {
-  const adminOwnerIds = await getAdminOwnerRecipientIds();
-  const recipientIds = [...new Set([...payload.recipientIds, ...adminOwnerIds])];
+  try {
+    const adminOwnerIds = await getAdminOwnerRecipientIds();
+    const recipientIds = [...new Set([...payload.recipientIds, ...adminOwnerIds])];
 
-  if (recipientIds.length === 0) return;
+    if (recipientIds.length === 0) return;
 
-  await notificationQueue.add('send', {
-    ...payload,
-    recipientIds,
-  } as NotificationJobData);
+    await notificationQueue.add('send', {
+      ...payload,
+      recipientIds,
+    } as NotificationJobData);
+  } catch (err: any) {
+    console.warn(`[dispatchNotification] Failed to enqueue notification: ${err.message || err}`);
+  }
 }

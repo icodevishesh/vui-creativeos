@@ -11,13 +11,49 @@ import IORedis from 'ioredis';
 
 // ── Redis connection ─────────────────────────────────────────────────────────
 // Upstash requires maxRetriesPerRequest=null so BullMQ's blocking commands work
+let hasLoggedRedisError = false;
+
 export const redisConnection = new IORedis(process.env.REDIS_URL!, {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
+  enableOfflineQueue: false, // Don't queue commands when offline to prevent API hanging
   // Upstash requires TLS — pass an empty tls object so ioredis performs
   // the TLS handshake even when the URL scheme is rediss://
   tls: {},
+  retryStrategy(times) {
+    // Retry every 10 seconds in development instead of spamming immediately
+    return Math.min(times * 1000, 10000);
+  },
 });
+
+// Override duplicate method to automatically attach error handler to any duplicated connections
+const originalDuplicate = redisConnection.duplicate.bind(redisConnection);
+redisConnection.duplicate = function(override?: any) {
+  const dup = originalDuplicate(override);
+  dup.on('error', (err: any) => {
+    if (!hasLoggedRedisError) {
+      console.warn('[Redis] Connection failed (notifications will be skipped in development):', err.message || err);
+      hasLoggedRedisError = true;
+    }
+  });
+  dup.on('connect', () => {
+    hasLoggedRedisError = false;
+  });
+  return dup;
+};
+
+redisConnection.on('error', (err: any) => {
+  if (!hasLoggedRedisError) {
+    console.warn('[Redis] Connection failed (notifications will be skipped in development):', err.message || err);
+    hasLoggedRedisError = true;
+  }
+});
+
+redisConnection.on('connect', () => {
+  console.info('[Redis] Connected successfully');
+  hasLoggedRedisError = false;
+});
+
 
 // ── Job payload ──────────────────────────────────────────────────────────────
 export interface NotificationJobData {
@@ -52,3 +88,7 @@ export const notificationQueue = new Queue<NotificationJobData>(
     },
   },
 );
+
+notificationQueue.on('error', (err: any) => {
+  // Silent or log cleanly to prevent unhandled queue error crashes/logs when offline
+});

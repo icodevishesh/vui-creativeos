@@ -1,16 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, getDay } from 'date-fns';
-import { TaskCard } from './TaskCard';
-import { TaskStatus } from '@prisma/client';
 import { CalendarCopyPreviewDialog, type CalendarCopy } from './CalendarCopyPreviewDialog';
-import { TaskPreviewDialog, type CalendarTaskPreview } from './TaskPreviewDialog';
 
 interface Task {
   id: string;
   title: string;
   description?: string;
-  status: TaskStatus;
+  // status: TaskStatus;
   priority?: string;
   startDate: Date | null;
   endDate: Date | null;
@@ -43,9 +40,9 @@ interface Project {
 }
 
 interface CalendarProps {
-  tasks: Task[];
-  clients: Client[];
-  projects: Project[];
+  tasks?: Task[];
+  clients?: Client[];
+  projects?: Project[];
   copies?: CalendarCopy[];
 }
 
@@ -64,16 +61,10 @@ const COPY_STATUS_DOT: Record<string, string> = {
 };
 
 export const Calendar: React.FC<CalendarProps> = ({
-  tasks,
-  clients,
-  projects,
   copies = [],
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [selectedCopy, setSelectedCopy] = useState<CalendarCopy | null>(null);
-  const [selectedTask, setSelectedTask] = useState<CalendarTaskPreview | null>(null);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -84,25 +75,6 @@ export const Calendar: React.FC<CalendarProps> = ({
     const paddingDays = Array(startDayOfWeek).fill(null);
     return [...paddingDays, ...monthDays];
   }, [monthStart, monthDays]);
-
-  const filteredProjects = useMemo(() => {
-    if (!selectedClientId) return projects;
-    return projects.filter(project => project.clientId === selectedClientId);
-  }, [projects, selectedClientId]);
-
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
-      if (selectedClientId && task.clientId !== selectedClientId) return false;
-      if (selectedProjectId && task.projectId !== selectedProjectId) return false;
-      return true;
-    });
-  }, [tasks, selectedClientId, selectedProjectId]);
-
-  const getTasksForDay = (day: Date) => {
-    return filteredTasks.filter(task =>
-      task.startDate && isSameDay(new Date(task.startDate), day)
-    );
-  };
 
   const getCopiesForDay = (day: Date) => {
     return copies.filter(copy => {
@@ -117,11 +89,6 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   const handleNextMonth = () => {
     setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1));
-  };
-
-  const handleClientChange = (clientId: string) => {
-    setSelectedClientId(clientId);
-    setSelectedProjectId('');
   };
 
   return (
@@ -194,7 +161,6 @@ export const Calendar: React.FC<CalendarProps> = ({
               );
             }
 
-            const dayTasks = getTasksForDay(day);
             const dayCopies = getCopiesForDay(day);
             const isCurrentMonth = isSameMonth(day, currentDate);
             const isToday = isSameDay(day, new Date());
@@ -217,13 +183,6 @@ export const Calendar: React.FC<CalendarProps> = ({
                   >
                     {format(day, 'd')}
                   </span>
-                </div>
-
-                {/* Tasks */}
-                <div className="space-y-1">
-                  {dayTasks.map(task => (
-                    <TaskCard key={task.id} task={task} onClick={() => setSelectedTask(task)} />
-                  ))}
                 </div>
 
                 {/* Calendar Copies */}
@@ -253,7 +212,6 @@ export const Calendar: React.FC<CalendarProps> = ({
         </div>
       </div>
       <CalendarCopyPreviewDialog copy={selectedCopy} onClose={() => setSelectedCopy(null)} />
-      <TaskPreviewDialog task={selectedTask} onClose={() => setSelectedTask(null)} />
     </div>
   );
 };
