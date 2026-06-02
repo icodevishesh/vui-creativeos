@@ -67,20 +67,20 @@ export interface ApprovalTaskPreview {
 }
 
 const PLATFORM_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  Instagram: { bg: 'bg-pink-50',  text: 'text-pink-600',  border: 'border-pink-200' },
-  Facebook:  { bg: 'bg-blue-50',  text: 'text-blue-600',  border: 'border-blue-200' },
-  LinkedIn:  { bg: 'bg-sky-50',   text: 'text-sky-700',   border: 'border-sky-200'  },
-  Twitter:   { bg: 'bg-gray-100', text: 'text-gray-700',  border: 'border-gray-300' },
-  YouTube:   { bg: 'bg-red-50',   text: 'text-red-600',   border: 'border-red-200'  },
-  Pinterest: { bg: 'bg-rose-50',  text: 'text-rose-600',  border: 'border-rose-200' },
+  Instagram: { bg: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200' },
+  Facebook: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' },
+  LinkedIn: { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
+  Twitter: { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-300' },
+  YouTube: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
+  Pinterest: { bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-200' },
 };
 
 const MEDIA_TYPE_STYLE: Record<string, string> = {
-  IMAGE:    'bg-violet-50 text-violet-700 border-violet-200',
-  VIDEO:    'bg-blue-50 text-blue-700 border-blue-200',
-  REEL:     'bg-pink-50 text-pink-700 border-pink-200',
+  IMAGE: 'bg-violet-50 text-violet-700 border-violet-200',
+  VIDEO: 'bg-blue-50 text-blue-700 border-blue-200',
+  REEL: 'bg-pink-50 text-pink-700 border-pink-200',
   CAROUSEL: 'bg-amber-50 text-amber-700 border-amber-200',
-  TEXT:     'bg-gray-100 text-gray-600 border-gray-200',
+  TEXT: 'bg-gray-100 text-gray-600 border-gray-200',
 };
 
 const isImageFile = (mime?: string) => !!mime && mime.startsWith('image/');
@@ -127,13 +127,13 @@ export function DesignPreviewModal({
   const isCarousel = copy?.isCarousel && copy.frames && copy.frames.length > 0;
   const media: Array<{ url: string; name: string; mime: string }> = isCarousel
     ? (copy!.frames ?? []).map((f) => ({
-        url: f.creativeUrl || '',
-        name: `Frame ${f.frameNumber}`,
-        mime: 'image/png',
-      }))
+      url: f.creativeUrl || '',
+      name: `Frame ${f.frameNumber}`,
+      mime: 'image/png',
+    }))
     : (task.attachments ?? [])
-        .filter((a) => isImageFile(a.mimeType) || isVideoFile(a.mimeType))
-        .map((a) => ({ url: a.fileUrl, name: a.fileName, mime: a.mimeType }));
+      .filter((a) => isImageFile(a.mimeType) || isVideoFile(a.mimeType))
+      .map((a) => ({ url: a.fileUrl, name: a.fileName, mime: a.mimeType }));
 
   const current = media[mediaIdx] ?? null;
   const safeIdx = Math.min(mediaIdx, Math.max(0, media.length - 1));
@@ -146,8 +146,8 @@ export function DesignPreviewModal({
   const platforms = copy?.platforms?.length
     ? copy.platforms
     : copy?.platform
-    ? [copy.platform]
-    : [];
+      ? [copy.platform]
+      : [];
 
   const publishLabel = [
     copy?.publishDate ? format(new Date(copy.publishDate), 'EEE, MMM d, yyyy') : null,
@@ -422,9 +422,8 @@ export function DesignPreviewModal({
                         <button
                           key={idx}
                           onClick={() => setMediaIdx(idx)}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${
-                            idx === mediaIdx ? 'bg-white' : 'bg-white/30 hover:bg-white/60'
-                          }`}
+                          className={`w-1.5 h-1.5 rounded-full transition-all ${idx === mediaIdx ? 'bg-white' : 'bg-white/30 hover:bg-white/60'
+                            }`}
                         />
                       ))}
                     </div>
