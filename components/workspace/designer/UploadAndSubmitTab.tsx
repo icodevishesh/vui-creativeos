@@ -78,6 +78,18 @@ const PLATFORM_STYLES: Record<string, { pill: string; zone: string; header: stri
     header:     'text-primary bg-primary/10 border-primary/20',
     activeType: 'bg-primary text-white border-primary',
   },
+  YouTube: {
+    pill:       'bg-red-50 text-red-600 border-red-100',
+    zone:       'border-red-200 hover:border-red-400 hover:bg-red-50/30',
+    header:     'text-red-600 bg-red-50 border-red-100',
+    activeType: 'bg-red-600 text-white border-red-600',
+  },
+  Pinterest: {
+    pill:       'bg-rose-50 text-rose-600 border-rose-100',
+    zone:       'border-rose-200 hover:border-rose-400 hover:bg-rose-50/30',
+    header:     'text-rose-600 bg-rose-50 border-rose-100',
+    activeType: 'bg-rose-600 text-white border-rose-600',
+  },
 };
 
 const defaultStyle = {
@@ -87,7 +99,7 @@ const defaultStyle = {
   activeType: 'bg-gray-600 text-white border-gray-600',
 };
 
-// Types available per platform
+// Types available per platform — any unlisted platform falls back to [{Post}]
 const PLATFORM_TYPES: Record<string, { label: string; value: string }[]> = {
   Instagram: [
     { label: 'Post',  value: 'post'  },
@@ -98,8 +110,10 @@ const PLATFORM_TYPES: Record<string, { label: string; value: string }[]> = {
     { label: 'Post',  value: 'post'  },
     { label: 'Story', value: 'story' },
   ],
-  Twitter:  [{ label: 'Post', value: 'post' }],
-  LinkedIn: [{ label: 'Post', value: 'post' }],
+  Twitter:   [{ label: 'Post',  value: 'post'  }],
+  LinkedIn:  [{ label: 'Post',  value: 'post'  }],
+  YouTube:   [{ label: 'Short', value: 'short' }, { label: 'Video', value: 'video' }],
+  Pinterest: [{ label: 'Pin',   value: 'pin'   }],
 };
 
 function getPlatformStyle(platform: string) {
@@ -280,7 +294,7 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
     : [];
 
   const addFiles = (platform: string, newFiles: File[]) => {
-    const types = PLATFORM_TYPES[platform] ?? [];
+    const types = PLATFORM_TYPES[platform] ?? [{ label: 'Post', value: 'post' }];
     const defaultType = types.length === 1 ? types[0].value : '';
     const items: FileItem[] = newFiles.map(file => ({ file, type: defaultType }));
     setFilesByPlatform(prev => ({

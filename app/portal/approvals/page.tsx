@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   CheckCircle2, XCircle, MessageSquare, Clock, X, Send, Eye,
-  FileText, Download, Image as ImageIcon, Hash, Globe, Calendar,
-  Film, Check, RefreshCw, BadgeCheck, Building2, BookOpen, User,
+  FileText, Image as ImageIcon,
+  Check, RefreshCw, BadgeCheck, Building2, BookOpen, User,
   ChevronRight, ChevronDown,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -203,141 +203,6 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
           {badge.label}
         </span>
         <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary/60 transition-colors" />
-      </div>
-    </div>
-  );
-}
-
-// ─── Copies Preview Modal ────────────────────────────────────────────────────
-
-function CopiesPreviewModal({ isOpen, onClose, task }: { isOpen: boolean; onClose: () => void; task: ApprovalTask | null }) {
-  const [activeIdx, setActiveIdx] = useState(0);
-  if (!isOpen || !task || !task.calendar) return null;
-  const { calendar } = task;
-  const copies = calendar.copies ?? [];
-  const activeCopy = copies[activeIdx];
-
-  const platformColor: Record<string, string> = {
-    Instagram: 'bg-pink-50 text-pink-600 border-pink-100',
-    LinkedIn: 'bg-blue-50 text-blue-700 border-blue-100',
-    Twitter: 'bg-sky-50 text-sky-600 border-sky-100',
-    Facebook: 'bg-primary/10 text-primary border-primary/20',
-  };
-
-  return (
-    <div className="fixed inset-0 z-70 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-950/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
-          <div>
-            <h2 className="text-sm font-bold text-gray-900">{task.title}</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{copies.length} {copies.length === 1 ? 'copy' : 'copies'}</p>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="flex flex-1 min-h-0 overflow-hidden">
-          <div className="w-64 shrink-0 border-r border-gray-100 overflow-y-auto bg-gray-50/40 p-3 space-y-1.5">
-            {calendar.objective && (
-              <div className="mb-3 px-3 py-2.5 bg-primary/10 border border-primary/20 rounded-lg">
-                <p className="text-[9px] font-bold text-primary/60 uppercase tracking-widest mb-1">Objective</p>
-                <p className="text-[11px] text-primary leading-relaxed">{calendar.objective}</p>
-              </div>
-            )}
-            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-1 pb-1">Copies ({copies.length})</p>
-            {copies.map((copy, idx) => (
-              <button key={copy.id} onClick={() => setActiveIdx(idx)}
-                className={`w-full text-left px-3 py-2.5 rounded-lg border transition-all ${activeIdx === idx ? 'bg-white border-primary/30 shadow-sm' : 'border-transparent hover:bg-white hover:border-gray-100'}`}>
-                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                  {copy.mediaType && <span className="text-[9px] font-bold bg-violet-50 text-violet-600 border border-violet-100 px-1.5 py-0.5 rounded-full">{copy.mediaType}</span>}
-                </div>
-                <p className="text-[11px] text-gray-700 font-medium line-clamp-2 leading-snug">{copy.content}</p>
-                {copy.publishDate && (
-                  <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
-                    <Calendar className="w-2.5 h-2.5" />
-                    {new Date(copy.publishDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    {copy.publishTime && ` · ${copy.publishTime}`}
-                  </p>
-                )}
-              </button>
-            ))}
-          </div>
-          {activeCopy ? (
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              <div className="flex flex-wrap items-center gap-2">
-                {activeCopy.bucket && <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 px-2.5 py-1 rounded-full"><Hash className="w-3 h-3" />{activeCopy.bucket.name}</span>}
-                {activeCopy.publishDate && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-white text-gray-500 border border-gray-200 px-2.5 py-1 rounded-full">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(activeCopy.publishDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    {activeCopy.publishTime && ` · ${activeCopy.publishTime}`}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-4">
-                {activeCopy.mediaType !== 'CAROUSEL' && (
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Creative Copy</p>
-                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
-                      <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{activeCopy.content}</p>
-                    </div>
-                  </div>
-                )}
-
-                {activeCopy.mediaType === 'CAROUSEL' && activeCopy.frames && activeCopy.frames.length > 0 && (
-                  <div className="space-y-3">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Carousel Frames</p>
-                    <div className="space-y-3 pb-3">
-                      {activeCopy.frames.map((f) => (
-                        <div key={f.id} className="bg-gray-50 border border-gray-100 rounded-lg p-4 space-y-1">
-                          <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Frame {f.frameNumber}</p>
-                          <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{f.caption || 'No caption'}</p>
-                          {f.hashtags && <p className="text-[10px] text-blue-600 font-medium">{f.hashtags}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {activeCopy.mediaType !== 'CAROUSEL' && activeCopy.caption && (
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Caption</p>
-                    <div className="bg-gray-50 border border-gray-100 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 leading-relaxed italic">{activeCopy.caption}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              {activeCopy.hashtags && activeCopy.mediaType !== 'CAROUSEL' && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Hashtags</p>
-                  <p className="text-sm font-semibold text-primary wrap-break-word">{activeCopy.hashtags}</p>
-                </div>
-              )}
-              {activeCopy.platforms && activeCopy.platforms.length > 0 && (
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Platforms</p>
-                  <p className="text-sm font-semibold text-primary wrap-break-word">{activeCopy.platforms.join(", ")}</p>
-                </div>
-              )}
-              {activeCopy.mediaType &&
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Media Type</p>
-                  <p className="text-sm font-semibold text-primary wrap-break-word">{activeCopy.mediaType}</p>
-                </div>}
-
-              {copies.length > 1 && (
-                <div className="flex items-center gap-2 pt-2">
-                  {copies.map((_, i) => (
-                    <button key={i} onClick={() => setActiveIdx(i)} className={`w-2 h-2 rounded-full transition-all ${i === activeIdx ? 'bg-primary scale-125' : 'bg-gray-200 hover:bg-gray-300'}`} />
-                  ))}
-                  <span className="ml-2 text-xs text-gray-400">{activeIdx + 1} / {copies.length}</span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-gray-400"><p className="text-sm">No copies found.</p></div>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -568,7 +433,7 @@ export default function PortalApprovalsPage() {
     isOpen: false, actionType: 'reject', task: null,
   });
   const [previewTask, setPreviewTask] = useState<ApprovalTask | null>(null);
-  const [copiesPreviewTask, setCopiesPreviewTask] = useState<ApprovalTask | null>(null);
+  const [copiesPreviewInfo, setCopiesPreviewInfo] = useState<{ task: ApprovalTask; idx: number } | null>(null);
 
   const { data: tasks = [], isLoading, error } = useQuery<ApprovalTask[]>({
     queryKey: ['portal-approvals'],
@@ -708,7 +573,7 @@ export default function PortalApprovalsPage() {
                     onReject={() => setModalState({ isOpen: true, actionType: 'reject', task })}
                     onFeedback={() => setModalState({ isOpen: true, actionType: 'feedback', task })}
                     onPreview={() => setPreviewTask(task)}
-                    onPreviewCopies={() => setCopiesPreviewTask(task)}
+                    onPreviewCopies={() => setCopiesPreviewInfo({ task, idx: 0 })}
                     isActioning={actionMutation.isPending}
                   />
                 ))}
@@ -781,7 +646,27 @@ export default function PortalApprovalsPage() {
         isLoading={actionMutation.isPending}
       />
       <DesignPreviewModal isOpen={!!previewTask} onClose={() => setPreviewTask(null)} task={previewTask} />
-      <CopiesPreviewModal isOpen={!!copiesPreviewTask} onClose={() => setCopiesPreviewTask(null)} task={copiesPreviewTask} />
+      {copiesPreviewInfo && (() => {
+        const { task: cpTask, idx } = copiesPreviewInfo;
+        const copies = cpTask.calendar?.copies ?? [];
+        const copy = copies[idx];
+        const copyPreview = copy ? {
+          id: copy.id,
+          title: `${cpTask.calendar?.name ?? cpTask.title} · ${idx + 1}/${copies.length}`,
+          client: cpTask.client,
+          calendarCopy: copy,
+          attachments: null,
+        } : null;
+        return (
+          <DesignPreviewModal
+            isOpen
+            onClose={() => setCopiesPreviewInfo(null)}
+            task={copyPreview}
+            onPrev={idx > 0 ? () => setCopiesPreviewInfo({ task: cpTask, idx: idx - 1 }) : undefined}
+            onNext={idx < copies.length - 1 ? () => setCopiesPreviewInfo({ task: cpTask, idx: idx + 1 }) : undefined}
+          />
+        );
+      })()}
     </div>
   );
 }

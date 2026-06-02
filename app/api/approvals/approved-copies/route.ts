@@ -115,6 +115,17 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
             client: { select: { id: true, companyName: true, organizationId: true } },
           },
         },
+        frames: {
+          select: {
+            id: true,
+            frameNumber: true,
+            caption: true,
+            hashtags: true,
+            creativeUrl: true,
+            creativeStatus: true,
+          },
+          orderBy: { frameNumber: "asc" },
+        },
         designerTasks: {
           select: {
             id: true,
@@ -166,7 +177,11 @@ export const GET = withApiLogging(async function GET(req: NextRequest) {
         publishTime: copy.publishTime,
         approvedBy: copy.approvedBy,
         approvedDate: copy.approvedDate,
+        approverRole: (copy as any).approverRole ?? null,
         referenceUrl: copy.referenceUrl,
+        isCarousel: (copy as any).isCarousel ?? false,
+        frameCount: (copy as any).frameCount ?? null,
+        frames: (copy as any).frames ?? [],
         calendarId: copy.calendarId,
         calendarName: copy.calendar?.name ?? null,
         bucket: copy.bucket,

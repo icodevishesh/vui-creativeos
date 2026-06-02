@@ -118,7 +118,7 @@ export function OverviewTab({ client, canEdit }: OverviewTabProps) {
   const CARDS = [
     {
       id: 'onboardingNotes',
-      title: 'Onboarding Notes',
+      title: `About ${client.companyName}`,
       content: client.onboardingNotes,
       icon: Sparkles,
       color: 'text-amber-500',

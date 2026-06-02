@@ -45,17 +45,12 @@ export async function saveFileToClientFolder(params: {
 
   const uploadDir = await ensureClientFolder(clientId, companyName);
 
-  const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const uniqueFileName = `${Date.now()}-${safeFileName}`;
+  const baseName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  const uniqueFileName = `${Date.now()}-${baseName}`;
   const filePath = path.join(uploadDir, uniqueFileName);
 
-  // Stream file to disk in chunks
-  const reader = file.stream().getReader();
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    await fs.appendFile(filePath, Buffer.from(value));
-  }
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await fs.writeFile(filePath, buffer);
 
   const safeFolderName = sanitizeFolderName(companyName);
   const fileUrl = `/uploads/${safeFolderName}/${uniqueFileName}`;

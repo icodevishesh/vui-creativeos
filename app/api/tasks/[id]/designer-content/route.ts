@@ -46,6 +46,9 @@ export const PATCH = withApiLogging(async function PATCH(
         if (!task) {
             return NextResponse.json({ error: "Task not found" }, { status: 404 });
         }
+        if (!task.client) {
+            return NextResponse.json({ error: "Task has no associated client" }, { status: 422 });
+        }
 
         const contentType = req.headers.get("content-type") ?? "";
 

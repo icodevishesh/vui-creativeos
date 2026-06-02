@@ -30,6 +30,10 @@ import {
   BookOpen,
   Building2,
   UserCheck,
+  LayoutList,
+  Palette,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { DesignPreviewModal, type ApprovalTaskPreview } from "@/components/ApprovalsDesignPreviewDialog";
@@ -73,11 +77,14 @@ interface CalendarCopyRef {
   status?: string;
   bucket?: { id: string; name: string } | null;
   isCarousel?: boolean;
+  frameCount?: number | null;
   frames?: Array<{
     id: string;
     frameNumber: number;
     caption?: string;
     hashtags?: string;
+    creativeUrl?: string;
+    creativeStatus?: string;
   }>;
 }
 
@@ -85,6 +92,8 @@ interface ApprovedCopyRow extends CalendarCopyRef {
   platforms?: string[];
   approvedBy?: string | null;
   approvedDate?: string | null;
+  approverRole?: string | null;
+  referenceUrl?: string | null;
   calendarId: string;
   calendarName?: string | null;
   client?: { id: string; companyName: string } | null;
@@ -781,22 +790,30 @@ function ClientCalendarGroup({
   const [open, setOpen] = useState(true);
   const isMulti = tasks.length > 1;
 
-  const statusCounts = tasks.reduce<Record<string, number>>((acc, t) => {
-    acc[t.status] = (acc[t.status] ?? 0) + 1;
-    return acc;
-  }, {});
+  // Derive copy-level aggregate stats across all calendars for this client
+  const allCopies = tasks.flatMap((t) => t.calendar?.copies ?? []);
+  const approvedCopies = allCopies.filter(c => c.status === "APPROVED" || c.status === "PUBLISHED").length;
+  const pendingCopies = allCopies.filter(c => c.status === "INTERNAL_REVIEW" || c.status === "CLIENT_REVIEW" || c.status === "DRAFT").length;
+
+  const initials = client.companyName
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
 
   return (
-    <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
       {/* Client header row */}
       <div
-        className={`flex items-center gap-3 px-5 py-4 border-b border-gray-50 ${
-          isMulti ? "cursor-pointer hover:bg-gray-50/60 transition-colors" : ""
+        className={`flex items-center gap-4 px-5 py-4 border-b border-gray-100 ${
+          isMulti ? "cursor-pointer hover:bg-gray-50/40 transition-colors" : ""
         }`}
         onClick={isMulti ? () => setOpen((v) => !v) : undefined}
       >
-        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-          <Building2 className="w-4 h-4 text-primary" />
+        {/* Avatar */}
+        <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <span className="text-xs font-bold text-primary">{initials}</span>
         </div>
 
         <div className="flex-1 min-w-0">
@@ -805,19 +822,14 @@ function ClientCalendarGroup({
             <span className="text-[10px] font-semibold text-gray-400">
               {tasks.length} calendar{tasks.length !== 1 ? "s" : ""}
             </span>
-            {statusCounts["INTERNAL_REVIEW"] && (
-              <span className="text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-100 px-1.5 py-0.5 rounded-full">
-                {statusCounts["INTERNAL_REVIEW"]} internal review
-              </span>
-            )}
-            {statusCounts["CLIENT_REVIEW"] && (
-              <span className="text-[10px] font-bold bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded-full">
-                {statusCounts["CLIENT_REVIEW"]} client review
-              </span>
-            )}
-            {statusCounts["APPROVED"] && (
+            {approvedCopies > 0 && (
               <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded-full">
-                {statusCounts["APPROVED"]} approved
+                {approvedCopies} approved
+              </span>
+            )}
+            {pendingCopies > 0 && (
+              <span className="text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-100 px-1.5 py-0.5 rounded-full">
+                {pendingCopies} pending
               </span>
             )}
           </div>
@@ -834,7 +846,7 @@ function ClientCalendarGroup({
 
       {/* Calendar cards — always shown for single, toggleable for multi */}
       {(!isMulti || open) && (
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-gray-100/60">
           {tasks.map((task) => (
             <CalendarApprovalCardInline key={task.id} task={task} />
           ))}
@@ -848,28 +860,33 @@ function ClientCalendarGroup({
 function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
   const router = useRouter();
   const calendar = task.calendar!;
-  const copyCount = calendar.copies?.length ?? 0;
+  const copies = calendar.copies ?? [];
+  const copyCount = copies.length;
+
+  // Per-copy status breakdown
+  const approvedCount = copies.filter(c => c.status === "APPROVED" || c.status === "PUBLISHED").length;
+  const pendingCount = copies.filter(c => c.status === "INTERNAL_REVIEW" || c.status === "CLIENT_REVIEW").length;
+  const draftCount = copies.filter(c => c.status === "DRAFT").length;
 
   // Derive effective status from copies: task is only APPROVED when ALL copies are APPROVED/PUBLISHED
-  const copies = calendar.copies ?? [];
   const effectiveStatus = copies.length > 0 && copies.every(c => c.status === 'APPROVED' || c.status === 'PUBLISHED')
     ? 'APPROVED'
     : task.status === 'APPROVED'
-      ? 'INTERNAL_REVIEW'   // task was prematurely approved — show In Review
+      ? 'INTERNAL_REVIEW'
       : task.status;
 
   const badge = TASK_STATUS_BADGE[effectiveStatus] ?? { label: effectiveStatus, className: "bg-gray-100 text-gray-500" };
 
   const platforms = Array.from(
-    new Set(calendar.copies?.map((c) => c.platform).filter(Boolean))
+    new Set(copies.map((c) => c.platform).filter(Boolean))
   ) as string[];
 
   return (
     <div
-      className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50/60 transition-colors group"
+      className="flex items-center gap-4 px-5 py-3.5 cursor-pointer hover:bg-gray-50/60 transition-colors group"
       onClick={() => router.push(`/approvals/calendar/${calendar.id}`)}
     >
-      <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-primary/20 group-hover:bg-primary/10 transition-colors">
+      <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:border-primary/20 group-hover:bg-primary/5 transition-colors">
         <BookOpen className="w-3.5 h-3.5 text-gray-400 group-hover:text-primary transition-colors" />
       </div>
 
@@ -878,7 +895,9 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
           {task.title}
         </p>
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-          <span className="text-[11px] text-gray-400">{task.project?.name}</span>
+          {task.project?.name && (
+            <span className="text-[11px] text-gray-400">{task.project.name}</span>
+          )}
           {task.assignedTo && (
             <>
               <span className="text-gray-200">·</span>
@@ -894,14 +913,30 @@ function CalendarApprovalCardInline({ task }: { task: ApprovalTask }) {
             {copyCount} {copyCount === 1 ? "copy" : "copies"}
           </span>
           {platforms.slice(0, 3).map((p) => (
-            <span
-              key={p}
-              className="text-[9px] font-bold bg-gray-50 border border-gray-200 text-gray-400 px-1.5 py-0.5 rounded-full"
-            >
+            <span key={p} className="text-[9px] font-bold bg-gray-50 border border-gray-200 text-gray-400 px-1.5 py-0.5 rounded-full">
               {p}
             </span>
           ))}
         </div>
+      </div>
+
+      {/* Copy status mini-pills */}
+      <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+        {approvedCount > 0 && (
+          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-full">
+            {approvedCount} ✓
+          </span>
+        )}
+        {pendingCount > 0 && (
+          <span className="text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded-full">
+            {pendingCount} pending
+          </span>
+        )}
+        {draftCount > 0 && (
+          <span className="text-[10px] font-bold bg-gray-50 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full">
+            {draftCount} draft
+          </span>
+        )}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
@@ -927,8 +962,11 @@ const formatDate = (value?: string | null) =>
 
 const toApprovedCopyPreview = (copy: ApprovedCopyRow): ApprovalTaskPreview => ({
   id: copy.id,
-  title: copy.project?.name || copy.calendarName || "Approved design",
+  title: copy.calendarName || copy.project?.name || "Approved design",
   client: copy.client ? { companyName: copy.client.companyName } : null,
+  approvedBy: copy.approvedBy ?? undefined,
+  approvedDate: copy.approvedDate ?? undefined,
+  approverRole: copy.approverRole ?? undefined,
   calendarCopy: {
     id: copy.id,
     content: copy.content,
@@ -939,13 +977,15 @@ const toApprovedCopyPreview = (copy: ApprovedCopyRow): ApprovalTaskPreview => ({
     mediaType: copy.mediaType,
     publishDate: copy.publishDate,
     publishTime: copy.publishTime,
+    referenceUrl: copy.referenceUrl ?? undefined,
     status: "APPROVED",
     bucket: copy.bucket,
     isCarousel: copy.isCarousel,
+    frameCount: copy.frameCount,
     frames: copy.frames,
   },
   attachments: copy.isCarousel && copy.frames && copy.frames.length > 0
-    ? copy.frames.map((f: any) => ({
+    ? copy.frames.map((f) => ({
         id: f.id,
         fileName: `Frame ${f.frameNumber}`,
         fileUrl: f.creativeUrl || "",
@@ -1486,36 +1526,84 @@ export default function ApprovalsPage() {
     (t: ApprovalTask) => t.status === "CLIENT_REVIEW" && !!t.calendarCopyId
   ).length;
 
+  // Summary stats
+  const totalCalendarCopies = calendarTasks.flatMap((t: ApprovalTask) => t.calendar?.copies ?? []);
+  const totalApprovedCopies = totalCalendarCopies.filter(c => c.status === "APPROVED" || c.status === "PUBLISHED").length;
+  const totalPendingCopies = totalCalendarCopies.filter(c => c.status === "INTERNAL_REVIEW" || c.status === "CLIENT_REVIEW").length;
+
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-0.5">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-1">Approvals</h1>
-        <p className="text-gray-400 text-sm">
-          {calendarTasks.length} calendar{calendarTasks.length !== 1 ? "s" : ""} · {designTasks.length} design approval{designTasks.length !== 1 ? "s" : ""} pending
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">Approvals</h1>
+          <p className="text-gray-400 text-sm mt-0.5">
+            Review and manage content calendars and design submissions
+          </p>
+        </div>
+      </div>
+
+      {/* Stats bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <LayoutList className="w-3.5 h-3.5 text-primary" />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Calendars</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{calendarTasks.length}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">{clientGroups.length} client{clientGroups.length !== 1 ? "s" : ""}</p>
+        </div>
+        <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pending</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{totalPendingCopies}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">copies in review</p>
+        </div>
+        <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Approved</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{totalApprovedCopies}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">copies approved</p>
+        </div>
+        <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <Palette className="w-3.5 h-3.5 text-violet-500" />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Designs</span>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{designTasks.length}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">pending design review</p>
+        </div>
       </div>
 
       {/* Content Calendars section — always visible, not tab-filtered */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <p className="text-xs font-medium text-gray-500 uppercase -tracking-tight">Content Calendars</p>
-          <span className="text-[10px] font-medium bg-primary/10 text-[#00786f] px-2 py-0.5 rounded-full">
+          <div className="flex items-center gap-2">
+            <LayoutList className="w-4 h-4 text-gray-400" />
+            <h2 className="text-sm font-bold text-gray-700">Content Calendars</h2>
+          </div>
+          <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full">
             {clientGroups.length} client{clientGroups.length !== 1 ? "s" : ""} · {calendarTasks.length} calendar{calendarTasks.length !== 1 ? "s" : ""}
           </span>
         </div>
 
         {calLoading ? (
-          <div className="flex items-center gap-3 text-gray-400 py-6">
+          <div className="flex items-center gap-3 text-gray-400 py-8">
             <Clock className="w-4 h-4 animate-spin" />
             <span className="text-sm">Loading calendars...</span>
           </div>
         ) : clientGroups.length === 0 ? (
-          <div className="bg-white border border-gray-100 rounded-lg p-8 text-center">
-            <p className="text-sm text-gray-400">No calendars found.</p>
+          <div className="bg-white border border-gray-100 rounded-xl p-10 text-center">
+            <LayoutList className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+            <p className="text-sm font-medium text-gray-400">No calendars in review</p>
+            <p className="text-xs text-gray-300 mt-1">Calendars submitted for review will appear here</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {clientGroups.map(({ client, tasks }) => (
               <ClientCalendarGroup key={client.id} client={client} tasks={tasks} />
             ))}
@@ -1526,7 +1614,10 @@ export default function ApprovalsPage() {
       {/* Design approvals section — tab-filtered */}
       <div className="space-y-4">
         <div className="flex items-center gap-4 flex-wrap">
-          <p className="text-xs font-medium text-gray-500 uppercase -tracking-tight">Design Approvals</p>
+          <div className="flex items-center gap-2">
+            <Palette className="w-4 h-4 text-gray-400" />
+            <h2 className="text-sm font-bold text-gray-700">Design Approvals</h2>
+          </div>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             const count = tab.key === "INTERNAL_REVIEW" ? internalDesignCount : clientDesignCount;
@@ -1535,29 +1626,29 @@ export default function ApprovalsPage() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${isActive
-                  ? "bg-white text-gray-900 border border-gray-100 shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "bg-white text-gray-900 border border-gray-200 shadow-sm"
+                  : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
                   }`}
               >
-                <span style={{ fontSize: '14px' }}>{tab.label}</span>
+                {tab.label}
                 {count > 0 && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-gray-100 text-gray-600" : "bg-gray-100 text-gray-400"}`}>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-400"}`}>
                     {count}
                   </span>
                 )}
               </button>
             );
           })}
-          <div className="ml-auto inline-flex items-center gap-1 p-1 rounded-lg border border-gray-100 bg-white">
+          <div className="ml-auto inline-flex items-center gap-0.5 p-1 rounded-lg border border-gray-200 bg-white">
             <button
               onClick={() => setDesignView("pending")}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${designView === "pending" ? "bg-gray-900 text-white" : "text-gray-500 hover:text-gray-700"}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${designView === "pending" ? "bg-gray-900 text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
               Pending
             </button>
             <button
               onClick={() => setDesignView("history")}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${designView === "history" ? "bg-gray-900 text-white" : "text-gray-500 hover:text-gray-700"}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${designView === "history" ? "bg-gray-900 text-white shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
               History
             </button>
@@ -1566,13 +1657,15 @@ export default function ApprovalsPage() {
 
         {designView === "history" ? (
           calLoading ? (
-            <div className="flex items-center gap-3 text-gray-400 py-6">
+            <div className="flex items-center gap-3 text-gray-400 py-8">
               <Clock className="w-4 h-4 animate-spin" />
               <span className="text-sm">Loading approved designs...</span>
             </div>
           ) : approvedDesignTasks.length === 0 ? (
-            <div className="bg-white border border-gray-100 rounded-lg p-8 text-center">
-              <p className="text-sm text-gray-400">No approved designs found.</p>
+            <div className="bg-white border border-gray-100 rounded-xl p-10 text-center">
+              <CheckCircle2 className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-400">No approved designs yet</p>
+              <p className="text-xs text-gray-300 mt-1">Approved designs will appear here</p>
             </div>
           ) : (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -1586,16 +1679,18 @@ export default function ApprovalsPage() {
             </div>
           )
         ) : tabLoading ? (
-          <div className="flex items-center gap-3 text-gray-400 py-6">
+          <div className="flex items-center gap-3 text-gray-400 py-8">
             <Clock className="w-4 h-4 animate-spin" />
             <span className="text-sm">Loading...</span>
           </div>
         ) : designTasks.length === 0 ? (
-          <div className="bg-white border border-gray-100 rounded-lg p-8 text-center">
-            <p className="text-sm text-gray-400">No designs found.</p>
+          <div className="bg-white border border-gray-100 rounded-xl p-10 text-center">
+            <Palette className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+            <p className="text-sm font-medium text-gray-400">No designs pending review</p>
+            <p className="text-xs text-gray-300 mt-1">Designs submitted for internal review will appear here</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5">
             {designTasks.map((task: ApprovalTask) => (
               <DesignApprovalCard
                 key={task.id}
@@ -1613,14 +1708,17 @@ export default function ApprovalsPage() {
 
       <div className="space-y-4">
         <div className="flex items-center gap-3 flex-wrap">
-          <p className="text-xs font-medium text-gray-500 uppercase -tracking-tight">Approved Copies</p>
-          <span className="text-[10px] font-medium bg-primary/10 text-[#00786f] px-2 py-0.5 rounded-full">
-            {filteredApprovedCopies.length} approved cop{filteredApprovedCopies.length === 1 ? "y" : "ies"}
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-gray-400" />
+            <h2 className="text-sm font-bold text-gray-700">Approved Copies</h2>
+          </div>
+          <span className="text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded-full">
+            {filteredApprovedCopies.length} cop{filteredApprovedCopies.length === 1 ? "y" : "ies"}
           </span>
           <select
             value={approvedCopyMediaType}
             onChange={(event) => setApprovedCopyMediaType(event.target.value)}
-            className="ml-auto w-full md:w-48 px-3 py-2 rounded-lg border border-gray-100 text-xs font-semibold bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="ml-auto w-full md:w-48 px-3 py-2 rounded-lg border border-gray-200 text-xs font-semibold bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="">All media types</option>
             {MEDIA_TYPE_FILTERS.map((type) => (

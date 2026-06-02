@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar as CalendarIcon, RefreshCw } from "lucide-react";
 import { Calendar } from "@/components/Calendar";
-import { type CalendarCopy } from "@/components/CalendarCopyPreviewDialog";
+import { type CalendarCopy } from "@/components/Calendar";
 
 type PortalProfile = {
   id: string;

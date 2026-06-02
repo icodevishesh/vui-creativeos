@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // Increase body size limit for designer file uploads (multiple platform files can exceed 10MB default)
+    proxyClientMaxBodySize: "100mb",
+  },
 };
 
 export default nextConfig;

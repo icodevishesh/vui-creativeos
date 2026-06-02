@@ -13,7 +13,18 @@
       "Bash(cat app/api/clients/[id]/team/route.ts)",
       "Bash(grep -A 5 \"userRole\" app/clients/[id]/_components/TeamTab.tsx)",
       "Bash(grep -B5 -A15 \"role.*option\\\\|select.*role\\\\|roleOption\\\\|GRAPHIC_DESIGNER\\\\|DESIGNER\" app/clients/[id]/_components/TeamTab.tsx)",
-      "Bash(grep -A 30 \"Role for this Client\" app/clients/[id]/_components/TeamTab.tsx)"
+      "Bash(grep -A 30 \"Role for this Client\" app/clients/[id]/_components/TeamTab.tsx)",
+      "Bash(xargs ls)",
+      "Bash(npm run *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(kill 14394)",
+      "Bash(echo \"Started PID $!\")",
+      "Bash(kill 41628)",
+      "Bash(kill 41864)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(awk '{print $2}')",
+      "Bash(xargs kill)",
+      "Bash(fuser -k 3000/tcp)"
     ]
   }
 }

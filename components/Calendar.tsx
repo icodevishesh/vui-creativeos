@@ -1,7 +1,29 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, getDay } from 'date-fns';
-import { CalendarCopyPreviewDialog, type CalendarCopy } from './CalendarCopyPreviewDialog';
+import { DesignPreviewModal, type ApprovalTaskPreview } from './ApprovalsDesignPreviewDialog';
+
+export interface CalendarCopy {
+  id: string;
+  content: string;
+  caption?: string | null;
+  hashtags?: string | null;
+  publishDate?: string | Date | null;
+  publishTime?: string | null;
+  platform?: string | null;
+  platforms?: string[] | null;
+  mediaType?: string | null;
+  status: string;
+  calendarName?: string;
+  bucket?: { id: string; name: string } | null;
+  isCarousel?: boolean;
+  frames?: Array<{
+    id: string;
+    frameNumber: number;
+    caption?: string | null;
+    hashtags?: string | null;
+  }>;
+}
 
 interface Task {
   id: string;
@@ -211,7 +233,42 @@ export const Calendar: React.FC<CalendarProps> = ({
           })}
         </div>
       </div>
-      <CalendarCopyPreviewDialog copy={selectedCopy} onClose={() => setSelectedCopy(null)} />
+      <DesignPreviewModal
+        isOpen={!!selectedCopy}
+        onClose={() => setSelectedCopy(null)}
+        task={selectedCopy ? ({
+          id: selectedCopy.id,
+          title: selectedCopy.publishDate
+            ? format(new Date(selectedCopy.publishDate as string), 'EEEE, MMMM d, yyyy')
+            : selectedCopy.calendarName ?? 'Content Preview',
+          calendarCopy: {
+            id: selectedCopy.id,
+            content: selectedCopy.content,
+            caption: selectedCopy.caption ?? undefined,
+            hashtags: selectedCopy.hashtags ?? undefined,
+            platform: selectedCopy.platform ?? undefined,
+            platforms: selectedCopy.platforms?.length
+              ? selectedCopy.platforms as string[]
+              : selectedCopy.platform ? [selectedCopy.platform] : [],
+            mediaType: selectedCopy.mediaType ?? undefined,
+            publishDate: selectedCopy.publishDate
+              ? new Date(selectedCopy.publishDate as string).toISOString()
+              : undefined,
+            publishTime: selectedCopy.publishTime ?? undefined,
+            status: selectedCopy.status,
+            bucket: selectedCopy.bucket,
+            isCarousel: selectedCopy.isCarousel,
+            frameCount: selectedCopy.frames?.length ?? null,
+            frames: selectedCopy.frames?.map(f => ({
+              id: f.id,
+              frameNumber: f.frameNumber,
+              caption: f.caption ?? undefined,
+              hashtags: f.hashtags ?? undefined,
+            })) ?? undefined,
+          },
+          attachments: null,
+        } satisfies ApprovalTaskPreview) : null}
+      />
     </div>
   );
 };
