@@ -55,65 +55,65 @@ interface UploadAndSubmitTabProps {
 
 const PLATFORM_STYLES: Record<string, { pill: string; zone: string; header: string; activeType: string }> = {
   Instagram: {
-    pill:       'bg-pink-50 text-pink-600 border-pink-100',
-    zone:       'border-pink-200 hover:border-pink-400 hover:bg-pink-50/30',
-    header:     'text-pink-600 bg-pink-50 border-pink-100',
+    pill: 'bg-pink-50 text-pink-600 border-pink-100',
+    zone: 'border-pink-200 hover:border-pink-400 hover:bg-pink-50/30',
+    header: 'text-pink-600 bg-pink-50 border-pink-100',
     activeType: 'bg-pink-500 text-white border-pink-500',
   },
   LinkedIn: {
-    pill:       'bg-blue-50 text-blue-700 border-blue-100',
-    zone:       'border-blue-200 hover:border-blue-400 hover:bg-blue-50/30',
-    header:     'text-blue-700 bg-blue-50 border-blue-100',
+    pill: 'bg-blue-50 text-blue-700 border-blue-100',
+    zone: 'border-blue-200 hover:border-blue-400 hover:bg-blue-50/30',
+    header: 'text-blue-700 bg-blue-50 border-blue-100',
     activeType: 'bg-blue-600 text-white border-blue-600',
   },
   Twitter: {
-    pill:       'bg-sky-50 text-sky-600 border-sky-100',
-    zone:       'border-sky-200 hover:border-sky-400 hover:bg-sky-50/30',
-    header:     'text-sky-600 bg-sky-50 border-sky-100',
+    pill: 'bg-sky-50 text-sky-600 border-sky-100',
+    zone: 'border-sky-200 hover:border-sky-400 hover:bg-sky-50/30',
+    header: 'text-sky-600 bg-sky-50 border-sky-100',
     activeType: 'bg-sky-500 text-white border-sky-500',
   },
   Facebook: {
-    pill:       'bg-primary/10 text-primary border-primary/20',
-    zone:       'border-primary/30 hover:border-primary/60 hover:bg-primary/30',
-    header:     'text-primary bg-primary/10 border-primary/20',
+    pill: 'bg-primary/10 text-primary border-primary/20',
+    zone: 'border-primary/30 hover:border-primary/60 hover:bg-primary/30',
+    header: 'text-primary bg-primary/10 border-primary/20',
     activeType: 'bg-primary text-white border-primary',
   },
   YouTube: {
-    pill:       'bg-red-50 text-red-600 border-red-100',
-    zone:       'border-red-200 hover:border-red-400 hover:bg-red-50/30',
-    header:     'text-red-600 bg-red-50 border-red-100',
+    pill: 'bg-red-50 text-red-600 border-red-100',
+    zone: 'border-red-200 hover:border-red-400 hover:bg-red-50/30',
+    header: 'text-red-600 bg-red-50 border-red-100',
     activeType: 'bg-red-600 text-white border-red-600',
   },
   Pinterest: {
-    pill:       'bg-rose-50 text-rose-600 border-rose-100',
-    zone:       'border-rose-200 hover:border-rose-400 hover:bg-rose-50/30',
-    header:     'text-rose-600 bg-rose-50 border-rose-100',
+    pill: 'bg-rose-50 text-rose-600 border-rose-100',
+    zone: 'border-rose-200 hover:border-rose-400 hover:bg-rose-50/30',
+    header: 'text-rose-600 bg-rose-50 border-rose-100',
     activeType: 'bg-rose-600 text-white border-rose-600',
   },
 };
 
 const defaultStyle = {
-  pill:       'bg-gray-50 text-gray-600 border-gray-200',
-  zone:       'border-gray-200 hover:border-gray-400 hover:bg-gray-50/50',
-  header:     'text-gray-600 bg-gray-50 border-gray-200',
+  pill: 'bg-gray-50 text-gray-600 border-gray-200',
+  zone: 'border-gray-200 hover:border-gray-400 hover:bg-gray-50/50',
+  header: 'text-gray-600 bg-gray-50 border-gray-200',
   activeType: 'bg-gray-600 text-white border-gray-600',
 };
 
 // Types available per platform — any unlisted platform falls back to [{Post}]
 const PLATFORM_TYPES: Record<string, { label: string; value: string }[]> = {
   Instagram: [
-    { label: 'Post',  value: 'post'  },
+    { label: 'Post', value: 'post' },
     { label: 'Story', value: 'story' },
-    { label: 'Reel',  value: 'reel'  },
+    { label: 'Reel', value: 'reel' },
   ],
   Facebook: [
-    { label: 'Post',  value: 'post'  },
+    { label: 'Post', value: 'post' },
     { label: 'Story', value: 'story' },
   ],
-  Twitter:   [{ label: 'Post',  value: 'post'  }],
-  LinkedIn:  [{ label: 'Post',  value: 'post'  }],
-  YouTube:   [{ label: 'Short', value: 'short' }, { label: 'Video', value: 'video' }],
-  Pinterest: [{ label: 'Pin',   value: 'pin'   }],
+  Twitter: [{ label: 'Post', value: 'post' }],
+  LinkedIn: [{ label: 'Post', value: 'post' }],
+  YouTube: [{ label: 'Short', value: 'short' }, { label: 'Video', value: 'video' }],
+  Pinterest: [{ label: 'Pin', value: 'pin' }],
 };
 
 function getPlatformStyle(platform: string) {
@@ -196,11 +196,10 @@ function PlatformUploadZone({
                         key={t.value}
                         type="button"
                         onClick={() => onTypeChange(idx, t.value)}
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ${
-                          item.type === t.value
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ${item.type === t.value
                             ? style.activeType
                             : 'bg-white text-gray-500 border-gray-200 hover:border-gray-400'
-                        }`}
+                          }`}
                       >
                         {t.label}
                       </button>
@@ -287,8 +286,8 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
 
   const platforms: string[] = copy
     ? (Array.isArray(copy.platforms) && copy.platforms.length > 0
-        ? copy.platforms
-        : copy.platform
+      ? copy.platforms
+      : copy.platform
         ? [copy.platform]
         : [])
     : [];
@@ -501,9 +500,8 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
                 const hasFile = !!filesByFrame[frame.id];
                 const isUploading = uploadingFrameId === frame.id;
                 return (
-                  <div key={frame.id} className={`rounded-lg border p-4 space-y-2 transition-all ${
-                    hasFile ? 'border-emerald-200 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50'
-                  }`}>
+                  <div key={frame.id} className={`rounded-lg border p-4 space-y-2 transition-all ${hasFile ? 'border-emerald-200 bg-emerald-50/40' : 'border-gray-200 bg-gray-50/50'
+                    }`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Frame {frame.frameNumber}</span>
@@ -523,15 +521,14 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
                         className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                         disabled={isUploading}
                       />
-                      <div className={`flex items-center justify-center gap-2 py-2 rounded-lg border-2 border-dashed text-xs font-bold transition-all ${
-                        hasFile
+                      <div className={`flex items-center justify-center gap-2 py-2 rounded-lg border-2 border-dashed text-xs font-bold transition-all ${hasFile
                           ? 'border-emerald-300 text-emerald-600 bg-white'
                           : 'border-gray-200 text-gray-400 bg-white hover:border-primary/40 hover:text-primary'
-                      }`}>
+                        }`}>
                         {isUploading ? (
                           <><div className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /> Uploading...</>
                         ) : hasFile ? (
-                          <><ImageIcon size={14} /> {filesByFrame[frame.id]!.name}</>  
+                          <><ImageIcon size={14} /> {filesByFrame[frame.id]!.name}</>
                         ) : (
                           <><Upload size={14} /> Click to upload Frame {frame.frameNumber}</>
                         )}
@@ -624,7 +621,7 @@ export const UploadAndSubmitTab: React.FC<UploadAndSubmitTabProps> = ({ task, on
             ) : (
               <Send size={18} />
             )}
-            Submit for Internal Review
+            Submit
           </button>
         </div>
       </div>

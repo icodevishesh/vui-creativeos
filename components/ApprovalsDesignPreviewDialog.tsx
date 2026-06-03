@@ -100,8 +100,23 @@ const PLATFORM_ICON: Record<string, React.ElementType> = {
   youtube: YouTubeIcon,
 };
 
-const isImageFile = (mime?: string) => !!mime && mime.startsWith('image/');
-const isVideoFile = (mime?: string) => !!mime && mime.startsWith('video/');
+const isImageFile = (mime?: string, fileName?: string) => {
+  if (mime && mime.startsWith('image/')) return true;
+  if (fileName) {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (ext && ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext)) return true;
+  }
+  return false;
+};
+
+const isVideoFile = (mime?: string, fileName?: string) => {
+  if (mime && mime.startsWith('video/')) return true;
+  if (fileName) {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (ext && ['mp4', 'mov', 'webm', 'ogg', 'mkv', 'avi'].includes(ext)) return true;
+  }
+  return false;
+};
 
 const downloadFile = async (url: string, name: string) => {
   try {
@@ -127,16 +142,26 @@ export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete, on
   if (!isOpen || !task) return null;
 
   const copy = task.calendarCopy;
-  const isCarousel = copy?.isCarousel && copy.frames && copy.frames.length > 0;
-  const media = isCarousel
-    ? (copy!.frames ?? [])
+  const isCarousel = !!(copy?.isCarousel && copy.frames && copy.frames.length > 0);
+  let media = isCarousel
+    ? (copy.frames ?? [])
       .filter((f) => !!f.creativeUrl)
       .map((f) => ({
         fileUrl: f.creativeUrl || '',
         fileName: `Frame ${f.frameNumber}`,
         mimeType: 'image/png',
       }))
-    : (task.attachments ?? []).filter(a => isImageFile(a.mimeType) || isVideoFile(a.mimeType));
+    : [];
+
+  if (!isCarousel || media.length === 0) {
+    media = (task.attachments ?? [])
+      .filter(a => !!a.fileUrl && (isImageFile(a.mimeType, a.fileName) || isVideoFile(a.mimeType, a.fileName)))
+      .map(a => ({
+        fileUrl: a.fileUrl,
+        fileName: a.fileName,
+        mimeType: a.mimeType,
+      }));
+  }
   const current = media[mediaIdx];
 
   const headerDate = copy?.publishDate
@@ -227,18 +252,24 @@ export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete, on
                 </div>
               ) : (
                 <>
-                  {isImageFile(current?.mimeType) ? (
-                    <img
-                      src={current.fileUrl}
-                      alt={current.fileName}
-                      className="w-full aspect-square object-contain block"
-                    />
+                  {current?.fileUrl ? (
+                    isImageFile(current?.mimeType, current?.fileName) ? (
+                      <img
+                        src={current.fileUrl}
+                        alt={current.fileName}
+                        className="w-full aspect-square object-contain block"
+                      />
+                    ) : (
+                      <video
+                        src={current?.fileUrl}
+                        controls
+                        className="w-full aspect-square object-contain block"
+                      />
+                    )
                   ) : (
-                    <video
-                      src={current?.fileUrl}
-                      controls
-                      className="w-full aspect-square object-contain block"
-                    />
+                    <div className="aspect-square flex items-center justify-center">
+                      <ImageIcon className="w-12 h-12 text-gray-600" />
+                    </div>
                   )}
 
                   {/* Download button */}
@@ -313,20 +344,16 @@ export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete, on
               )}
               {/* <p className="font-semibold text-gray-900">{task.title}</p> */}
 
-              {copy?.mediaType === 'CAROUSEL' ? (
-                <>
-                  {copy.frames?.[mediaIdx]?.caption && (
-                    <div className="space-y-1">
-                      <p className="text-md text-gray-900 leading-relaxed">
-                        {copy.frames[mediaIdx].caption}
-                      </p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                copy?.caption && (
-                  <p className="text-sm text-gray-500 leading-relaxed italic">{copy.caption}</p>
-                )
+              {copy?.mediaType === 'CAROUSEL' && copy.frames?.[mediaIdx]?.caption && (
+                <div className="space-y-1">
+                  <p className="text-md text-gray-900 leading-relaxed">
+                    {copy.frames[mediaIdx].caption}
+                  </p>
+                </div>
+              )}
+
+              {copy?.caption && (
+                <p className="text-sm text-gray-500 leading-relaxed italic">{copy.caption}</p>
               )}
 
               {copy?.hashtags && (
