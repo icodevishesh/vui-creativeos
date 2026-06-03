@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from 'react';
 import { Target, Layers, FileText, ChevronRight, Plus, ArrowLeft, Trash2, Edit2, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { CalendarCopiesList } from './CalendarCopiesList';
+import { useAuth } from '@/context/AuthContext';
 
 /* Types */
 type BucketForm = {
@@ -31,6 +32,7 @@ type CalendarData = {
 
 interface CalendarWizardProps {
     calendar: CalendarData | null;
+    initialCalendarId?: string;
     onCalendarCreated: (calendar: CalendarData) => void;
     onRefresh: () => void;
     onBack?: () => void;
@@ -43,6 +45,7 @@ interface CalendarWizardProps {
 // Main function
 export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     calendar,
+    initialCalendarId,
     onCalendarCreated,
     onRefresh,
     onBack,
@@ -51,6 +54,10 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     taskTitle,
     clientPlatforms = [],
 }) => {
+    const { user } = useAuth();
+    const isAdmin = user?.userType === 'ADMIN_OWNER' || (user?.roles ?? []).includes('ADMIN');
+    const shouldSkipObjective = !!initialCalendarId && !isAdmin;
+
     const [step, setStep] = useState(1);
     const [calendarName, setCalendarName] = useState('');
     const [objective, setObjective] = useState('');
@@ -75,9 +82,14 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                 setCopies(calendar.copies);
             }
             // Determine step based on data
-            if (!calendar.objective) setStep(1);
-            else if (!calendar.buckets || calendar.buckets.length === 0) setStep(2);
-            else setStep(3);
+            if (shouldSkipObjective) {
+                if (!calendar.buckets || calendar.buckets.length === 0) setStep(2);
+                else setStep(3);
+            } else {
+                if (!calendar.objective) setStep(1);
+                else if (!calendar.buckets || calendar.buckets.length === 0) setStep(2);
+                else setStep(3);
+            }
         }
     }, [calendar]);
 
@@ -179,11 +191,16 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
     };
 
     const renderStepHeader = () => {
-        const steps = [
-            { id: 1, label: 'Objective', icon: Target },
-            { id: 2, label: 'Buckets', icon: Layers },
-            { id: 3, label: 'Copies', icon: FileText }
-        ];
+        const steps = shouldSkipObjective
+            ? [
+                { id: 2, label: 'Buckets', icon: Layers },
+                { id: 3, label: 'Copies', icon: FileText }
+            ]
+            : [
+                { id: 1, label: 'Objective', icon: Target },
+                { id: 2, label: 'Buckets', icon: Layers },
+                { id: 3, label: 'Copies', icon: FileText }
+            ];
 
         return (
             <div className="flex items-center gap-4 mb-6">
@@ -318,7 +335,18 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
 
                     <div className="flex justify-between mt-8">
                         <button
-                            onClick={() => setStep(1)}
+                            onClick={() => {
+                                if (shouldSkipObjective) {
+                                    if (calendar?.buckets && calendar.buckets.length > 0) {
+                                        setStep(3);
+                                    } else {
+                                        if (onBack) onBack();
+                                        else onRefresh();
+                                    }
+                                } else {
+                                    setStep(1);
+                                }
+                            }}
                             className="flex items-center gap-2 text-gray-500 hover:text-gray-900 px-6 py-3 rounded-xl font-bold transition-all bg-gray-100 hover:bg-gray-200"
                         >
                             <ArrowLeft size={18} /> Back
@@ -358,7 +386,7 @@ export const CalendarWizard: React.FC<CalendarWizardProps> = ({
                             ))}
                         </div>
                     </div>
-                    <button onClick={() => setStep(1)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all">
+                    <button onClick={() => setStep(shouldSkipObjective ? 2 : 1)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title={shouldSkipObjective ? "Manage Buckets" : "Edit Objective"}>
                         <Edit2 size={16} />
                     </button>
                 </div>

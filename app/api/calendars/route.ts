@@ -95,6 +95,121 @@ export const POST = withApiLogging(async function POST(req: Request) {
       clientId = client.id;
     }
 
+    // Check if task already contains a calendarId, or if a calendar already exists for this taskId
+    let existingCalendar = null;
+    if (taskId) {
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        select: { calendarId: true }
+      });
+      if (task?.calendarId) {
+        existingCalendar = await prisma.calendar.findUnique({
+          where: { id: task.calendarId },
+          include: {
+            client: { select: { companyName: true } },
+            buckets: true,
+            copies: {
+              include: {
+                frames: { orderBy: { frameNumber: 'asc' } },
+                designerTasks: {
+                  include: {
+                    attachments: {
+                      select: {
+                        id: true,
+                        fileName: true,
+                        fileUrl: true,
+                        mimeType: true,
+                      }
+                    }
+                  },
+                  orderBy: { createdAt: 'desc' }
+                }
+              },
+              orderBy: { publishDate: 'asc' }
+            },
+            _count: { select: { copies: true } }
+          }
+        });
+      }
+
+      if (!existingCalendar) {
+        existingCalendar = await prisma.calendar.findFirst({
+          where: { taskId },
+          include: {
+            client: { select: { companyName: true } },
+            buckets: true,
+            copies: {
+              include: {
+                frames: { orderBy: { frameNumber: 'asc' } },
+                designerTasks: {
+                  include: {
+                    attachments: {
+                      select: {
+                        id: true,
+                        fileName: true,
+                        fileUrl: true,
+                        mimeType: true,
+                      }
+                    }
+                  },
+                  orderBy: { createdAt: 'desc' }
+                }
+              },
+              orderBy: { publishDate: 'asc' }
+            },
+            _count: { select: { copies: true } }
+          }
+        });
+      }
+    }
+
+    if (existingCalendar) {
+      // Update name/objective on the existing calendar if they are changed or provided
+      const updatedCalendar = await prisma.calendar.update({
+        where: { id: existingCalendar.id },
+        data: {
+          name: name || existingCalendar.name,
+          objective: objective !== undefined ? objective : existingCalendar.objective,
+          clientId: clientId || existingCalendar.clientId,
+          taskId: taskId || existingCalendar.taskId,
+        },
+        include: {
+          client: { select: { companyName: true } },
+          buckets: true,
+          copies: {
+            include: {
+              frames: { orderBy: { frameNumber: 'asc' } },
+              designerTasks: {
+                include: {
+                  attachments: {
+                    select: {
+                      id: true,
+                      fileName: true,
+                      fileUrl: true,
+                      mimeType: true,
+                    }
+                  }
+                },
+                orderBy: { createdAt: 'desc' }
+              }
+            },
+            orderBy: { publishDate: 'asc' }
+          },
+          _count: { select: { copies: true } }
+        }
+      });
+
+      // Link task to the calendar if not already linked
+      if (taskId) {
+        await prisma.task.update({
+          where: { id: taskId },
+          data: { calendarId: updatedCalendar.id }
+        });
+      }
+
+      return NextResponse.json(updatedCalendar);
+    }
+
     const calendar = await prisma.calendar.create({
       data: {
         name,

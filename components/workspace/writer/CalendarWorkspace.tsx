@@ -74,6 +74,7 @@ export const CalendarWorkspace: React.FC<CalendarWorkspaceProps> = ({
         <div className="space-y-6">
             <CalendarWizard
                 calendar={calendar}
+                initialCalendarId={initialCalendarId}
                 onCalendarCreated={handleCalendarCreated}
                 onRefresh={handleRefresh}
                 onBack={onBack}
