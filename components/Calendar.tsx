@@ -17,11 +17,14 @@ export interface CalendarCopy {
   calendarName?: string;
   bucket?: { id: string; name: string } | null;
   isCarousel?: boolean;
+  frameCount?: number | null;
   frames?: Array<{
     id: string;
     frameNumber: number;
     caption?: string | null;
     hashtags?: string | null;
+    creativeUrl?: string | null;
+    creativeStatus?: string | null;
   }>;
   designerTasks?: Array<{
     id: string;
@@ -280,12 +283,31 @@ export const Calendar: React.FC<CalendarProps> = ({
               creativeStatus: (f as any).creativeStatus ?? undefined,
             })) ?? undefined,
           },
-          attachments: selectedCopy.designerTasks?.[0]?.attachments?.map(a => ({
-            id: a.id,
-            fileName: a.fileName,
-            fileUrl: a.fileUrl,
-            mimeType: a.mimeType || '',
-          })) ?? null,
+          attachments: (() => {
+            // First try: attachments from linked designer tasks
+            const taskAttachments = (selectedCopy.designerTasks ?? [])
+              .flatMap(t => t.attachments ?? [])
+              .map(a => ({
+                id: a.id,
+                fileName: a.fileName,
+                fileUrl: a.fileUrl,
+                mimeType: a.mimeType || '',
+              }));
+            if (taskAttachments.length > 0) return taskAttachments;
+
+            // Second try: creativeUrl from carousel frames
+            const frameMedia = (selectedCopy.frames ?? [])
+              .filter(f => f.creativeUrl)
+              .map((f, i) => ({
+                id: f.id,
+                fileName: `Frame ${f.frameNumber}`,
+                fileUrl: f.creativeUrl!,
+                mimeType: 'image/*',
+              }));
+            if (frameMedia.length > 0) return frameMedia;
+
+            return null;
+          })(),
         } satisfies ApprovalTaskPreview) : null}
       />
     </div>

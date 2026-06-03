@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Download, Image as ImageIcon, Pencil, Trash2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import InstagramIcon from '@mui/icons-material/Instagram';
@@ -33,6 +33,7 @@ interface CalendarCopyRef {
   bucket?: { id: string; name: string } | null;
   isCarousel?: boolean;
   frameCount?: number | null;
+  referenceUrl?: string;
   frames?: Array<{
     id: string;
     frameNumber: number;
@@ -49,6 +50,9 @@ export interface ApprovalTaskPreview {
   client?: { companyName: string } | null;
   calendarCopy?: CalendarCopyRef | null;
   attachments?: Attachment[] | null;
+  approvedBy?: string | null;
+  approvedDate?: string | null;
+  approverRole?: string | null;
 }
 
 interface DesignPreviewModalProps {
@@ -57,6 +61,8 @@ interface DesignPreviewModalProps {
   task: ApprovalTaskPreview | null;
   onEdit?: () => void;
   onDelete?: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -111,8 +117,12 @@ const downloadFile = async (url: string, name: string) => {
   }
 };
 
-export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete }: DesignPreviewModalProps) {
+export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete, onPrev, onNext }: DesignPreviewModalProps) {
   const [mediaIdx, setMediaIdx] = useState(0);
+
+  useEffect(() => {
+    setMediaIdx(0);
+  }, [task?.id]);
 
   if (!isOpen || !task) return null;
 
@@ -148,8 +158,28 @@ export function DesignPreviewModal({ isOpen, onClose, task, onEdit, onDelete }: 
 
       <div className="relative bg-gray-50 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">{headerDate}</h2>
+        <div className="flex items-center justify-between px-5 py-4 shrink-0 bg-white border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            {onPrev && (
+              <button
+                onClick={onPrev}
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                title="Previous Copy"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
+            <h2 className="text-base font-semibold text-gray-900">{headerDate}</h2>
+            {onNext && (
+              <button
+                onClick={onNext}
+                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
+                title="Next Copy"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-700 transition-colors"
