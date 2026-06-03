@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, getDay } from 'date-fns';
-import { DesignPreviewModal, type ApprovalTaskPreview } from './ApprovalsDesignPreviewDialog';
+import { DesignPreviewModal, type ApprovalTaskPreview } from './CalendarDesignPreview';
 
 export interface CalendarCopy {
   id: string;
@@ -22,6 +22,15 @@ export interface CalendarCopy {
     frameNumber: number;
     caption?: string | null;
     hashtags?: string | null;
+  }>;
+  designerTasks?: Array<{
+    id: string;
+    attachments?: Array<{
+      id: string;
+      fileName: string;
+      fileUrl: string;
+      mimeType: string | null;
+    }>;
   }>;
 }
 
@@ -221,7 +230,10 @@ export const Calendar: React.FC<CalendarProps> = ({
                         >
                           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
                           <span className="truncate">
-                            {copy.platform ?? 'Post'}{copy.mediaType ? ` · ${copy.mediaType}` : ''}
+                            {(copy.platforms && copy.platforms.length > 0)
+                              ? copy.platforms.join(', ')
+                              : (copy.platform ?? 'Post')}
+                            {copy.mediaType ? ` · ${copy.mediaType}` : ''}
                           </span>
                         </button>
                       );
@@ -264,9 +276,16 @@ export const Calendar: React.FC<CalendarProps> = ({
               frameNumber: f.frameNumber,
               caption: f.caption ?? undefined,
               hashtags: f.hashtags ?? undefined,
+              creativeUrl: (f as any).creativeUrl ?? undefined,
+              creativeStatus: (f as any).creativeStatus ?? undefined,
             })) ?? undefined,
           },
-          attachments: null,
+          attachments: selectedCopy.designerTasks?.[0]?.attachments?.map(a => ({
+            id: a.id,
+            fileName: a.fileName,
+            fileUrl: a.fileUrl,
+            mimeType: a.mimeType || '',
+          })) ?? null,
         } satisfies ApprovalTaskPreview) : null}
       />
     </div>

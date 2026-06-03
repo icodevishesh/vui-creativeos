@@ -3,8 +3,10 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Users, CheckSquare, Clock, AlertTriangle } from 'lucide-react';
+import Link from 'next/link';
+import { link } from 'fs';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// Types 
 
 interface DashboardStats {
   activeClients: number;
@@ -19,6 +21,7 @@ interface KPICardProps {
   subtitle: string;
   icon: React.ReactNode;
   iconBgColor: string;
+  urls: string;
 }
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
@@ -40,20 +43,25 @@ function KPICardSkeleton() {
 
 // ─── KPI Card ───────────────────────────────────────────────────────────────
 
-function KPICard({ title, value, subtitle, icon, iconBgColor }: KPICardProps) {
+function KPICard({ title, value, subtitle, icon, iconBgColor, urls }: KPICardProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-5">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-            {title}
-          </p>
-          <h3 className="text-3xl font-bold text-gray-900 mb-0.5">{value}</h3>
-          <p className="text-xs text-gray-400">{subtitle}</p>
+    <Link
+        href={urls}
+        className="block rounded-lg transition-shadow hover:shadow-md hover:border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+      >
+      <div className="bg-white rounded-lg border border-gray-200 p-5">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+              {title}
+            </p>
+            <h3 className="text-3xl font-bold text-gray-900 mb-0.5">{value}</h3>
+            <p className="text-xs text-gray-400">{subtitle}</p>
+          </div>
+          <div className={`p-2.5 rounded-lg ${iconBgColor}`}>{icon}</div>
         </div>
-        <div className={`p-2.5 rounded-lg ${iconBgColor}`}>{icon}</div>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -87,6 +95,7 @@ export function KPISection() {
         subtitle: 'Currently active',
         icon: <Users className="w-5 h-5 text-blue-600" />,
         iconBgColor: 'bg-blue-50',
+        urls: '/clients',
       },
       {
         title: 'Open Tasks',
@@ -94,6 +103,7 @@ export function KPISection() {
         subtitle: 'Across all projects',
         icon: <CheckSquare className="w-5 h-5 text-primary" />,
         iconBgColor: 'bg-primary/10',
+        urls: '/tasks',
       },
       {
         title: 'Pending Approvals',
@@ -101,6 +111,7 @@ export function KPISection() {
         subtitle: 'Awaiting review',
         icon: <Clock className="w-5 h-5 text-amber-600" />,
         iconBgColor: 'bg-amber-50',
+        urls: '/approvals',
       },
       {
         title: 'Delayed Projects',
@@ -108,6 +119,7 @@ export function KPISection() {
         subtitle: 'Past end date',
         icon: <AlertTriangle className="w-5 h-5 text-red-600" />,
         iconBgColor: 'bg-red-50',
+        urls: '/projects',
       },
     ];
   }, [data]);

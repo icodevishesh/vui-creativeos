@@ -18,7 +18,20 @@ export const GET = withApiLogging(async function GET(
             where: { calendarId: id },
             include: {
                 frames: { orderBy: { frameNumber: 'asc' } },
-                bucket: { select: { id: true, name: true } }
+                bucket: { select: { id: true, name: true } },
+                designerTasks: {
+                    include: {
+                        attachments: {
+                            select: {
+                                id: true,
+                                fileName: true,
+                                fileUrl: true,
+                                mimeType: true,
+                            }
+                        }
+                    },
+                    orderBy: { createdAt: 'desc' }
+                }
             },
             orderBy: { createdAt: 'desc' }
         });

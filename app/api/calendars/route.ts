@@ -22,6 +22,19 @@ export const GET = withApiLogging(async function GET(req: Request) {
           copies: {
             include: {
               frames: { orderBy: { frameNumber: 'asc' } },
+              designerTasks: {
+                include: {
+                  attachments: {
+                    select: {
+                      id: true,
+                      fileName: true,
+                      fileUrl: true,
+                      mimeType: true,
+                    }
+                  }
+                },
+                orderBy: { createdAt: 'desc' }
+              }
             },
             orderBy: { publishDate: 'asc' }
           },
@@ -41,6 +54,19 @@ export const GET = withApiLogging(async function GET(req: Request) {
         copies: {
           include: {
             frames: { orderBy: { frameNumber: 'asc' } },
+            designerTasks: {
+              include: {
+                attachments: {
+                  select: {
+                    id: true,
+                    fileName: true,
+                    fileUrl: true,
+                    mimeType: true,
+                  }
+                }
+              },
+              orderBy: { createdAt: 'desc' }
+            }
           },
           orderBy: { publishDate: 'asc' }
         },
